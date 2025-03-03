@@ -40,13 +40,13 @@ export const LongDataTST = [
   {
     id: '2',
     name: 'second food',
-    description: 'second description test test',
+    description: 'second description',
     servings: 2,
   },
   {
     id: '3',
     name: 'third food',
-    description: 'third description',
+    description: 'third description test 2',
     servings: 1.5,
   },
   {
