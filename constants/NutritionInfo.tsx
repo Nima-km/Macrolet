@@ -46,7 +46,7 @@ export const foodLogDATA = [
   {
     id: '3',
     name: 'third food',
-    description: 'third description test 2',
+    description: 'third description',
     servings: 1.5,
   },
   {
