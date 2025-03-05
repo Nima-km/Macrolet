@@ -30,7 +30,7 @@ export const calculateCalories = (nutrition: NutritionInfo): number => {
 
 ////// TEST DATA
 
-export const foodLogDATA = [
+export const LongDataTST = [
   {
     id: '1',
     name: 'First food',
@@ -69,6 +69,20 @@ export const foodLogDATA = [
   },
 ];
 
+export const shortDataTST = [
+  {
+    id: '1',
+    name: 'First food',
+    description: 'first description',
+    servings: 1,
+  },
+  {
+    id: '2',
+    name: 'second food',
+    description: 'second description',
+    servings: 2,
+  },
+];
 
 export const Item = ({ name, description, servings}: FoodInfo) => {
   return (
@@ -88,12 +102,12 @@ const styles = StyleSheet.create({
   },
   item: {
     backgroundColor: '#f9c2ff',
-    padding: 20,
+    padding: 10,
     marginVertical: 8,
     marginHorizontal: 16,
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
   },
 });
 
