@@ -23,8 +23,8 @@ export default function LogFood() {
     const [servingSize, onChangeServingSize] = React.useState('');
     const [time, onChangeTime] = React.useState('');
 
-    const progress = useSharedValue(.9);
-    const targetPercentage = 85 / 100;
+    const progress = useSharedValue(.6);
+    const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
     const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
     
@@ -85,6 +85,25 @@ export default function LogFood() {
                     
                 </View>
             </View>
+            <View style={[styles.rowContainer]}>
+                <View style={[styles.container]}>
+                    <Text style={styles.smallText}>Calories</Text>
+                    <Text style={styles.smallText}>1234</Text>
+                </View>
+                <View style={[styles.container]}>
+                    <Text style={styles.smallText}>Carbs</Text>
+                    <Text style={styles.smallText}>1234</Text>
+                </View>
+                <View style={[styles.container]}>
+                    <Text style={styles.smallText}>Fat</Text>
+                    <Text style={styles.smallText}>1234</Text>
+                </View>
+                <View style={[styles.container]}>
+                    <Text style={styles.smallText}>Protein</Text>
+                    <Text style={styles.smallText}>1234</Text>
+                </View>
+
+            </View>
         </View>
     );
 }
@@ -142,7 +161,7 @@ const styles = StyleSheet.create({
     },
     box: {
         paddingVertical: 0,
-        paddingHorizontal: 20,
+        paddingHorizontal: 10,
         marginTop: 10,
         marginRight: 15,
         backgroundColor: colors.primary,
