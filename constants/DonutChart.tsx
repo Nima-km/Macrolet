@@ -44,7 +44,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
     return <View />;
   }
 
-  smallerFont.setSize(smallerFont.getSize() * 1.2)
+  smallerFont.setSize(font.getSize() * .6)
   const matrix = Skia.Matrix();
   matrix.translate(radius, radius);
   matrix.rotate(-Math.PI / 2);
