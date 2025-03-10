@@ -28,7 +28,7 @@ export default function RootLayout() {
         options={{ enableChangeListener: true }}
         useSuspense>
         <Stack>
-          <Stack.Screen name="index" options={{ title: 'Tasks' }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
       </SQLiteProvider>
     </Suspense>
