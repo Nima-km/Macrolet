@@ -4,36 +4,47 @@ import {
     SkFont,
     Skia,
     Text,
+    useFont,
   } from "@shopify/react-native-skia";
-import { StyleSheet, View } from "react-native";
+import { PixelRatio, StyleSheet, View } from "react-native";
 import { useDerivedValue, SharedValue } from "react-native-reanimated";
 import { } from "react-native-reanimated";
 import { colors, spacing, typography } from "./theme";
   
 interface CircularProgressProps {
-  strokeWidth: number;
-  radius: number;
+  font: SkFont;
   backgroundColor: string;
   percentageComplete: SharedValue<number>;
-  font: SkFont;
   smallerFont: SkFont;
   targetPercentage: number;
 }
 
+
+
+
 export const DonutChart: React.FC<CircularProgressProps> = ({
-  strokeWidth,
-  radius,
   percentageComplete,
   font,
   targetPercentage,
   smallerFont,
 }) => {
-  const innerRadius = radius - strokeWidth / 2;
+  const font_size = font.getSize()
+  const radius = PixelRatio.roundToNearestPixel(font_size * 3);
+  const STROKE_WIDTH = Math.min(font_size * 1, 16);
+  const innerRadius = radius - STROKE_WIDTH / 2;
   const targetText = `${targetPercentage * 100}`;
+  
 
+ // const font = useFont(require("../Roboto-Light.ttf"), FONT_SIZE);
+  font.setSize(font.getSize())
   const path = Skia.Path.Make();
   path.addCircle(radius, radius, innerRadius);
 
+  if (!font || !smallerFont) {
+    return <View />;
+  }
+
+  smallerFont.setSize(font.getSize() * .6)
   const matrix = Skia.Matrix();
   matrix.translate(radius, radius);
   matrix.rotate(-Math.PI / 2);
@@ -45,7 +56,6 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
   const opacity = useDerivedValue(() => percentageComplete.value);
   const width = font.getTextWidth(targetText) - 10;
   const titleWidth = smallerFont.getTextWidth("Power");
-
   return (
     <View style={styles.container}>
       <Canvas style={styles.container}>
@@ -54,7 +64,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
           color={colors.secondary}
           style="stroke"
           strokeJoin="round"
-          strokeWidth={strokeWidth}
+          strokeWidth={STROKE_WIDTH}
           strokeCap="round"
           start={0}
           end={end}

@@ -60,8 +60,6 @@ export default function Index() {
         <View style={styles.ringChartContainer}>
           <DonutChart
             backgroundColor="white"
-            radius={radius}
-            strokeWidth={STROKE_WIDTH}
             percentageComplete={progress}  // Changed from animationState to progress
             targetPercentage={targetPercentage}
             font={font}
@@ -78,7 +76,7 @@ export default function Index() {
           <Text>bo o o wo a</Text>
         </View>
       </View>
-      <Text style={styles.titleText}>MY NIGGAS</Text>
+      <Text style={styles.titleText}>MY NIBBLERS</Text>
       <View style={styles.box}>
         <View style={styles.centerContainter}>
           <Text style={styles.smallText}>No Bitches?</Text>

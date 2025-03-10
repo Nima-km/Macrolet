@@ -1,8 +1,9 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView} from "react-native";
-import { colors, spacing, typography } from "../../constants/theme";
+import { colors, spacing, typography } from "../../../constants/theme";
 import { TouchableOpacity } from "react-native";
-import { NutritionInfo, foodLogDATA, Item} from "../../constants/NutritionInfo";
-import { BarChart } from "../../constants/BarChart";
+import { Link } from 'expo-router';
+import { NutritionInfo, LongDataTST, shortDataTST, Item} from "../../../constants/NutritionInfo";
+import { BarChart } from "../../../constants/BarChart";
 import React from 'react';
 import {
   Canvas,
@@ -65,8 +66,8 @@ export default function Logs() {
       easing: Easing.inOut(Easing.cubic),
     });
   };
-  const font = useFont(require("../../Roboto-Light.ttf"), 25);
-  const smallerFont = useFont(require("../../Roboto-Light.ttf"), 25);
+  const font = useFont(require("../../../Roboto-Light.ttf"), 25);
+  const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 25);
   const displayText = useDerivedValue(() => {
     return `Calories: ${Math.floor(dailyProgress.value.carbs)}`;
   });
@@ -94,17 +95,59 @@ export default function Logs() {
         </View>
       </View>
       <View style={styles.container}>
-        <Text style={styles.titleText}>Food Log</Text>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>+ Add food</Text>
-        </TouchableOpacity>
-        <View style={[styles.box, styles.constrainedBox]}>
+        <Text style={styles.titleText}>Breakfast</Text>
+        <View style={[styles.box]}>
             <FlatList
-            data={foodLogDATA}
+            data={shortDataTST}
             renderItem={({item}) => <Item name={item.name} description={item.description} servings={item.servings} />}
             keyExtractor={item => item.id}
-            nestedScrollEnabled={true}
+            scrollEnabled={false}
           />
+        </View>
+        <View style={styles.box}>
+        <Link href="/logFood" asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>+ Add food</Text>
+          </TouchableOpacity>
+        </Link>
+        </View>
+      </View>
+
+      <View style={styles.container}>
+        <Text style={styles.titleText}>Lunch</Text>
+        <View style={[styles.box]}>
+            <FlatList
+            data={shortDataTST}
+            renderItem={({item}) => <Item name={item.name} description={item.description} servings={item.servings} />}
+            keyExtractor={item => item.id}
+            scrollEnabled={false}
+          />
+        </View>
+        <View style={styles.box}>
+        <Link href="/logFood" asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>+ Add food</Text>
+          </TouchableOpacity>
+        </Link>
+        </View>
+      </View>
+
+      <View style={styles.container}>
+        <Text style={styles.titleText}>Dinner</Text>
+        <View style={[styles.box]}>
+            <FlatList
+            data={shortDataTST}
+            renderItem={({item}) => <Item name={item.name} description={item.description} servings={item.servings} />}
+            keyExtractor={item => item.id}
+            scrollEnabled={false}
+          />
+        </View>
+        <View style={styles.box}>
+        <Link href="/logFood" asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>+ Add food</Text>
+          </TouchableOpacity>
+        </Link>
         </View>
       </View>
     </ScrollView>
@@ -127,8 +170,6 @@ const styles = StyleSheet.create({
     height: 300,
   },
   button: {
-    marginTop: 20,
-    marginLeft: 15,
     backgroundColor: colors.secondary,
     paddingHorizontal: 40,
     paddingVertical: 15,
@@ -151,7 +192,7 @@ const styles = StyleSheet.create({
   box: {
     paddingVertical: 20,
     paddingHorizontal: 20,
-    marginVertical: 20,
+    marginTop: 10,
     marginHorizontal: 15,
     backgroundColor: colors.primary,
     borderRadius: 4,
