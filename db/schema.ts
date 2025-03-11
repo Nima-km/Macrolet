@@ -13,4 +13,14 @@ export const lists = sqliteTable('lists', {
     name: text('name').notNull(),
 })
 
+export const food = sqliteTable('food', {
+    id: integer('id').primaryKey({autoIncrement: true}),
+    name: text('name').notNull(),
+    description: text('description').notNull(),
+    protein: integer('protein'),
+    fat: integer('fat'),
+    calories: integer('calories').notNull(),
+    carbs: integer('carbs'),
+})
+
 export type Task = typeof tasks.$inferSelect;

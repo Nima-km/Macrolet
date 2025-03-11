@@ -12,22 +12,28 @@ import {
   Skia,
   useFont,
 } from "@shopify/react-native-skia";
-
-
 import Animated, {useSharedValue, withTiming, Easing, useDerivedValue} from "react-native-reanimated";
 import { useFocusEffect } from '@react-navigation/native';
-
+import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
+import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { lists, tasks, food } from '@/db/schema';
 const strokeWidth = PixelRatio.roundToNearestPixel(30);
 
 export default function Logs() {
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db);
   const calorieTarget = 2500;
   const carbTarget = 14;
+  const { data } = useLiveQuery(
+    drizzleDb.select().from(food)
+  )
+
   const daily: NutritionInfo = {
     protein: 50,
     fat: 100,
     carbs: 200
   };
-
+  
   const carbProgress = useSharedValue(0);
   const dailyProgress = useSharedValue<NutritionInfo>({
     protein: 0,
@@ -98,9 +104,9 @@ export default function Logs() {
         <Text style={styles.titleText}>Breakfast</Text>
         <View style={[styles.box]}>
             <FlatList
-            data={shortDataTST}
-            renderItem={({item}) => <Item name={item.name} description={item.description} servings={item.servings} />}
-            keyExtractor={item => item.id}
+            data={data}
+            renderItem={({item}) => <Item name={item.name} description={item.description} servings={item.calories} />}
+            keyExtractor={item => item.id.toString()}
             scrollEnabled={false}
           />
         </View>

@@ -7,6 +7,7 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations';
 import { addDummyData } from '@/db/addDummyData';
 import { useDrizzleStudio} from 'expo-drizzle-studio-plugin'
+import { and } from 'drizzle-orm';
 
 export const DATABASE_NAME = 'tasks';
 
