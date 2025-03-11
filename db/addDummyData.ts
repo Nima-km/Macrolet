@@ -1,4 +1,4 @@
-import { lists, tasks } from './schema';
+import { lists, tasks, food } from './schema';
 import { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 
 import AsyncStorage from 'expo-sqlite/kv-store';
@@ -9,21 +9,11 @@ export const addDummyData = async (db: ExpoSQLiteDatabase) => {
 
     console.log('Inserting lists');
 
-    await db.insert(lists).values([{ name: "Lists 1" }, { name: "Lists 2" }, { name: "Lists 3" }]);
-
-    await db.insert(tasks).values([
-        { name: 'Task 1', list_id: 1},
-        { name: 'Task 2', list_id: 1},
-        { name: 'Task 3', list_id: 1},
-    ])
-    await db.insert(tasks).values([
-        { name: 'Task 1', list_id: 2},
-        { name: 'Task 2', list_id: 2},
-        { name: 'Task 3', list_id: 2},
-    ])
-    await db.insert(tasks).values([
-        { name: 'Task 1', list_id: 3},
-        { name: 'Task 2', list_id: 3},
-        { name: 'Task 3', list_id: 3},
+    await db.insert(food).values([
+        { name: 'Test 1', description: 'test 1', protein: 1, carbs: 2, fat: 3, calories: 4},
+        { name: 'Test 2', description: 'test 1', protein: 1, carbs: 2, fat: 3, calories: 4},
+        { name: 'Test 3', description: 'test 1', protein: 1, carbs: 2, fat: 3, calories: 4},
+        { name: 'Test 4', description: 'test 1', protein: 1, carbs: 2, fat: 3, calories: 4},
+        { name: 'Test 5', description: 'test 1', protein: 1, carbs: 2, fat: 3, calories: 4},
     ])
 }
