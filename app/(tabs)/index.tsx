@@ -13,14 +13,20 @@ import {
 
 import { useSharedValue, withTiming, Easing } from "react-native-reanimated";
 import { useFocusEffect } from '@react-navigation/native';
-
+import { useDrizzleStudio} from 'expo-drizzle-studio-plugin'
+import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
 const FONT_SIZE = 27
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 16;
+const DATABASE_NAME = 'tasks';
 
 export default function Index() {
   const targetPercentage = 85 / 100;
   const progress = useSharedValue(0);
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db);
+  useDrizzleStudio(db);
 
   useFocusEffect(
     React.useCallback(() => {
