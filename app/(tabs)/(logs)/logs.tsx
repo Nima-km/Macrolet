@@ -18,12 +18,13 @@ import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite'
 import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { lists, tasks, food, foodItem, Task} from '@/db/schema';
 import { sql, eq, sum} from 'drizzle-orm';
+import { integer } from "drizzle-orm/pg-core";
 const strokeWidth = PixelRatio.roundToNearestPixel(30);
 
 export default function Logs() {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
-  const calorieTarget = 2500;
+  const calorieTarget = 5000;
   const carbTarget = 14;
   const { data: breakFast } = useLiveQuery(
     drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 1`)
@@ -57,8 +58,17 @@ export default function Logs() {
       // This code runs when the screen is focused
       console.log('Tab is now focused');
       animateChart();
-      console.log(nutinfo[0])
-
+      const load = async () => {
+        await drizzleDb.select({fat: sum(food.fat), 
+          carbs: sum(food.carbs), 
+          protein: sum(food.protein)}).from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+          .then(nutinfo2 => setDaily({protein: parseInt(nutinfo2[0].protein !== null ? nutinfo2[0].protein : '0'), 
+            fat: parseInt(nutinfo2[0].fat !== null ? nutinfo2[0].fat : '0'), 
+            carbs: parseInt(nutinfo2[0].carbs !== null ? nutinfo2[0].carbs : '0')}))
+        console.log("updated")
+      }
+      load();
+      console.log(daily)
       // Optionally return a cleanup function if needed
       return () => {
         console.log('Tab is unfocused');
@@ -66,8 +76,8 @@ export default function Logs() {
     }, [])
   );
   useEffect(() => {
-
-  })
+      
+  }, [])
   const animateChart = () => {
     // Reset carb progress
     carbProgress.value = 0;
