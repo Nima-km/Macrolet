@@ -1,4 +1,11 @@
-import { sqliteTable, text, integer} from 'drizzle-orm/sqlite-core';
+import { timestamp } from 'drizzle-orm/gel-core';
+import { check, sqliteTable, text, integer} from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
+const timestamps = {
+    updated_at: timestamp(),
+    created_at: timestamp().defaultNow().notNull(),
+    deleted_at: timestamp(),
+  }
 
 export const tasks = sqliteTable('tasks', {
     id: integer('id').primaryKey({autoIncrement: true}),
@@ -17,10 +24,28 @@ export const food = sqliteTable('food', {
     id: integer('id').primaryKey({autoIncrement: true}),
     name: text('name').notNull(),
     description: text('description').notNull(),
-    protein: integer('protein'),
-    fat: integer('fat'),
-    calories: integer('calories').notNull(),
-    carbs: integer('carbs'),
+    protein: integer('protein').notNull(),
+    fat: integer('fat').notNull(),
+    calories: integer('calories'),
+    carbs: integer('carbs').notNull(),
 })
+
+export const foodItem = sqliteTable ('foodItem', {
+    id: integer('id').primaryKey({autoIncrement: true}),
+    created_at: text('timestamp')
+    .notNull()
+    .default(sql`(current_timestamp)`),
+    food_id: integer('food_id')
+    .notNull()
+    .references(() => food.id),
+    servings: integer('servings').notNull(),
+    meal: integer('meal').notNull() 
+    
+},
+    (table) => [
+        check("meal_check", sql`${table.meal} < 3`),
+        check("meal_check2", sql`${table.meal} >= 0`),
+    ]
+)
 
 export type Task = typeof tasks.$inferSelect;

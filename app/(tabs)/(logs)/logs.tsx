@@ -4,7 +4,7 @@ import { TouchableOpacity } from "react-native";
 import { Link } from 'expo-router';
 import { NutritionInfo, LongDataTST, shortDataTST, Item} from "../../../constants/NutritionInfo";
 import { BarChart } from "../../../constants/BarChart";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Canvas,
   Path,
@@ -16,7 +16,8 @@ import Animated, {useSharedValue, withTiming, Easing, useDerivedValue} from "rea
 import { useFocusEffect } from '@react-navigation/native';
 import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
 import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { lists, tasks, food } from '@/db/schema';
+import { lists, tasks, food, foodItem, Task} from '@/db/schema';
+import { sql, eq, sum} from 'drizzle-orm';
 const strokeWidth = PixelRatio.roundToNearestPixel(30);
 
 export default function Logs() {
@@ -24,15 +25,26 @@ export default function Logs() {
   const drizzleDb = drizzle(db);
   const calorieTarget = 2500;
   const carbTarget = 14;
-  const { data } = useLiveQuery(
-    drizzleDb.select().from(food)
+  const { data: breakFast } = useLiveQuery(
+    drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 1`)
+    .orderBy(food.id)
   )
-
-  const daily: NutritionInfo = {
+  const { data: lunch } = useLiveQuery(
+    drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 2`)
+    .orderBy(food.id)
+  )
+  const { data: dinner } = useLiveQuery(
+    drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 0`)
+    .orderBy(food.id)
+  )
+  const { data: nutinfo } = useLiveQuery(
+    drizzleDb.select({fat: sum(food.fat), carbs: sum(food.carbs), protein: sum(food.protein)}).from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+  )
+  const [daily, setDaily] = useState<NutritionInfo>({
     protein: 50,
     fat: 100,
     carbs: 200
-  };
+  })
   
   const carbProgress = useSharedValue(0);
   const dailyProgress = useSharedValue<NutritionInfo>({
@@ -40,13 +52,12 @@ export default function Logs() {
     fat: 0,
     carbs: 0,
   });
-  
   useFocusEffect(
     React.useCallback(() => {
       // This code runs when the screen is focused
       console.log('Tab is now focused');
-      console.log(daily.carbs)
       animateChart();
+      console.log(nutinfo[0])
 
       // Optionally return a cleanup function if needed
       return () => {
@@ -54,7 +65,9 @@ export default function Logs() {
       };
     }, [])
   );
+  useEffect(() => {
 
+  })
   const animateChart = () => {
     // Reset carb progress
     carbProgress.value = 0;
@@ -104,9 +117,9 @@ export default function Logs() {
         <Text style={styles.titleText}>Breakfast</Text>
         <View style={[styles.box]}>
             <FlatList
-            data={data}
-            renderItem={({item}) => <Item name={item.name} description={item.description} servings={item.calories} />}
-            keyExtractor={item => item.id.toString()}
+            data={breakFast}
+            renderItem={({item}) => <Item name={item.food.name} description={item.food.description} servings={item.foodItem.servings} />}
+            keyExtractor={item => item.foodItem.id.toString()}
             scrollEnabled={false}
           />
         </View>
@@ -123,9 +136,9 @@ export default function Logs() {
         <Text style={styles.titleText}>Lunch</Text>
         <View style={[styles.box]}>
             <FlatList
-            data={shortDataTST}
-            renderItem={({item}) => <Item name={item.name} description={item.description} servings={item.servings} />}
-            keyExtractor={item => item.id}
+            data={lunch}
+            renderItem={({item}) => <Item name={item.food.name} description={item.food.description} servings={item.foodItem.servings} />}
+            keyExtractor={item => item.foodItem.id.toString()}
             scrollEnabled={false}
           />
         </View>
@@ -142,9 +155,9 @@ export default function Logs() {
         <Text style={styles.titleText}>Dinner</Text>
         <View style={[styles.box]}>
             <FlatList
-            data={shortDataTST}
-            renderItem={({item}) => <Item name={item.name} description={item.description} servings={item.servings} />}
-            keyExtractor={item => item.id}
+            data={dinner}
+            renderItem={({item}) => <Item name={item.food.name} description={item.food.description} servings={item.foodItem.servings} />}
+            keyExtractor={item => item.foodItem.id.toString()}
             scrollEnabled={false}
           />
         </View>

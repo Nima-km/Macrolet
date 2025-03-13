@@ -17,7 +17,7 @@ export default function RootLayout() {
   const db = drizzle(expoDb);
   const { success, error } = useMigrations(db, migrations);
   useEffect(() => {
-    if (success) {
+    if (success && false) {
       addDummyData(db);
     }
   }, [success]);

@@ -29,6 +29,27 @@
       "when": 1741711252919,
       "tag": "0003_sweet_toro",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1741806083633,
+      "tag": "0004_amazing_namor",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1741886062573,
+      "tag": "0005_burly_stature",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1741895446865,
+      "tag": "0006_wet_ken_ellis",
+      "breakpoints": true
     }
   ]
 }
