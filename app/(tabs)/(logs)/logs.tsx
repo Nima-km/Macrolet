@@ -38,46 +38,65 @@ export default function Logs() {
     drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 0`)
     .orderBy(food.id)
   )
-  const { data: nutinfo } = useLiveQuery(
-    drizzleDb.select({fat: sum(food.fat), carbs: sum(food.carbs), protein: sum(food.protein)}).from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-  )
   const [daily, setDaily] = useState<NutritionInfo>({
     protein: 50,
     fat: 100,
     carbs: 200
   })
-  
+  const [isLoaded, setIsLoaded] = useState(false)
   const carbProgress = useSharedValue(0);
   const dailyProgress = useSharedValue<NutritionInfo>({
     protein: 0,
     fat: 0,
     carbs: 0,
   });
+  const load = async () => {
+    try {
+      // Execute query first
+      const result = await drizzleDb
+        .select({
+          fat: sum(food.fat),
+          carbs: sum(food.carbs),
+          protein: sum(food.protein)
+        })
+        .from(foodItem)
+        .innerJoin(food, eq(foodItem.food_id, food.id));
+
+      // Process result
+      const nutritionData = result[0];
+      const newDaily = {
+        protein: parseInt(nutritionData.protein || '0', 10),
+        fat: parseInt(nutritionData.fat || '0', 10),
+        carbs: parseInt(nutritionData.carbs || '0', 10)
+      };
+
+      // Update state
+      setDaily(newDaily);
+      setIsLoaded(true)
+      console.log("Updated data:", newDaily);
+      console.log("Updated data:", daily);
+    } catch (error) {
+      console.error("Error loading nutrition data:", error);
+    }
+  };
   useFocusEffect(
     React.useCallback(() => {
       // This code runs when the screen is focused
       console.log('Tab is now focused');
       animateChart();
-      const load = async () => {
-        await drizzleDb.select({fat: sum(food.fat), 
-          carbs: sum(food.carbs), 
-          protein: sum(food.protein)}).from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-          .then(nutinfo2 => setDaily({protein: parseInt(nutinfo2[0].protein !== null ? nutinfo2[0].protein : '0'), 
-            fat: parseInt(nutinfo2[0].fat !== null ? nutinfo2[0].fat : '0'), 
-            carbs: parseInt(nutinfo2[0].carbs !== null ? nutinfo2[0].carbs : '0')}))
-        console.log("updated")
-      }
       load();
       console.log(daily)
       // Optionally return a cleanup function if needed
       return () => {
         console.log('Tab is unfocused');
       };
+      
     }, [])
   );
   useEffect(() => {
-      
-  }, [])
+    console.log(daily)
+    animateChart()
+  }, [daily])
   const animateChart = () => {
     // Reset carb progress
     carbProgress.value = 0;
@@ -100,12 +119,13 @@ export default function Logs() {
   const displayText = useDerivedValue(() => {
     return `Calories: ${Math.floor(dailyProgress.value.carbs)}`;
   });
-  if (!font || !smallerFont) {
-    return <View />;
+  if (!font || !smallerFont || !isLoaded) {
+    return <Text>LOADING</Text>;
   }
   return (
     <ScrollView style={styles.container}>
       <View style={styles.box}>
+        <Text>{daily.protein}</Text>
         <View style={styles.barChartContainer}>
           <BarChart
             backgroundColor="sdfas"
