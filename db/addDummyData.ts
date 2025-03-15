@@ -24,7 +24,7 @@ export const addDummyData = async (db: ExpoSQLiteDatabase) => {
         { name: 'Test 5', description: 'test 1', protein: 1, carbs: 2, fat: 3, calories: 4},
     ])
     */
-   
+   /*
     await db.insert(food).values([
         { name: 'Test 1', description: 'test 1', protein: randNut(30, 1, true), carbs: randNut(30, 1, true), fat: randNut(30, 1, true)},
         { name: 'Test 1', description: 'test 1', protein: randNut(30, 1, true), carbs: randNut(30, 1, true), fat: randNut(30, 1, true)},
@@ -35,7 +35,7 @@ export const addDummyData = async (db: ExpoSQLiteDatabase) => {
         { name: 'Test 1', description: 'test 1', protein: randNut(30, 1, true), carbs: randNut(30, 1, true), fat: randNut(30, 1, true)},
         
         
-    ])
+    ])*/
     console.log('Inserting lists');
     /*
     await db.insert(foodItem).values([
