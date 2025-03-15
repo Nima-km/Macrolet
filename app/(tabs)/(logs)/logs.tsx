@@ -125,7 +125,6 @@ export default function Logs() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.box}>
-        <Text>{daily.protein}</Text>
         <View style={styles.barChartContainer}>
           <BarChart
             backgroundColor="sdfas"
