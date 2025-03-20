@@ -84,12 +84,12 @@ export const shortDataTST = [
   },
 ];
 
-export const Item = ({ name, description, servings}: FoodInfo) => {
+export const Item = ({ name, description, nutritionInfo, servings}: FoodInfo) => {
   return (
     <View style={styles.item}>
       <View>
         <Text style={styles.title}>{name}</Text>
-        <Text style={styles.title}>{servings} serving</Text>
+        <Text style={styles.title}>{servings} servings {nutritionInfo != null ? calculateCalories(nutritionInfo) : 0} calories</Text>
       </View>
     </View>
   );
@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 8,
     marginHorizontal: 16,
+    borderRadius: 4,
   },
   title: {
     fontSize: 14,

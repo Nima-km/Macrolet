@@ -18,6 +18,7 @@ import Animated, {
   Easing,
   useDerivedValue
 } from 'react-native-reanimated';
+import { useEffect } from "react";
 
 interface BarProgressProps {
   strokeWidth: number;
@@ -29,7 +30,7 @@ interface BarProgressProps {
   progressProtein?: SharedValue<number>;
   progressFat: SharedValue<number>;
   progressCarbs: SharedValue<number>;
-  progressDaily: SharedValue<NutritionInfo>;
+  dailyEnd: NutritionInfo;
   font: SkFont;
   smallerFont?: SkFont;
   targetPercentage: number;
@@ -42,7 +43,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
     colorProtein,
     colorfat,
     colorCarbs,
-    progressDaily,
+    dailyEnd,
     font,
     smallerFont,
     targetPercentage,
@@ -51,7 +52,20 @@ export const BarChart: React.FC<BarProgressProps> = ({
 		calorieTarget = 1;
 //	const endCarb = useDerivedValue(() => ((progressCarbs.value / calorieTarget) * 320 * 4));
   //const endFat = useDerivedValue(() => ((progressFat.value / calorieTarget) * 320 * 4 + progressDaily.value.carbs));
-
+  const progressDaily = useSharedValue<NutritionInfo>({
+    protein: 0,
+    fat: 0,
+    carbs: 0,
+  });
+  const animateChart = () => {
+    // Reset daily progress
+    progressDaily.value = { protein: 0, fat: 0, carbs: 0 };
+    // Update carbs immutably
+    progressDaily.value = withTiming(dailyEnd,  {
+      duration: 1250,
+      easing: Easing.inOut(Easing.cubic),
+    });
+  };
   const endCarb = useDerivedValue(() => ((progressDaily.value.carbs / calorieTarget) * 320 * 4));
   const endFat = useDerivedValue(() => ((progressDaily.value.fat / calorieTarget) * 320 * 9 + endCarb.value));
   const endProtein = useDerivedValue(() => ((progressDaily.value.protein / calorieTarget) * 320 * 4 + endFat.value));
@@ -59,6 +73,12 @@ export const BarChart: React.FC<BarProgressProps> = ({
   const carbsDayText = useDerivedValue(() => (Math.floor(progressDaily.value.carbs).toString() + 'g'));
   const fatDayText = useDerivedValue(() => (Math.floor(progressDaily.value.fat).toString() + 'g'));
   const proteinDayText = useDerivedValue(() => (Math.floor(progressDaily.value.protein).toString() + 'g'));
+
+
+  useEffect(() => {
+    console.log(dailyEnd)
+    animateChart()
+  }, [dailyEnd])
   return (
     <View style={styles.container}>
         <Canvas style={{ flex: 1 }}>

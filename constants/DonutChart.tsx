@@ -7,14 +7,14 @@ import {
     useFont,
   } from "@shopify/react-native-skia";
 import { PixelRatio, StyleSheet, View } from "react-native";
-import { useDerivedValue, SharedValue } from "react-native-reanimated";
-import { } from "react-native-reanimated";
+import { Easing, useDerivedValue, SharedValue, useSharedValue, withTiming } from "react-native-reanimated";
 import { colors, spacing, typography } from "./theme";
+import { useFocusEffect } from "expo-router";
+import { useEffect } from "react";
   
 interface CircularProgressProps {
   font: SkFont;
   backgroundColor: string;
-  percentageComplete: SharedValue<number>;
   smallerFont: SkFont;
   targetPercentage: number;
 }
@@ -23,11 +23,18 @@ interface CircularProgressProps {
 
 
 export const DonutChart: React.FC<CircularProgressProps> = ({
-  percentageComplete,
   font,
   targetPercentage,
   smallerFont,
 }) => {
+  const percentageComplete = useSharedValue(0);
+  const animateChart = () => {
+    percentageComplete.value = 0;
+    percentageComplete.value = withTiming(targetPercentage, {
+      duration: 1250,
+      easing: Easing.inOut(Easing.cubic),
+    });
+  };
   const font_size = font.getSize()
   const radius = PixelRatio.roundToNearestPixel(font_size * 3);
   const STROKE_WIDTH = Math.min(font_size * 1, 16);
@@ -56,6 +63,11 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
   const opacity = useDerivedValue(() => percentageComplete.value);
   const width = font.getTextWidth(targetText) - 10;
   const titleWidth = smallerFont.getTextWidth("Power");
+
+  useEffect(() => {
+    animateChart()
+  }, [])
+
   return (
     <View style={styles.container}>
       <Canvas style={styles.container}>

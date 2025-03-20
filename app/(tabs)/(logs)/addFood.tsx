@@ -1,4 +1,4 @@
-import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, TextInput} from "react-native";
+import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, TextInput, TouchableOpacity} from "react-native";
 import { colors, spacing, typography } from "../../../constants/theme";
 import { DonutChart } from "../../../constants/DonutChart";
 import { useSharedValue, withTiming, Easing } from "react-native-reanimated";
@@ -11,19 +11,27 @@ import {
     useFont,
   } from "@shopify/react-native-skia";
 import React from 'react';
+import { useSQLiteContext } from "expo-sqlite";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { foodItem, food } from "@/db/schema";
+import { SelectList } from 'react-native-dropdown-select-list'
 
 const FONT_SIZE = 18
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 8;
 
 export default function AddFood() {
-    const [food, onChangefood] = React.useState('');
+    const db = useSQLiteContext();
+    const drizzleDb = drizzle(db);
+    const [foodName, onChangeFoodName] = React.useState('');
     const [servings, onChangeServings] = React.useState('');
     const [meal, onChangeMeal] = React.useState('');
+    const [protein, onChangeProtien] = React.useState('');
+    const [carbs, onChangeCarbs] = React.useState('');
+    const [fat, onChangeFat] = React.useState('');
     const [servingSize, onChangeServingSize] = React.useState('');
     const [time, onChangeTime] = React.useState('');
 
-    const progress = useSharedValue(.6);
     const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
     const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
@@ -31,87 +39,116 @@ export default function AddFood() {
       if (!font || !smallerFont) {
         return <View />;
       }
-    return (
-        <View style={styles.box}>
-            <Text style={styles.smallText}>Quick add</Text>
-            <TextInput
-                style={styles.input}
-                onChangeText={onChangefood}
-                value={food}
-            />
-            <View style={styles.rowContainer}>
-                <View>
-                    <View style={[styles.box, styles.rowContainer]}>
-                        <Text style={styles.smallText}>Meal</Text>
-                        <TextInput
-                        style={[styles.input, {width: 56, margin: 0, marginHorizontal: 10}]}
-                        onChangeText={onChangeMeal}
-                        value={meal}
-                        /> 
-                    </View>
-                    <View style={[styles.box, styles.rowContainer]}>
-                        <Text style={styles.smallText}>Time</Text>
-                        <TextInput
-                        style={[styles.input, {width: 56, margin: 0, marginHorizontal: 10}]}
-                        onChangeText={onChangeTime}
-                        value={time}
-                        />
-                    </View>
-                    <View style={[styles.box, styles.rowContainer]}>
-                        <Text style={styles.smallText}>servings</Text>
-                        <TextInput
-                        style={[styles.input, {width: 56, margin: 0, marginHorizontal: 10}]}
-                        onChangeText={onChangeServings}
-                        value={servings}
-                        />
-                    </View>
-                    <View style={[styles.box, styles.rowContainer]}>
-                        <Text style={styles.smallText}>Serving size</Text>
-                        <TextInput
-                        style={[styles.input, {width: 56, margin: 0, marginHorizontal: 10}]}
-                        onChangeText={onChangeServingSize}
-                        value={servingSize}
-                        />
-                    </View>
-                </View>
-                <View style={[styles.ringChartContainer]}>
-                    <DonutChart
-                    font={font}
-                    backgroundColor="white"
-                    percentageComplete={progress}  // Changed from animationState to progress
-                    targetPercentage={targetPercentage}
-                    smallerFont={smallerFont}
-                    />
-                    
-                </View>
-            </View>
-            <View style={[styles.rowContainer]}>
-                <View style={[styles.container]}>
-                    <Text style={styles.smallText}>Calories</Text>
-                    <Text style={styles.smallText}>1234</Text>
-                </View>
-                <View style={[styles.container]}>
-                    <Text style={styles.smallText}>Carbs</Text>
-                    <Text style={styles.smallText}>1234</Text>
-                </View>
-                <View style={[styles.container]}>
-                    <Text style={styles.smallText}>Fat</Text>
-                    <Text style={styles.smallText}>1234</Text>
-                </View>
-                <View style={[styles.container]}>
-                    <Text style={styles.smallText}>Protein</Text>
-                    <Text style={styles.smallText}>1234</Text>
-                </View>
 
+    const handleAddFood = async () => {
+        await drizzleDb.insert(food).values({name: foodName, 
+            description: "TESTTT", 
+            protein: 1,
+            fat: 2,
+            carbs: 3,})
+        console.log("FOOD INSERT ADDED")
+    }
+    return (
+        <View style={styles.container}>
+            <View style={[styles.box]}>
+                <Text style={styles.titleText}>Quick add</Text>
+                <TextInput
+                    style={styles.input}
+                    onChangeText={onChangeFoodName}
+                    value={foodName}
+                />
+                <View style={styles.flexRowContainer}>
+                    <View style={styles.spaceInbetween}>
+                        <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
+                            <Text style={styles.smallText}>Meal</Text>
+                            <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={onChangeMeal}
+                            value={meal}
+                            /> 
+                        </View>
+                        <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
+                            <Text style={styles.smallText}>Time</Text>
+                            <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={onChangeTime}
+                            value={time}
+                            />
+                        </View>
+                        <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
+                            <Text style={styles.smallText}>servings</Text>
+                            <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={onChangeServings}
+                            value={servings}
+                            />
+                        </View>
+                        <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
+                            <Text style={styles.smallText}>Serving size</Text>
+                            <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={onChangeServingSize}
+                            value={servingSize}
+                            />
+                        </View>
+                    </View>
+                    <View style={[styles.ringChartContainer]}>
+                        <DonutChart
+                        font={font}
+                        backgroundColor="white"
+                        targetPercentage={targetPercentage}
+                        smallerFont={smallerFont}
+                        />
+                        
+                    </View>
+                </View>
+                <View style={[styles.flexRowContainer]}>
+                    <View style={[styles.container, {alignItems: "center"}]}>
+                        <Text style={styles.smallText}>Calories</Text>
+                        <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={onChangeMeal}
+                            value={meal}
+                            /> 
+                    </View>
+                    <View style={[styles.container, {alignItems: "center"}]}>
+                        <Text style={styles.smallText}>Carbs</Text>
+                        <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={onChangeCarbs}
+                            keyboardType = 'numeric'
+                            value={carbs}
+                            /> 
+                    </View>
+                    <View style={[styles.container, {alignItems: "center"}]}>
+                        <Text style={styles.smallText}>Fat</Text>
+                        <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={onChangeFat}
+                            keyboardType = 'numeric'
+                            value={fat}
+                            /> 
+                    </View>
+                    <View style={[styles.container, {alignItems: "center"}]}>
+                        <Text style={styles.smallText}>Protein</Text>
+                        <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={onChangeProtien}
+                            keyboardType = 'numeric'
+                            value={protein}
+                            /> 
+                    </View>
+
+                </View>
+                <TouchableOpacity style={[styles.button, styles.centerContainter]} onPress={handleAddFood}>
+                    <Text style={styles.buttonText}>+ Add food</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
     centerContainter: {
         alignItems: "center",
         justifyContent: "center"
@@ -137,14 +174,6 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         borderRadius: 10,
     },
-    input: {
-        height: 40,
-        margin: 12,
-        borderWidth: 1,
-        padding: 0,
-        borderRadius: 10,
-        backgroundColor: colors.secondary,
-      },
     buttonText: {
         color: "black",
         fontSize: 12,
@@ -157,16 +186,7 @@ const styles = StyleSheet.create({
     smallText: {
         color: "black",
         marginHorizontal: 0,
-        fontSize: 20,
-    },
-    box: {
-        paddingVertical: 0,
-        paddingHorizontal: 10,
-        marginTop: 10,
-        marginRight: 15,
-        backgroundColor: colors.primary,
-        borderRadius: 4,
-        
+        fontSize: 16,
     },
     constrainedBox: {
         height: 350
@@ -182,4 +202,44 @@ const styles = StyleSheet.create({
         marginRight: 30,
 
     },
+    container: {
+        flex: 1,
+        padding: 10
+    },
+    text: {
+        fontSize: 20,
+
+    },
+    box: {
+        padding: 10,
+        marginVertical: 20,
+        backgroundColor: colors.primary,
+        borderRadius: 7,
+        minHeight: 100,
+        minWidth: 190,
+    },
+    center: {
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    flexRowContainer: {
+        flexDirection: "row",
+        alignItems: "center"
+       // justifyContent: "space-between"
+    },
+    spaceInbetween: {
+        justifyContent: "space-between",
+       // backgroundColor: "red"
+    },
+    input: {
+        height: 30,
+        margin: 5,
+        borderWidth: 1,
+        padding: 0,
+        borderRadius: 10,
+        backgroundColor: colors.secondary,
+    },
+    smallInput: {
+        minWidth: 50,
+    }
 });

@@ -32,7 +32,6 @@ export default function Index() {
     React.useCallback(() => {
       // This code runs when the screen is focused
       console.log('Tab is now focused');
-      animateChart();
 
       // Optionally return a cleanup function if needed
       return () => {
@@ -40,19 +39,7 @@ export default function Index() {
       };
     }, [])
   );
-
-
-
-  const animateChart = () => {
-    progress.value = 0;
-    progress.value = withTiming(targetPercentage, {
-      duration: 1250,
-      easing: Easing.inOut(Easing.cubic),
-    });
-  };
   
-
-
   const font = useFont(require("../../Roboto-Light.ttf"), FONT_SIZE);
   const smallerFont = useFont(require("../../Roboto-Light.ttf"), FONT_SIZE / 2);
 
@@ -66,7 +53,6 @@ export default function Index() {
         <View style={styles.ringChartContainer}>
           <DonutChart
             backgroundColor="white"
-            percentageComplete={progress}  // Changed from animationState to progress
             targetPercentage={targetPercentage}
             font={font}
             smallerFont={smallerFont}
@@ -88,10 +74,10 @@ export default function Index() {
           <Text style={styles.smallText}>No Bitches?</Text>
         </View>
         <View style={styles.rowContainer}>
-          <TouchableOpacity onPress={animateChart} style={styles.button}>
+          <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>cut me cock</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={animateChart} style={styles.button}>
+          <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>cut me balls</Text>
           </TouchableOpacity>
         </View>

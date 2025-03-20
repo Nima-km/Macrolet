@@ -1,8 +1,8 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView} from "react-native";
-import { colors, spacing, typography } from "../../../constants/theme";
+import { colors, spacing, typography } from "@/constants/theme";
 import { TouchableOpacity } from "react-native";
 import { Link } from 'expo-router';
-import { NutritionInfo, LongDataTST, shortDataTST, Item} from "../../../constants/NutritionInfo";
+import { NutritionInfo, LongDataTST, shortDataTST, Item} from "@/constants/NutritionInfo";
 import { BarChart } from "../../../constants/BarChart";
 import React, { useEffect, useState } from 'react';
 import {
@@ -55,9 +55,9 @@ export default function Logs() {
       // Execute query first
       const result = await drizzleDb
         .select({
-          fat: sum(food.fat),
-          carbs: sum(food.carbs),
-          protein: sum(food.protein)
+          fat: sql<number>`sum(${food.fat} * ${foodItem.servings})`,
+          carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings})`,
+          protein: sql<number>`sum(${food.protein} * ${foodItem.servings})`,
         })
         .from(foodItem)
         .innerJoin(food, eq(foodItem.food_id, food.id));
@@ -65,9 +65,9 @@ export default function Logs() {
       // Process result
       const nutritionData = result[0];
       const newDaily = {
-        protein: parseInt(nutritionData.protein || '0', 10),
-        fat: parseInt(nutritionData.fat || '0', 10),
-        carbs: parseInt(nutritionData.carbs || '0', 10)
+        protein: nutritionData.protein,
+        fat: nutritionData.fat,
+        carbs: nutritionData.carbs
       };
 
       // Update state
@@ -83,8 +83,6 @@ export default function Logs() {
     React.useCallback(() => {
       // This code runs when the screen is focused
       console.log('Tab is now focused');
-      animateChart();
-      load();
       console.log(daily)
       // Optionally return a cleanup function if needed
       return () => {
@@ -95,25 +93,8 @@ export default function Logs() {
   );
   useEffect(() => {
     console.log(daily)
-    animateChart()
-  }, [daily])
-  const animateChart = () => {
-    // Reset carb progress
-    carbProgress.value = 0;
-    carbProgress.value = withTiming(carbTarget, {
-      duration: 1250,
-      easing: Easing.inOut(Easing.cubic),
-    });
-
-    // Reset daily progress
-    dailyProgress.value = { protein: 0, fat: 0, carbs: 0 };
-
-    // Update carbs immutably
-    dailyProgress.value = withTiming(daily,  {
-      duration: 1250,
-      easing: Easing.inOut(Easing.cubic),
-    });
-  };
+    load();
+  }, [])
   const font = useFont(require("../../../Roboto-Light.ttf"), 25);
   const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 25);
   const displayText = useDerivedValue(() => {
@@ -134,7 +115,7 @@ export default function Logs() {
             colorCarbs="CUNT"
             progressCarbs={carbProgress}
             progressFat={carbProgress}
-            progressDaily={dailyProgress}
+            dailyEnd={daily}
             strokeWidth={strokeWidth}
             font={smallerFont}
             targetPercentage = {2}
@@ -169,7 +150,7 @@ export default function Logs() {
             renderItem={({item}) => <Item name={item.food.name} description={item.food.description} servings={item.foodItem.servings} />}
             keyExtractor={item => item.foodItem.id.toString()}
             scrollEnabled={false}
-          />
+            />
         </View>
         <View style={styles.box}>
         <Link href="/logFood" asChild>
