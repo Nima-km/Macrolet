@@ -20,7 +20,7 @@ export default function LogFood() {
     )
     const [filteredData, setFilteredData] = useState(history);
     useEffect(() => {
-        setFilteredData(history.filter((item) => item.food.name.toLowerCase().includes(`${search}`)))
+        setFilteredData(history.filter((item) => item.food.name.toLowerCase().includes(`${search}`.toLowerCase())))
     }, [search, history])
     return (
         <View style={styles.container}>
