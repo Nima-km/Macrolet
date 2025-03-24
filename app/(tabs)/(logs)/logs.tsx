@@ -18,16 +18,22 @@ import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite'
 import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { lists, tasks, food, foodItem, Task} from '@/db/schema';
 import { sql, eq, sum} from 'drizzle-orm';
-import { integer } from "drizzle-orm/pg-core";
 const strokeWidth = PixelRatio.roundToNearestPixel(30);
 
 export default function Logs() {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
   const calorieTarget = 5000;
-  const carbTarget = 14;
   const { data: breakFast } = useLiveQuery(
     drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 1`)
+    .orderBy(food.id)
+  )
+  const { data: LiveFood } = useLiveQuery(
+    drizzleDb.select({
+      fat: sql<number>`sum(${food.fat} * ${foodItem.servings})`,
+      carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings})`,
+      protein: sql<number>`sum(${food.protein} * ${foodItem.servings})`,
+    }).from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
     .orderBy(food.id)
   )
   const { data: lunch } = useLiveQuery(
@@ -38,11 +44,6 @@ export default function Logs() {
     drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 0`)
     .orderBy(food.id)
   )
-  const [daily, setDaily] = useState<NutritionInfo>({
-    protein: 50,
-    fat: 100,
-    carbs: 200
-  })
   const [isLoaded, setIsLoaded] = useState(false)
   const carbProgress = useSharedValue(0);
   const dailyProgress = useSharedValue<NutritionInfo>({
@@ -50,41 +51,9 @@ export default function Logs() {
     fat: 0,
     carbs: 0,
   });
-  const load = async () => {
-    try {
-      // Execute query first
-      const result = await drizzleDb
-        .select({
-          fat: sql<number>`sum(${food.fat} * ${foodItem.servings})`,
-          carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings})`,
-          protein: sql<number>`sum(${food.protein} * ${foodItem.servings})`,
-        })
-        .from(foodItem)
-        .innerJoin(food, eq(foodItem.food_id, food.id));
-
-      // Process result
-      const nutritionData = result[0];
-      const newDaily = {
-        protein: nutritionData.protein,
-        fat: nutritionData.fat,
-        carbs: nutritionData.carbs
-      };
-
-      // Update state
-      setDaily(newDaily);
-      setIsLoaded(true)
-      console.log("Updated data:", newDaily);
-      console.log("Updated data:", daily);
-    } catch (error) {
-      console.error("Error loading nutrition data:", error);
-    }
-  };
   useFocusEffect(
     React.useCallback(() => {
-      // This code runs when the screen is focused
       console.log('Tab is now focused');
-      console.log(daily)
-      // Optionally return a cleanup function if needed
       return () => {
         console.log('Tab is unfocused');
       };
@@ -92,15 +61,14 @@ export default function Logs() {
     }, [])
   );
   useEffect(() => {
-    console.log(daily)
-    load();
+
   }, [])
   const font = useFont(require("../../../Roboto-Light.ttf"), 25);
   const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 25);
   const displayText = useDerivedValue(() => {
     return `Calories: ${Math.floor(dailyProgress.value.carbs)}`;
   });
-  if (!font || !smallerFont || !isLoaded) {
+  if (!font || !smallerFont) {
     return <Text>LOADING</Text>;
   }
   return (
@@ -115,7 +83,7 @@ export default function Logs() {
             colorCarbs="CUNT"
             progressCarbs={carbProgress}
             progressFat={carbProgress}
-            dailyEnd={daily}
+            dailyEnd={LiveFood[0]}
             strokeWidth={strokeWidth}
             font={smallerFont}
             targetPercentage = {2}
@@ -128,7 +96,11 @@ export default function Logs() {
         <View style={[styles.box]}>
             <FlatList
             data={breakFast}
-            renderItem={({item}) => <Item name={item.food.name} description={item.food.description} servings={item.foodItem.servings} />}
+            renderItem={({item}) => <Item name={item.food.name} 
+            description={item.food.description} 
+            servings={item.foodItem.servings} 
+            nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
+            foodItem_id={item.foodItem.id}/>}
             keyExtractor={item => item.foodItem.id.toString()}
             scrollEnabled={false}
           />
@@ -147,7 +119,11 @@ export default function Logs() {
         <View style={[styles.box]}>
             <FlatList
             data={lunch}
-            renderItem={({item}) => <Item name={item.food.name} description={item.food.description} servings={item.foodItem.servings} />}
+            renderItem={({item}) => <Item name={item.food.name} 
+            description={item.food.description} 
+            servings={item.foodItem.servings} 
+            nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
+            foodItem_id={item.foodItem.id}/>}
             keyExtractor={item => item.foodItem.id.toString()}
             scrollEnabled={false}
             />
@@ -166,7 +142,11 @@ export default function Logs() {
         <View style={[styles.box]}>
             <FlatList
             data={dinner}
-            renderItem={({item}) => <Item name={item.food.name} description={item.food.description} servings={item.foodItem.servings} />}
+            renderItem={({item}) => <Item name={item.food.name} 
+            description={item.food.description} 
+            servings={item.foodItem.servings} 
+            nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
+            foodItem_id={item.foodItem.id}/>}
             keyExtractor={item => item.foodItem.id.toString()}
             scrollEnabled={false}
           />

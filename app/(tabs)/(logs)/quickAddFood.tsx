@@ -10,32 +10,22 @@ import {
     Skia,
     useFont,
   } from "@shopify/react-native-skia";
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSQLiteContext } from "expo-sqlite";
-import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
+import { drizzle } from "drizzle-orm/expo-sqlite";
 import { foodItem, food } from "@/db/schema";
-import { sql, eq, sum} from 'drizzle-orm';
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { SelectList } from 'react-native-dropdown-select-list'
+import { Link } from "expo-router";
 
 const FONT_SIZE = 18
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 8;
 
-
-
-
-
-const AddFood = () => {
+export default function QuickAddFood() {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
-    const { food_id } = useLocalSearchParams();
-    const { data: foodObject } = useLiveQuery(
-        drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.id} = ${Number(food_id)}`)
-        .orderBy(food.id)
-    )
-
     const [foodName, onChangeFoodName] = React.useState('');
-    const [serving, onChangeServing] = React.useState(``);
+    const [servings, onChangeServings] = React.useState('');
     const [meal, onChangeMeal] = React.useState('');
     const [protein, onChangeProtien] = React.useState('');
     const [carbs, onChangeCarbs] = React.useState('');
@@ -46,35 +36,32 @@ const AddFood = () => {
     const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
     const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
-
-    useEffect(() => {
-        console.log(food_id)
-        onChangeServing(`${foodObject[0]?.foodItem.servings}`)
-      }, [foodObject])
-    if (!font || !smallerFont) {
+    
+      if (!font || !smallerFont) {
         return <View />;
-    }
-    const handleUpdateFood = async () => {
-        console.log("FOOD updated")
-        console.log(serving)
-        const foodCheck = await drizzleDb.update(foodItem).set({servings: Number(serving)}).where(eq(foodItem.id, Number(food_id))).returning()
-        console.log(foodCheck[0])
-    }
-    const handleDeleteFood = async () => {
-        console.log("FOOD Deleted")
-        console.log(serving)
-        const foodCheck = await drizzleDb.delete(foodItem).where(eq(foodItem.id, Number(food_id))).returning()
-        console.log(foodCheck[0])
-    }
+      }
+
     const handleAddFood = async () => {
+        const foodObject = await drizzleDb.insert(food).values({name: foodName, 
+            description: "TESTTT", 
+            protein: Number(protein),
+            fat: Number(fat),
+            carbs: Number(carbs),}).returning()
         console.log("FOOD INSERT ADDED")
-        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].food.id, servings: Number(serving), meal: 1})
+        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, servings: Number(servings), meal: 1})
         console.log("FOODItem INSERT ADDED")
     }
     return (
         <View style={styles.container}>
             <View style={[styles.box]}>
-                <Text style={styles.titleText}>{foodObject[0]?.food.name}</Text>
+                <Text style={styles.titleText}>Quick add</Text>
+                
+                <TextInput
+                    style={styles.input}
+                    onChangeText={onChangeFoodName}
+                    value={foodName}
+                    
+                />
                 <View style={styles.flexRowContainer}>
                     <View style={styles.spaceInbetween}>
                         <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
@@ -89,8 +76,8 @@ const AddFood = () => {
                             <Text style={styles.smallText}>servings</Text>
                             <TextInput
                             style={[styles.input, styles.smallInput]}
-                            onChangeText={onChangeServing}
-                            value={serving}
+                            onChangeText={onChangeServings}
+                            value={servings}
                             keyboardType="numeric"
                             />
                         </View>
@@ -151,27 +138,15 @@ const AddFood = () => {
                     </View>
 
                 </View>
-                
                 <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
-                    <TouchableOpacity onPress={handleDeleteFood}>
-                        <Text style={styles.buttonText}>Delete food</Text>
-                    </TouchableOpacity>
-                </Link>
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
-                    <TouchableOpacity style={[styles.button, styles.centerContainter]} onPress={handleUpdateFood}>
-                        <Text style={styles.buttonText}>Update food</Text>
-                    </TouchableOpacity>
-                </Link>
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
-                    <TouchableOpacity style={[styles.button, styles.centerContainter]} onPress={handleAddFood}>
-                        <Text style={styles.buttonText}>Add food</Text>
+                    <TouchableOpacity onPress={handleAddFood}>
+                        <Text style={styles.buttonText}>+ Add food</Text>
                     </TouchableOpacity>
                 </Link>
             </View>
         </View>
     );
 }
-export default AddFood
 
 const styles = StyleSheet.create({
     centerContainter: {
@@ -197,7 +172,6 @@ const styles = StyleSheet.create({
         backgroundColor: colors.secondary,
         paddingHorizontal: 40,
         paddingVertical: 15,
-        marginVertical: 10,
         borderRadius: 10,
     },
     buttonText: {
@@ -230,7 +204,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        padding: 10,
+        padding: 10
     },
     text: {
         fontSize: 20,

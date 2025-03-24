@@ -30,6 +30,17 @@ export const food = sqliteTable('food', {
     carbs: integer('carbs').notNull(),
 })
 
+export const nutritionGoal = sqliteTable('nutritionGoal', {
+    id: integer('id').primaryKey({autoIncrement: true}),
+    created_at: text('timestamp')
+    .notNull()
+    .default(sql`(current_timestamp)`),
+    protein: integer('protein').notNull().default(0),
+    fat: integer('fat').notNull().default(0),
+    calories: integer('calories').default(0),
+    carbs: integer('carbs').notNull().default(0),
+})
+
 export const foodItem = sqliteTable ('foodItem', {
     id: integer('id').primaryKey({autoIncrement: true}),
     created_at: text('timestamp')

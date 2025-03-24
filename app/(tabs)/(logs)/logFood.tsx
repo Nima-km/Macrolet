@@ -34,10 +34,13 @@ export default function LogFood() {
                 <View style={styles.box}>
                     <FlatList
                         data={filteredData}
-                        renderItem={({item}) => <Item name={item.food.name} 
+                        renderItem={({item}) => 
+                        <Item name={item.food.name} 
                         description={item.food.description} 
                         servings={item.foodItem.servings} 
-                        nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}/>}
+                        nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
+                        foodItem_id={item.foodItem.id}/>
+                        }
                         keyExtractor={item => item.foodItem.id.toString()}
                         scrollEnabled={false}
                     />
@@ -47,7 +50,7 @@ export default function LogFood() {
                 <View style={[styles.box, styles.center]}>
                     <Text style={styles.text}>Scan Barcode</Text>
                 </View>
-                <Link style={[styles.box, styles.center]} href="/addFood" asChild>
+                <Link style={[styles.box, styles.center]} href="/quickAddFood" asChild>
                     <TouchableOpacity>
                         <Text style={styles.text}>Quick Add</Text>
                     </TouchableOpacity>

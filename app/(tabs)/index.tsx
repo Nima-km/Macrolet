@@ -1,7 +1,8 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, spacing, typography } from "../../constants/theme";
 import { TouchableOpacity } from "react-native";
-import { DonutChart } from "../../constants/DonutChart";
+import { DonutChart } from "@/constants/DonutChart";
+import { SimpleChart } from "@/constants/SimpleChart";
 import React from 'react';
 import {
   Canvas,
@@ -50,17 +51,32 @@ export default function Index() {
     <View style={styles.container}>
       <View style={styles.box}>
         <Text>Today, Nov 30th</Text>
-        <View style={styles.ringChartContainer}>
-          <DonutChart
-            backgroundColor="white"
-            targetPercentage={targetPercentage}
-            font={font}
-            smallerFont={smallerFont}
-          />
-          
+        <View style={styles.flexRowContainer}>
+          <View style={styles.ringChartContainer}>
+            <DonutChart
+              backgroundColor="white"
+              targetPercentage={targetPercentage}
+              font={font}
+              smallerFont={smallerFont}
+            />
+          </View>
+          <View style={styles.container}>
+            <View style={styles.barChartContainer}>
+              <SimpleChart
+                strokeWidth={18}
+                backgroundColor="grey"
+                target={100}
+                barColor="green"
+                progress={20}
+                smallerFont={smallerFont}
+                mainText="Carbs"
+              />
+            </View>
+          </View>
         </View>
-      </View>
-      <View style={styles.rowContainer}>
+      </View> 
+      
+      <View style={styles.flexRowContainer}>
         <View style={[styles.smallBox, styles.box]}>
           <Text>WAIT!</Text>
         </View>
@@ -73,7 +89,7 @@ export default function Index() {
         <View style={styles.centerContainter}>
           <Text style={styles.smallText}>No Bitches?</Text>
         </View>
-        <View style={styles.rowContainer}>
+        <View style={styles.flexRowContainer}>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>cut me cock</Text>
           </TouchableOpacity>
@@ -93,12 +109,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  rowContainer: {
+  flexRowContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between'
   },
   ringChartContainer: {
     width: radius * 2,
     height: radius * 2,
+  },
+  barChartContainer: {
+    flex: 1,
+    paddingLeft: 75,
+    backgroundColor: 'red',
   },
   button: {
     marginTop: 20,

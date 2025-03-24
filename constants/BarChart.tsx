@@ -99,7 +99,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
                 y={60}
                 width={endProtein}
                 height={strokeWidth}
-                r={25}
+                r={5}
                 color="gray"
             />
             <RoundedRect
@@ -107,7 +107,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
                 y={60}
                 width={endFat}
                 height={strokeWidth}
-                r={25}
+                r={5}
                 color="black"
             />
             <RoundedRect
@@ -115,7 +115,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
                 y={60}
                 width={endCarb}
                 height={strokeWidth}
-                r={25}
+                r={5}
                 color="white"
             />
             <Text

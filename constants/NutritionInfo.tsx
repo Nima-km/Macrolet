@@ -1,5 +1,6 @@
 import { SharedValue } from "react-native-reanimated";
-import {View, FlatList, StyleSheet, Text, StatusBar} from 'react-native';
+import {View, FlatList, StyleSheet, Text, StatusBar, TouchableOpacity} from 'react-native';
+import { Link } from "expo-router";
 export type NutritionInfo = {
   protein: number;
   fat: number;
@@ -10,7 +11,9 @@ export type FoodInfo = {
   name: string;
   description: string;
   servings: number;
-  nutritionInfo?: NutritionInfo;
+  nutritionInfo: NutritionInfo;
+  foodItem_id: number;
+  
 }
 
 
@@ -84,14 +87,20 @@ export const shortDataTST = [
   },
 ];
 
-export const Item = ({ name, description, nutritionInfo, servings}: FoodInfo) => {
+export const Item = ({ name, description, nutritionInfo, servings, foodItem_id}: FoodInfo) => {
   return (
-    <View style={styles.item}>
-      <View>
-        <Text style={styles.title}>{name}</Text>
-        <Text style={styles.title}>{servings} servings {nutritionInfo != null ? calculateCalories(nutritionInfo) : 0} calories</Text>
-      </View>
-    </View>
+    <Link href={{pathname: "/addFood",
+      params: {food_id: foodItem_id}
+    }} asChild>
+      <TouchableOpacity>
+        <View style={styles.item}>
+          <View>
+            <Text style={styles.title}>{name}</Text>
+            <Text style={styles.title}>{servings} servings {nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo) * servings) : 0} calories</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Link>
   );
 };
 
