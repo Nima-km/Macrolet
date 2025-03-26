@@ -1,4 +1,4 @@
-import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, TextInput, TouchableOpacity} from "react-native";
+import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, TextInput, TouchableOpacity, SafeAreaView, Button} from "react-native";
 import { colors, spacing, typography } from "../../../constants/theme";
 import { DonutChart } from "../../../constants/DonutChart";
 import { useSharedValue, withTiming, Easing } from "react-native-reanimated";
@@ -10,18 +10,18 @@ import {
     Skia,
     useFont,
   } from "@shopify/react-native-skia";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSQLiteContext } from "expo-sqlite";
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { foodItem, food } from "@/db/schema";
 import { sql, eq, sum} from 'drizzle-orm';
 import { Link, router, useLocalSearchParams } from "expo-router";
-
+import DateTimePicker from '@react-native-community/datetimepicker';
 const FONT_SIZE = 18
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 8;
 
-
+type AndroidMode = 'date' | 'time';
 
 
 
@@ -33,7 +33,7 @@ const AddFood = () => {
         drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.id} = ${Number(food_id)}`)
         .orderBy(food.id)
     )
-
+    const [date, setDate] = React.useState(new Date());
     const [foodName, onChangeFoodName] = React.useState('');
     const [serving, onChangeServing] = React.useState(``);
     const [meal, onChangeMeal] = React.useState('');
@@ -41,14 +41,17 @@ const AddFood = () => {
     const [carbs, onChangeCarbs] = React.useState('');
     const [fat, onChangeFat] = React.useState('');
     const [servingSize, onChangeServingSize] = React.useState('');
-    const [time, onChangeTime] = React.useState('');
-
+    const [show, setShow] = useState(false);
+    const [mode, setMode] = useState<AndroidMode>('date');
     const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
     const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
-
+    
     useEffect(() => {
         console.log(food_id)
+        console.log(date);
+        console.log(foodObject[0])
+        setDate(foodObject[0]?.foodItem.timestamp)
         onChangeServing(`${foodObject[0]?.foodItem.servings}`)
       }, [foodObject])
     if (!font || !smallerFont) {
@@ -57,7 +60,7 @@ const AddFood = () => {
     const handleUpdateFood = async () => {
         console.log("FOOD updated")
         console.log(serving)
-        const foodCheck = await drizzleDb.update(foodItem).set({servings: Number(serving)}).where(eq(foodItem.id, Number(food_id))).returning()
+        const foodCheck = await drizzleDb.update(foodItem).set({servings: Number(serving), timestamp: date}).where(eq(foodItem.id, Number(food_id))).returning()
         console.log(foodCheck[0])
     }
     const handleDeleteFood = async () => {
@@ -68,9 +71,23 @@ const AddFood = () => {
     }
     const handleAddFood = async () => {
         console.log("FOOD INSERT ADDED")
-        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].food.id, servings: Number(serving), meal: 1})
+        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].food.id, servings: Number(serving), meal: 1, timestamp: date})
         console.log("FOODItem INSERT ADDED")
     }
+
+
+    
+    const onChange = (event: any, selectedDate? : Date) => {
+        const currentDate = selectedDate;
+        setShow(false);
+        if (currentDate)
+            setDate(currentDate);
+        console.log(date);
+      };
+    
+      const showTimepicker = () => {
+        setShow(true);
+      };
     return (
         <View style={styles.container}>
             <View style={[styles.box]}>
@@ -79,11 +96,18 @@ const AddFood = () => {
                     <View style={styles.spaceInbetween}>
                         <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
                             <Text style={styles.smallText}>Time</Text>
-                            <TextInput
-                            style={[styles.input, styles.smallInput]}
-                            onChangeText={onChangeTime}
-                            value={time}
-                            />
+                            <TouchableOpacity style={[styles.input, styles.smallInput, styles.center]} onPress={showTimepicker}>
+                                <Text style={styles.smallText}>{date?.getHours()}:{date?.getMinutes() < 10 ? 0 : null}{date?.getMinutes()}</Text>
+                            </TouchableOpacity>
+                            {show && 
+                                <DateTimePicker
+                                    testID="dateTimePicker"
+                                    value={date}
+                                    mode='time'
+                                    is24Hour={true}
+                                    onChange={onChange}
+                                />
+                            }
                         </View>
                         <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
                             <Text style={styles.smallText}>servings</Text>
@@ -105,9 +129,10 @@ const AddFood = () => {
                     </View>
                     <View style={[styles.ringChartContainer]}>
                         <DonutChart
-                        font={font}
                         backgroundColor="white"
-                        targetPercentage={targetPercentage}
+                        dailyProgress={targetPercentage}
+                        targetPercentage={5000}
+                        font={font}
                         smallerFont={smallerFont}
                         />
                         

@@ -55,12 +55,12 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
       easing: Easing.inOut(Easing.cubic),
     });
   };
-  const end = useDerivedValue(() => ((progressDaily.value / target) * 100));
+  const end = useDerivedValue(() => ((progressDaily.value / target) * 120));
   const goalText = useDerivedValue(() => (Math.floor(progressDaily.value).toString() + 'g'  + '/' + target.toString() + 'g'));
   useEffect(() => {
     console.log(target)
     animateChart()
-  }, [target])
+  }, [target, progress])
   if (!smallerFont) {
     return <View />;
   }
@@ -83,7 +83,7 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
             <RoundedRect
                 x={0}
                 y={20}
-                width={100}
+                width={120}
                 height={strokeWidth}
                 r={20}
                 color={backgroundColor}
@@ -104,7 +104,6 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'brown'
   },
   centerText: {
     flex: 1,

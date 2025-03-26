@@ -16,7 +16,7 @@ export default function LogFood() {
     // THIS IS A PLACEHOLDER FOR HISTORY PLEASE CHANGE IT
     const { data: history } = useLiveQuery(
         drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-        .orderBy(foodItem.created_at).limit(4)
+        .orderBy(foodItem.timestamp).limit(4)
     )
     const [filteredData, setFilteredData] = useState(history);
     useEffect(() => {

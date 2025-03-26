@@ -1,6 +1,7 @@
 import { SharedValue } from "react-native-reanimated";
 import {View, FlatList, StyleSheet, Text, StatusBar, TouchableOpacity} from 'react-native';
 import { Link } from "expo-router";
+import { colors } from "./theme";
 export type NutritionInfo = {
   protein: number;
   fat: number;
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
     marginTop: StatusBar.currentHeight || 0,
   },
   item: {
-    backgroundColor: '#f9c2ff',
+    backgroundColor: colors.primary,
     padding: 10,
     marginVertical: 8,
     marginHorizontal: 16,

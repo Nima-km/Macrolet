@@ -27,13 +27,9 @@ interface BarProgressProps {
   colorProtein: string;
   colorfat: string;
   colorCarbs: string;
-  progressProtein?: SharedValue<number>;
-  progressFat: SharedValue<number>;
-  progressCarbs: SharedValue<number>;
   dailyEnd: NutritionInfo;
   font: SkFont;
   smallerFont?: SkFont;
-  targetPercentage: number;
 }
 
 export const BarChart: React.FC<BarProgressProps> = ({
@@ -46,12 +42,9 @@ export const BarChart: React.FC<BarProgressProps> = ({
     dailyEnd,
     font,
     smallerFont,
-    targetPercentage,
 }) => {
 	if (calorieTarget == 0)
 		calorieTarget = 1;
-//	const endCarb = useDerivedValue(() => ((progressCarbs.value / calorieTarget) * 320 * 4));
-  //const endFat = useDerivedValue(() => ((progressFat.value / calorieTarget) * 320 * 4 + progressDaily.value.carbs));
   const progressDaily = useSharedValue<NutritionInfo>({
     protein: 0,
     fat: 0,
@@ -69,11 +62,14 @@ export const BarChart: React.FC<BarProgressProps> = ({
   const endCarb = useDerivedValue(() => ((progressDaily.value.carbs / calorieTarget) * 320 * 4));
   const endFat = useDerivedValue(() => ((progressDaily.value.fat / calorieTarget) * 320 * 9 + endCarb.value));
   const endProtein = useDerivedValue(() => ((progressDaily.value.protein / calorieTarget) * 320 * 4 + endFat.value));
-  const calorieDayText = useDerivedValue(() => (Math.floor((progressDaily.value.protein + progressDaily.value.carbs) * 4 + progressDaily.value.fat * 9).toString() + '/' + calorieTarget.toString()));
+  const calorieDay = useDerivedValue(() => (Math.floor((progressDaily.value.protein + progressDaily.value.carbs) * 4 + progressDaily.value.fat * 9)));
+  const calorieDayText = useDerivedValue(() => (calorieDay.value.toString() + '/' + calorieTarget.toString()));
+  const caloriesRemaining = useDerivedValue(() => (calorieTarget - calorieDay.value).toString())
   const carbsDayText = useDerivedValue(() => (Math.floor(progressDaily.value.carbs).toString() + 'g'));
   const fatDayText = useDerivedValue(() => (Math.floor(progressDaily.value.fat).toString() + 'g'));
   const proteinDayText = useDerivedValue(() => (Math.floor(progressDaily.value.protein).toString() + 'g'));
 
+  const smallFont = font;
 
   useEffect(() => {
     console.log(dailyEnd)
@@ -97,10 +93,18 @@ export const BarChart: React.FC<BarProgressProps> = ({
             <RoundedRect
                 x={0}
                 y={60}
+                width={320}
+                height={strokeWidth}
+                r={5}
+                color={backgroundColor}
+            />
+            <RoundedRect
+                x={0}
+                y={60}
                 width={endProtein}
                 height={strokeWidth}
                 r={5}
-                color="gray"
+                color={colorProtein}
             />
             <RoundedRect
                 x={0}
@@ -108,7 +112,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
                 width={endFat}
                 height={strokeWidth}
                 r={5}
-                color="black"
+                color={colorfat}
             />
             <RoundedRect
                 x={0}
@@ -116,60 +120,66 @@ export const BarChart: React.FC<BarProgressProps> = ({
                 width={endCarb}
                 height={strokeWidth}
                 r={5}
-                color="white"
+                color={colorCarbs}
+            />
+            <Text
+              x={260}
+              y={85}
+              font={font}
+              text={caloriesRemaining}
             />
             <Text
               x={10}
-              y={150}
+              y={180}
               font={font}
               text="carbs"
             />
             <Text
               x={150}
-              y={150}
+              y={180}
               font={font}
               text={carbsDayText}
             />
             <Text
               x={250}
-              y={150}
+              y={180}
               font={font}
               text={carbsDayText}
             />
 
             <Text
               x={10}
-              y={200}
+              y={230}
               font={font}
               text="fat"
             />
             <Text
               x={150}
-              y={200}
+              y={230}
               font={font}
               text={fatDayText}
             />
             <Text
               x={250}
-              y={200}
+              y={230}
               font={font}
               text={fatDayText}
             />
             <Text
               x={10}
-              y={250}
+              y={280}
               font={font}
               text="protein"
             />
             <Text
               x={150}
-              y={250}
+              y={280}
               font={font}
               text={proteinDayText}
             />
             <Text
               x={250}
-              y={250}
+              y={280}
               font={font}
               text={proteinDayText}
             />

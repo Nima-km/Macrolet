@@ -1,17 +1,18 @@
+import { colors } from '@/constants/theme';
 import { Tabs } from 'expo-router';
 
 export default function RootLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#ffd33d',
+        tabBarActiveTintColor: colors.text,
         headerStyle: {
-          backgroundColor: '#25292e',
+          backgroundColor: colors.secondary,
         },
         headerShadowVisible: false,
-        headerTintColor: '#fff',
+        headerTintColor: 'black',
         tabBarStyle: {
-        backgroundColor: '#25292e',
+        backgroundColor: colors.secondary,
         },
       }}
     >

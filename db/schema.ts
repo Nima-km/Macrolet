@@ -43,9 +43,9 @@ export const nutritionGoal = sqliteTable('nutritionGoal', {
 
 export const foodItem = sqliteTable ('foodItem', {
     id: integer('id').primaryKey({autoIncrement: true}),
-    created_at: text('timestamp')
+    timestamp: integer('timestamp', { mode: 'timestamp' })
     .notNull()
-    .default(sql`(current_timestamp)`),
+    .default(sql`now()`),
     food_id: integer('food_id')
     .notNull()
     .references(() => food.id),

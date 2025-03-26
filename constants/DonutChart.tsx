@@ -17,6 +17,7 @@ interface CircularProgressProps {
   backgroundColor: string;
   smallerFont: SkFont;
   targetPercentage: number;
+  dailyProgress: number;
 }
 
 
@@ -25,12 +26,19 @@ interface CircularProgressProps {
 export const DonutChart: React.FC<CircularProgressProps> = ({
   font,
   targetPercentage,
+  dailyProgress,
   smallerFont,
 }) => {
   const percentageComplete = useSharedValue(0);
+  const opacity = useSharedValue(0);
   const animateChart = () => {
     percentageComplete.value = 0;
-    percentageComplete.value = withTiming(targetPercentage, {
+    percentageComplete.value = withTiming(dailyProgress, {
+      duration: 1250,
+      easing: Easing.inOut(Easing.cubic),
+    });
+    opacity.value = 0;
+    opacity.value = withTiming(1, {
       duration: 1250,
       easing: Easing.inOut(Easing.cubic),
     });
@@ -39,7 +47,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
   const radius = PixelRatio.roundToNearestPixel(font_size * 3);
   const STROKE_WIDTH = Math.min(font_size * 1, 16);
   const innerRadius = radius - STROKE_WIDTH / 2;
-  const targetText = `${targetPercentage * 100}`;
+  const targetText = `${Math.floor(dailyProgress)}`;
   
 
  // const font = useFont(require("../Roboto-Light.ttf"), FONT_SIZE);
@@ -59,21 +67,31 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
   path.transform(matrix);
 
   // Using Reanimated's derived values directly
-  const end = useDerivedValue(() => percentageComplete.value);
-  const opacity = useDerivedValue(() => percentageComplete.value);
+  const end = useDerivedValue(() => percentageComplete.value / targetPercentage);
   const width = font.getTextWidth(targetText) - 10;
   const titleWidth = smallerFont.getTextWidth("Power");
 
   useEffect(() => {
     animateChart()
-  }, [])
+    console.log(end.value)
+  }, [dailyProgress])
 
   return (
     <View style={styles.container}>
       <Canvas style={styles.container}>
         <Path
           path={path}
-          color={colors.secondary}
+          color={colors.background}
+          style="stroke"
+          strokeJoin="round"
+          strokeWidth={STROKE_WIDTH}
+          strokeCap="round"
+          start={0}
+          end={1}
+        />
+        <Path
+          path={path}
+          color={colors.error}
           style="stroke"
           strokeJoin="round"
           strokeWidth={STROKE_WIDTH}
@@ -81,6 +99,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
           start={0}
           end={end}
         />
+        
         <Text
           x={innerRadius - width / 2}
           y={innerRadius }

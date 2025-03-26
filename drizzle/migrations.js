@@ -10,6 +10,10 @@ import m0005 from './0005_burly_stature.sql';
 import m0006 from './0006_wet_ken_ellis.sql';
 import m0007 from './0007_mean_deathbird.sql';
 import m0008 from './0008_omniscient_namor.sql';
+import m0009 from './0009_faulty_eternity.sql';
+import m0010 from './0010_groovy_ultimatum.sql';
+import m0011 from './0011_steady_otto_octavius.sql';
+import m0012 from './0012_thankful_sheva_callister.sql';
 
   export default {
     journal,
@@ -22,7 +26,11 @@ m0004,
 m0005,
 m0006,
 m0007,
-m0008
+m0008,
+m0009,
+m0010,
+m0011,
+m0012
     }
   }
   

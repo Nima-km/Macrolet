@@ -1,7 +1,7 @@
 export const colors = {
-    primary: "#2196F3",
-    secondary: "#FF5722",
-    background: "#FFFFFF",
+    primary: "#FFFFFF",
+    secondary: "#F3F0EE",
+    background: "#F3F0EE",
     text: "#212121",
     error: "#B00020",
   } as const; // Use `as const` for literal type inference

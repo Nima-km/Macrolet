@@ -25,14 +25,14 @@ export default function QuickAddFood() {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
     const [foodName, onChangeFoodName] = React.useState('');
-    const [servings, onChangeServings] = React.useState('');
+    const [serving, onChangeServing] = React.useState('');
     const [meal, onChangeMeal] = React.useState('');
     const [protein, onChangeProtien] = React.useState('');
     const [carbs, onChangeCarbs] = React.useState('');
     const [fat, onChangeFat] = React.useState('');
     const [servingSize, onChangeServingSize] = React.useState('');
     const [time, onChangeTime] = React.useState('');
-
+    const [date, setDate] = React.useState(new Date());
     const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
     const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
@@ -48,7 +48,7 @@ export default function QuickAddFood() {
             fat: Number(fat),
             carbs: Number(carbs),}).returning()
         console.log("FOOD INSERT ADDED")
-        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, servings: Number(servings), meal: 1})
+        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, servings: Number(serving), meal: 1, timestamp: date})
         console.log("FOODItem INSERT ADDED")
     }
     return (
@@ -76,8 +76,8 @@ export default function QuickAddFood() {
                             <Text style={styles.smallText}>servings</Text>
                             <TextInput
                             style={[styles.input, styles.smallInput]}
-                            onChangeText={onChangeServings}
-                            value={servings}
+                            onChangeText={onChangeServing}
+                            value={serving}
                             keyboardType="numeric"
                             />
                         </View>
@@ -92,10 +92,11 @@ export default function QuickAddFood() {
                     </View>
                     <View style={[styles.ringChartContainer]}>
                         <DonutChart
-                        font={font}
-                        backgroundColor="white"
-                        targetPercentage={targetPercentage}
-                        smallerFont={smallerFont}
+                            backgroundColor="white"
+                            dailyProgress={10}
+                            targetPercentage={10}
+                            font={font}
+                            smallerFont={smallerFont}
                         />
                         
                     </View>

@@ -3,7 +3,7 @@ import { colors, spacing, typography } from "../../constants/theme";
 import { TouchableOpacity } from "react-native";
 import { DonutChart } from "@/constants/DonutChart";
 import { SimpleChart } from "@/constants/SimpleChart";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Canvas,
   Path,
@@ -16,18 +16,39 @@ import { useSharedValue, withTiming, Easing } from "react-native-reanimated";
 import { useFocusEffect } from '@react-navigation/native';
 import { useDrizzleStudio} from 'expo-drizzle-studio-plugin'
 import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { food, foodItem } from "@/db/schema";
+import DateTimePicker from '@react-native-community/datetimepicker';
 const FONT_SIZE = 27
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 16;
 const DATABASE_NAME = 'tasks';
 
 export default function Index() {
-  const targetPercentage = 85 / 100;
+
+  
   const progress = useSharedValue(0);
+  const [date, setDate] = useState(new Date());
+  const [show, setShow] = useState(false);
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
   useDrizzleStudio(db);
+  const { data: LiveFood } = useLiveQuery(
+    drizzleDb.select({
+      fat: sql<number>`sum(${food.fat} * ${foodItem.servings})`,
+      carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings})`,
+      protein: sql<number>`sum(${food.protein} * ${foodItem.servings})`,
+      calories: sql<number>`sum((${food.protein} * 4 + ${food.carbs} * 4 + ${food.fat} * 9) * ${foodItem.servings})`,
+    })
+    .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+    .where(and(sql`${foodItem.meal} = 1`, 
+          gte(foodItem.timestamp, new Date(date.getFullYear(), date.getMonth(), date.getDate())), 
+          lt(foodItem.timestamp, new Date(date.getFullYear(), date.getMonth(), date.getDate(), 24))))
+    .orderBy(food.id)
+  , [date])
+  const [targetCalorie, setTargetCalorie] = useState(5000)
+  const dailyCalorie = 2500;
 
   useFocusEffect(
     React.useCallback(() => {
@@ -40,22 +61,49 @@ export default function Index() {
       };
     }, [])
   );
-  
+  useEffect(() => {
+    console.log(Math.floor(LiveFood[0]?.calories))
+    }, [])
   const font = useFont(require("../../Roboto-Light.ttf"), FONT_SIZE);
   const smallerFont = useFont(require("../../Roboto-Light.ttf"), FONT_SIZE / 2);
 
   if (!font || !smallerFont) {
     return <View />;
   }
+  const onChange = (event: any, selectedDate? : Date) => {
+    const currentDate = selectedDate;
+    setShow(false);
+     
+    if (currentDate)
+        setDate(currentDate);
+    console.log(date);
+  };
+
+  const showTimepicker = () => {
+    setShow(true);
+  };
   return (
     <View style={styles.container}>
+      {show && 
+        <DateTimePicker
+            testID="dateTimePicker"
+            value={date}
+            mode='date'
+            is24Hour={true}
+            onChange={onChange}
+        />
+      }
+      <TouchableOpacity style={[styles.button]} onPress={showTimepicker}>
+        <Text style={styles.smallText}>DATE</Text>
+      </TouchableOpacity>
       <View style={styles.box}>
         <Text>Today, Nov 30th</Text>
         <View style={styles.flexRowContainer}>
           <View style={styles.ringChartContainer}>
             <DonutChart
               backgroundColor="white"
-              targetPercentage={targetPercentage}
+              dailyProgress={LiveFood[0].calories}
+              targetPercentage={targetCalorie}
               font={font}
               smallerFont={smallerFont}
             />
@@ -63,13 +111,31 @@ export default function Index() {
           <View style={styles.container}>
             <View style={styles.barChartContainer}>
               <SimpleChart
-                strokeWidth={18}
-                backgroundColor="grey"
-                target={100}
-                barColor="green"
-                progress={20}
+                strokeWidth={14}
+                backgroundColor="#F3F0EE"
+                target={400}
+                barColor="yellow"
+                progress={LiveFood[0].carbs}
                 smallerFont={smallerFont}
                 mainText="Carbs"
+              />
+              <SimpleChart
+                strokeWidth={14}
+                backgroundColor="#F3F0EE"
+                target={400}
+                barColor="orange"
+                progress={LiveFood[0].protein}
+                smallerFont={smallerFont}
+                mainText="Protein"
+              />
+              <SimpleChart
+                strokeWidth={14}
+                backgroundColor="#F3F0EE"
+                target={400}
+                barColor="brown"
+                progress={LiveFood[0].fat}
+                smallerFont={smallerFont}
+                mainText="Fat"
               />
             </View>
           </View>
@@ -115,12 +181,11 @@ const styles = StyleSheet.create({
   },
   ringChartContainer: {
     width: radius * 2,
-    height: radius * 2,
+    height: radius * 2.5,
   },
   barChartContainer: {
     flex: 1,
-    paddingLeft: 75,
-    backgroundColor: 'red',
+    paddingLeft: 35,
   },
   button: {
     marginTop: 20,
