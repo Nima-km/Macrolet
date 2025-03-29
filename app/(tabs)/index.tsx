@@ -3,7 +3,7 @@ import { colors, spacing, typography } from "../../constants/theme";
 import { TouchableOpacity } from "react-native";
 import { DonutChart } from "@/constants/DonutChart";
 import { SimpleChart } from "@/constants/SimpleChart";
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Canvas,
   Path,
@@ -20,6 +20,8 @@ import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { food, foodItem } from "@/db/schema";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Context } from "../_layout";
+
 const FONT_SIZE = 27
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 16;
@@ -29,7 +31,7 @@ export default function Index() {
 
   
   const progress = useSharedValue(0);
-  const [date, setDate] = useState(new Date());
+  const context = useContext(Context)
   const [show, setShow] = useState(false);
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
@@ -43,10 +45,10 @@ export default function Index() {
     })
     .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
     .where(and(sql`${foodItem.meal} = 1`, 
-          gte(foodItem.timestamp, new Date(date.getFullYear(), date.getMonth(), date.getDate())), 
-          lt(foodItem.timestamp, new Date(date.getFullYear(), date.getMonth(), date.getDate(), 24))))
+          gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
+          lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
     .orderBy(food.id)
-  , [date])
+  , [context.date])
   const [targetCalorie, setTargetCalorie] = useState(5000)
   const dailyCalorie = 2500;
 
@@ -75,8 +77,8 @@ export default function Index() {
     setShow(false);
      
     if (currentDate)
-        setDate(currentDate);
-    console.log(date);
+      context.setDate(currentDate);
+    console.log(context.date);
   };
 
   const showTimepicker = () => {
@@ -87,7 +89,7 @@ export default function Index() {
       {show && 
         <DateTimePicker
             testID="dateTimePicker"
-            value={date}
+            value={context.date}
             mode='date'
             is24Hour={true}
             onChange={onChange}

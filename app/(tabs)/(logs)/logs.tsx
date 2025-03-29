@@ -4,7 +4,7 @@ import { TouchableOpacity } from "react-native";
 import { Link } from 'expo-router';
 import { NutritionInfo, LongDataTST, shortDataTST, Item} from "@/constants/NutritionInfo";
 import { BarChart } from "../../../constants/BarChart";
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Canvas,
   Path,
@@ -19,6 +19,7 @@ import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { lists, tasks, food, foodItem, Task} from '@/db/schema';
 import { sql, eq, sum, and, gte, lt} from 'drizzle-orm';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Context } from "@/app/_layout";
 
 const strokeWidth = PixelRatio.roundToNearestPixel(30);
 
@@ -27,15 +28,15 @@ export default function Logs() {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
   const calorieTarget = 5000;
-  const [date, setDate] = useState(new Date());
+  const context = useContext(Context)
   const [show, setShow] = useState(false);
   const { data: breakFast } = useLiveQuery(
     drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
     .where(and(sql`${foodItem.meal} = 1`, 
-      gte(foodItem.timestamp, new Date(date.getFullYear(), date.getMonth(), date.getDate())), 
-      lt(foodItem.timestamp, new Date(date.getFullYear(), date.getMonth(), date.getDate(), 24))))
+      gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
+      lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
     .orderBy(food.id)
-  , [date])
+  , [context.date])
   const { data: LiveFood } = useLiveQuery(
     drizzleDb.select({
       fat: sql<number>`sum(${food.fat} * ${foodItem.servings})`,
@@ -44,10 +45,10 @@ export default function Logs() {
     })
     .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
     .where(and(sql`${foodItem.meal} = 1`, 
-      gte(foodItem.timestamp, new Date(date.getFullYear(), date.getMonth(), date.getDate())), 
-      lt(foodItem.timestamp, new Date(date.getFullYear(), date.getMonth(), date.getDate(), 24))))
+      gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
+      lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
     .orderBy(food.id)
-  , [date])
+  , [context.date])
   const { data: lunch } = useLiveQuery(
     drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 2`)
     .orderBy(food.id)
@@ -77,7 +78,7 @@ export default function Logs() {
    // console.log(Number(new Date(date.getFullYear(), date.getMonth(), date.getDay() + 1)))
    // console.log(breakFast[1]?.foodItem.timestamp)
     
-  }, [breakFast, date])
+  }, [breakFast, context.date])
   const font = useFont(require("../../../Roboto-Light.ttf"), 25);
   const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 25);
   const displayText = useDerivedValue(() => {
@@ -91,8 +92,8 @@ export default function Logs() {
     setShow(false);
      
     if (currentDate)
-        setDate(currentDate);
-    console.log(date);
+      context.setDate(currentDate);
+    console.log(context.date);
   };
 
   const showTimepicker = () => {
@@ -104,7 +105,7 @@ export default function Logs() {
       {show && 
           <DateTimePicker
               testID="dateTimePicker"
-              value={date}
+              value={context.date}
               mode='date'
               is24Hour={true}
               onChange={onChange}
