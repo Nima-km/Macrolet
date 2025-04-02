@@ -10,13 +10,15 @@ import {
     Skia,
     useFont,
   } from "@shopify/react-native-skia";
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useSQLiteContext } from "expo-sqlite";
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { foodItem, food } from "@/db/schema";
 import { sql, eq, sum} from 'drizzle-orm';
 import { Link, router, useLocalSearchParams } from "expo-router";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { calculateCalories } from "@/constants/NutritionInfo";
+import { Context } from "@/app/_layout";
 const FONT_SIZE = 18
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 8;
@@ -34,6 +36,7 @@ const AddFood = () => {
         .orderBy(food.id)
     )
     const [date, setDate] = React.useState(new Date());
+    const context = useContext(Context)
     const [foodName, onChangeFoodName] = React.useState('');
     const [serving, onChangeServing] = React.useState(``);
     const [meal, onChangeMeal] = React.useState('');
@@ -41,7 +44,8 @@ const AddFood = () => {
     const [carbs, onChangeCarbs] = React.useState('');
     const [fat, onChangeFat] = React.useState('');
     const [servingSize, onChangeServingSize] = React.useState('');
-    const [show, setShow] = useState(false);
+    const [showDate, setShowDate] = useState(false);
+    const [showTime, setShowTime] = useState(false);
     const [mode, setMode] = useState<AndroidMode>('date');
     const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
@@ -79,17 +83,33 @@ const AddFood = () => {
     
     const onChange = (event: any, selectedDate? : Date) => {
         const currentDate = selectedDate;
-        setShow(false);
+        setShowDate(false);
+        setShowTime(false);
         if (currentDate)
             setDate(currentDate);
         console.log(date);
       };
     
-      const showTimepicker = () => {
-        setShow(true);
-      };
+    const showTimepicker = () => {
+    setShowTime(true);
+    };
+    const showDatepicker = () => {
+    setShowDate(true);
+    };
     return (
         <View style={styles.container}>
+            {showDate && 
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={context.date}
+                    mode='date'
+                    is24Hour={true}
+                    onChange={onChange}
+                />
+            }
+            <TouchableOpacity style={[styles.button]} onPress={showDatepicker}>
+                <Text style={styles.smallText}>DATE</Text>
+            </TouchableOpacity>
             <View style={[styles.box]}>
                 <Text style={styles.titleText}>{foodObject[0]?.food.name}</Text>
                 <View style={styles.flexRowContainer}>
@@ -99,7 +119,7 @@ const AddFood = () => {
                             <TouchableOpacity style={[styles.input, styles.smallInput, styles.center]} onPress={showTimepicker}>
                                 <Text style={styles.smallText}>{date?.getHours()}:{date?.getMinutes() < 10 ? 0 : null}{date?.getMinutes()}</Text>
                             </TouchableOpacity>
-                            {show && 
+                            {showTime && 
                                 <DateTimePicker
                                     testID="dateTimePicker"
                                     value={date}
@@ -141,38 +161,19 @@ const AddFood = () => {
                 <View style={[styles.flexRowContainer]}>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Calories</Text>
-                        <TextInput
-                            style={[styles.input, styles.smallInput]}
-                            onChangeText={onChangeMeal}
-                            value={meal}
-                            /> 
+                        <Text style={styles.smallText}>{foodObject[0] ? calculateCalories(foodObject[0].food) * Number(serving) : null}</Text>
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Carbs</Text>
-                        <TextInput
-                            style={[styles.input, styles.smallInput]}
-                            onChangeText={onChangeCarbs}
-                            keyboardType = 'numeric'
-                            value={carbs}
-                            /> 
+                        <Text style={styles.smallText}>{foodObject[0]?.food.carbs * Number(serving)}</Text> 
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Fat</Text>
-                        <TextInput
-                            style={[styles.input, styles.smallInput]}
-                            onChangeText={onChangeFat}
-                            keyboardType = 'numeric'
-                            value={fat}
-                            /> 
+                        <Text style={styles.smallText}>{foodObject[0]?.food.fat * Number(serving)}</Text> 
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Protein</Text>
-                        <TextInput
-                            style={[styles.input, styles.smallInput]}
-                            onChangeText={onChangeProtien}
-                            keyboardType = 'numeric'
-                            value={protein}
-                            /> 
+                        <Text style={styles.smallText}>{foodObject[0]?.food.protein * Number(serving)}</Text>
                     </View>
 
                 </View>

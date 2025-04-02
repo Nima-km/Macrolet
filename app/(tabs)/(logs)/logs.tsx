@@ -1,4 +1,4 @@
-import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView} from "react-native";
+import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, SectionList} from "react-native";
 import { colors, spacing, typography } from "@/constants/theme";
 import { TouchableOpacity } from "react-native";
 import { Link } from 'expo-router';
@@ -35,7 +35,7 @@ export default function Logs() {
     .where(and(sql`${foodItem.meal} = 1`, 
       gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
       lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
-    .orderBy(food.id)
+    .orderBy(foodItem.timestamp)
   , [context.date])
   const { data: LiveFood } = useLiveQuery(
     drizzleDb.select({
@@ -58,7 +58,18 @@ export default function Logs() {
     .orderBy(food.id)
   )
   const [isLoaded, setIsLoaded] = useState(false)
+  
   const carbProgress = useSharedValue(0);
+  const timeSections = (start : number, stop: number, step: number) =>
+    Array.from(
+    { length: (stop - start) / step + 1 },
+    (value, index) => start + index * step
+    );
+  const [slData, setSlData] = useState(timeSections(breakFast[0]?.foodItem.timestamp.getHours(), breakFast[breakFast.length - 1]?.foodItem.timestamp.getHours(), 5)
+    .map((tmp) => {
+      return {title: tmp, data: breakFast
+        .filter((item) => (item.foodItem.timestamp.getHours() >= tmp && item.foodItem.timestamp.getHours() < tmp + 5))}
+  }).filter((item) => item.data.length > 0))
   const dailyProgress = useSharedValue<NutritionInfo>({
     protein: 0,
     fat: 0,
@@ -77,7 +88,24 @@ export default function Logs() {
    // console.log(date.toDateString())
    // console.log(Number(new Date(date.getFullYear(), date.getMonth(), date.getDay() + 1)))
    // console.log(breakFast[1]?.foodItem.timestamp)
-    
+    let tmp: (number)[] = []
+    tmp.push(breakFast[0]?.foodItem.timestamp.getHours())
+    for (let i = 1; i < 9; i++) {
+      const tst1 = breakFast?.find((item) => item.foodItem.timestamp.getHours() > tmp[i - 1] + 3)?.foodItem.timestamp.getHours()
+      if (tst1)
+        tmp.push(tst1)
+
+    }
+    console.log(tmp)
+    const timesec = tmp
+    setSlData(timesec
+    .map((tmp) => {
+      const filtered = breakFast
+        .filter((item) => (item.foodItem.timestamp.getHours() >= tmp && item.foodItem.timestamp.getHours() < tmp + 3))
+      return {title: tmp, data: filtered}
+  
+  }).filter((item) => item.data.length > 0))
+  //console.log(slData)
   }, [breakFast, context.date])
   const font = useFont(require("../../../Roboto-Light.ttf"), 25);
   const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 25);
@@ -136,51 +164,33 @@ export default function Logs() {
             </TouchableOpacity>
           </Link>
         </View>
-        <Text style={styles.titleText}>Breakfast</Text>
-        <View style={[styles.boxColorless]}>
-            <FlatList
-            data={breakFast}
-            renderItem={({item}) => <Item name={item.food.name} 
-            description={item.food.description} 
-            servings={item.foodItem.servings} 
-            nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
-            foodItem_id={item.foodItem.id}/>}
-            keyExtractor={item => item.foodItem.id.toString()}
-            scrollEnabled={false}
-          />
-        </View>
       </View>
 
-      <View style={styles.container}>
-        <Text style={styles.titleText}>Lunch</Text>
-        <View style={[styles.boxColorless]}>
-            <FlatList
-            data={lunch}
-            renderItem={({item}) => <Item name={item.food.name} 
-            description={item.food.description} 
-            servings={item.foodItem.servings} 
-            nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
-            foodItem_id={item.foodItem.id}/>}
-            keyExtractor={item => item.foodItem.id.toString()}
-            scrollEnabled={false}
+      <View style={[styles.container, {marginRight: 30}]}>
+        <SectionList
+        sections={slData}
+          renderItem={({item}) => <Item name={item.food.name} 
+          description={item.food.description} 
+          servings={item.foodItem.servings} 
+          nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
+          foodItem_id={item.foodItem.id}
+          timestamp={item.foodItem.timestamp}/>}
+        keyExtractor={item => item.foodItem.id.toString()}
+        scrollEnabled={false}
+        renderSectionHeader={({section: {title}}) => (
+          <View style={[styles.rowContainer, {alignItems: 'center'}]}>
+            <Text style={styles.titleText}>{title < 10 ? 0: ''}{title}:00</Text>
+            <View
+              style={{
+                backgroundColor: '#DFDFDF',
+                height: 1,
+                flex: 1,
+                
+              }}
             />
-        </View>
-      </View>
-
-      <View style={styles.container}>
-        <Text style={styles.titleText}>Dinner</Text>
-        <View style={[styles.boxColorless]}>
-            <FlatList
-            data={dinner}
-            renderItem={({item}) => <Item name={item.food.name} 
-            description={item.food.description} 
-            servings={item.foodItem.servings} 
-            nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
-            foodItem_id={item.foodItem.id}/>}
-            keyExtractor={item => item.foodItem.id.toString()}
-            scrollEnabled={false}
-          />
-        </View>
+          </View>
+        )}
+        />
       </View>
     </ScrollView>
   );

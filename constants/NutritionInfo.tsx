@@ -13,6 +13,7 @@ export type FoodInfo = {
   description: string;
   servings: number;
   nutritionInfo: NutritionInfo;
+  timestamp?: Date;
   foodItem_id: number;
   
 }
@@ -23,6 +24,11 @@ export type SharedNutritionInfo = {
   fat: SharedValue<number>;
   carbs: SharedValue<number>;
 }
+export type Section = {
+  title: string;
+  data: any[];
+};
+
 
 export const calculateCalories = (nutrition: NutritionInfo): number => {
   return (nutrition.protein * 4) + (nutrition.fat * 9) + (nutrition.carbs * 4);
@@ -88,7 +94,7 @@ export const shortDataTST = [
   },
 ];
 
-export const Item = ({ name, description, nutritionInfo, servings, foodItem_id}: FoodInfo) => {
+export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id}: FoodInfo) => {
   return (
     <Link href={{pathname: "/addFood",
       params: {food_id: foodItem_id}
@@ -96,8 +102,16 @@ export const Item = ({ name, description, nutritionInfo, servings, foodItem_id}:
       <TouchableOpacity>
         <View style={styles.item}>
           <View>
-            <Text style={styles.title}>{name}</Text>
-            <Text style={styles.title}>{servings} servings {nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo) * servings) : 0} calories</Text>
+            <View style={styles.flexRowContainer}>
+              <Text style={styles.title}>{name}</Text>
+              <Text style={styles.title}>{nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo) * servings) : 0} Calories</Text>
+            </View>
+            <View style={styles.flexRowContainer}>
+              <Text style={styles.title}>{servings} servings </Text>
+              {timestamp &&
+              <Text style={styles.title}>{timestamp.getHours() < 10 ? 0: ''}{timestamp.getHours()}:{timestamp?.getMinutes() < 10 ? 0: ''}{timestamp?.getMinutes()}</Text>
+              }
+            </View>
           </View>
         </View>
       </TouchableOpacity>
@@ -116,6 +130,10 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 16,
     borderRadius: 4,
+  },
+  flexRowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
   },
   title: {
     fontSize: 14,
