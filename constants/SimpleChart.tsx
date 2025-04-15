@@ -103,7 +103,9 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+   // flex: 1,
+   minHeight: 80,
+   paddingLeft: 30,
   },
   centerText: {
     flex: 1,

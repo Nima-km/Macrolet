@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c3487483-4a6a-4634-bc3d-8032c171c513",
-  "prevId": "8a7bb345-b57f-4e9a-9b89-73f1728666a8",
+  "id": "2b4830bb-91cb-4cab-adb5-a33320781e3b",
+  "prevId": "cf88b797-971a-4e2a-9e36-9bc0c23d5778",
   "tables": {
     "food": {
       "name": "food",
@@ -33,14 +33,16 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "fat": {
           "name": "fat",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "calories": {
           "name": "calories",
@@ -54,7 +56,16 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
+        },
+        "barcode": {
+          "name": "barcode",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
         },
         "is_recipe": {
           "name": "is_recipe",
@@ -62,7 +73,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": true
+          "default": false
         }
       },
       "indexes": {},

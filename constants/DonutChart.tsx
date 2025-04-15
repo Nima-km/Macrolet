@@ -15,6 +15,7 @@ import { useEffect } from "react";
 interface CircularProgressProps {
   font: SkFont;
   backgroundColor: string;
+  radius: number;
   smallerFont: SkFont;
   targetPercentage: number;
   dailyProgress: number;
@@ -26,6 +27,7 @@ interface CircularProgressProps {
 export const DonutChart: React.FC<CircularProgressProps> = ({
   font,
   targetPercentage,
+  radius,
   dailyProgress,
   smallerFont,
 }) => {
@@ -44,14 +46,10 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
     });
   };
   const font_size = font.getSize()
-  const radius = PixelRatio.roundToNearestPixel(font_size * 3);
   const STROKE_WIDTH = Math.min(font_size * 1, 16);
   const innerRadius = radius - STROKE_WIDTH / 2;
   const targetText = `${Math.floor(dailyProgress)}`;
   
-
- // const font = useFont(require("../Roboto-Light.ttf"), FONT_SIZE);
-  font.setSize(font.getSize())
   const path = Skia.Path.Make();
   path.addCircle(radius, radius, innerRadius);
 
@@ -59,7 +57,6 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
     return <View />;
   }
 
-  smallerFont.setSize(font.getSize() * .6)
   const matrix = Skia.Matrix();
   matrix.translate(radius, radius);
   matrix.rotate(-Math.PI / 2);
@@ -91,7 +88,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
         />
         <Path
           path={path}
-          color={colors.error}
+          color="#1A8199"
           style="stroke"
           strokeJoin="round"
           strokeWidth={STROKE_WIDTH}
@@ -102,7 +99,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
         
         <Text
           x={innerRadius - width / 2}
-          y={innerRadius }
+          y={60}
           text={targetText}
           font={font}
           opacity={opacity}

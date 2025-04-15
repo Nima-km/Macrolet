@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a210feff-5480-4f6a-ac15-145b1128b850",
+  "id": "8a7bb345-b57f-4e9a-9b89-73f1728666a8",
   "prevId": "5be5b8e8-f92c-4a79-b5d9-8e2024cf68d4",
   "tables": {
     "food": {
@@ -55,6 +55,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "is_recipe": {
+          "name": "is_recipe",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
         }
       },
       "indexes": {},
@@ -132,30 +140,6 @@
         }
       }
     },
-    "lists": {
-      "name": "lists",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "nutritionGoal": {
       "name": "nutritionGoal",
       "columns": {
@@ -213,8 +197,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "tasks": {
-      "name": "tasks",
+    "recipeItem": {
+      "name": "recipeItem",
       "columns": {
         "id": {
           "name": "id",
@@ -223,15 +207,22 @@
           "notNull": true,
           "autoincrement": true
         },
-        "name": {
-          "name": "name",
-          "type": "text",
+        "recipe_id": {
+          "name": "recipe_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "list_id": {
-          "name": "list_id",
+        "food_id": {
+          "name": "food_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "servings": {
+          "name": "servings",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -240,12 +231,25 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "tasks_list_id_lists_id_fk": {
-          "name": "tasks_list_id_lists_id_fk",
-          "tableFrom": "tasks",
-          "tableTo": "lists",
+        "recipeItem_recipe_id_food_id_fk": {
+          "name": "recipeItem_recipe_id_food_id_fk",
+          "tableFrom": "recipeItem",
+          "tableTo": "food",
           "columnsFrom": [
-            "list_id"
+            "recipe_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "recipeItem_food_id_food_id_fk": {
+          "name": "recipeItem_food_id_food_id_fk",
+          "tableFrom": "recipeItem",
+          "tableTo": "food",
+          "columnsFrom": [
+            "food_id"
           ],
           "columnsTo": [
             "id"
@@ -256,7 +260,12 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "meal_check3": {
+          "name": "meal_check3",
+          "value": "\"recipeItem\".\"id\" != \"recipeItem\".\"food_id\""
+        }
+      }
     }
   },
   "views": {},

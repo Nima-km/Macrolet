@@ -1,4 +1,4 @@
-import { PixelRatio, Pressable, StyleSheet, Text, View } from "react-native";
+import { PixelRatio, Pressable, StyleSheet, Text, View, Image } from "react-native";
 import { colors, spacing, typography } from "../../constants/theme";
 import { TouchableOpacity } from "react-native";
 import { DonutChart } from "@/constants/DonutChart";
@@ -22,8 +22,8 @@ import { food, foodItem } from "@/db/schema";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Context } from "../_layout";
 
-const FONT_SIZE = 27
-const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
+const FONT_SIZE = 22
+const radius = 82;
 const STROKE_WIDTH = 16;
 const DATABASE_NAME = 'tasks';
 
@@ -44,7 +44,7 @@ export default function Index() {
       calories: sql<number>`sum((${food.protein} * 4 + ${food.carbs} * 4 + ${food.fat} * 9) * ${foodItem.servings})`,
     })
     .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-    .where(and(sql`${foodItem.meal} = 1`, 
+    .where(and( 
           gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
           lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
     .orderBy(food.id)
@@ -64,10 +64,10 @@ export default function Index() {
     }, [])
   );
   useEffect(() => {
-    console.log(Math.floor(LiveFood[0]?.calories))
+    console.log(radius)
     }, [])
-  const font = useFont(require("../../Roboto-Light.ttf"), FONT_SIZE);
-  const smallerFont = useFont(require("../../Roboto-Light.ttf"), FONT_SIZE / 2);
+  const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), FONT_SIZE);
+  const smallerFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 16);
 
   if (!font || !smallerFont) {
     return <View />;
@@ -95,75 +95,60 @@ export default function Index() {
             onChange={onChange}
         />
       }
-      <TouchableOpacity style={[styles.button]} onPress={showTimepicker}>
-        <Text style={styles.smallText}>DATE</Text>
-      </TouchableOpacity>
-      <View style={styles.box}>
-        <Text>Today, Nov 30th</Text>
-        <View style={styles.flexRowContainer}>
-          <View style={styles.ringChartContainer}>
+      <View style={[styles.flexRowContainer, {justifyContent: 'center'}]}>
+        <Text style={[styles.h2, {paddingLeft: 90, paddingTop: 40}]}> {context.date.toDateString()} </Text>
+        <TouchableOpacity style={[{paddingLeft: 40, paddingTop: 40}]} onPress={showTimepicker}>
+          <Image source={require('@/assets/images/Calendar.png')} />
+        </TouchableOpacity>
+      </View>
+      <View style={[styles.box, styles.flexRowContainer]}>
+          <View style={[styles.ringChartContainer]}>
             <DonutChart
               backgroundColor="white"
+              radius={radius}
               dailyProgress={LiveFood[0].calories}
               targetPercentage={targetCalorie}
               font={font}
               smallerFont={smallerFont}
             />
           </View>
-          <View style={styles.container}>
             <View style={styles.barChartContainer}>
               <SimpleChart
-                strokeWidth={14}
+                strokeWidth={18}
                 backgroundColor="#F3F0EE"
                 target={400}
-                barColor="yellow"
+                barColor="#F8E559"
                 progress={LiveFood[0].carbs}
                 smallerFont={smallerFont}
                 mainText="Carbs"
               />
               <SimpleChart
-                strokeWidth={14}
+                strokeWidth={18}
                 backgroundColor="#F3F0EE"
                 target={400}
-                barColor="orange"
-                progress={LiveFood[0].protein}
-                smallerFont={smallerFont}
-                mainText="Protein"
-              />
-              <SimpleChart
-                strokeWidth={14}
-                backgroundColor="#F3F0EE"
-                target={400}
-                barColor="brown"
+                barColor="#FAAE5B"
                 progress={LiveFood[0].fat}
                 smallerFont={smallerFont}
                 mainText="Fat"
               />
+              <SimpleChart
+                strokeWidth={18}
+                backgroundColor="#F3F0EE"
+                target={400}
+                barColor="#E98A67"
+                progress={LiveFood[0].protein}
+                smallerFont={smallerFont}
+                mainText="Protein"
+              />
             </View>
-          </View>
-        </View>
       </View> 
       
       <View style={styles.flexRowContainer}>
         <View style={[styles.smallBox, styles.box]}>
-          <Text>WAIT!</Text>
+          <Text style={styles.h5}>WAIT!</Text>
         </View>
         <View style={[styles.box, styles.smallBox]}>
-          <Text>bo o o wo a</Text>
-        </View>
-      </View>
-      <Text style={styles.titleText}>MY NIBBLERS</Text>
-      <View style={styles.box}>
-        <View style={styles.centerContainter}>
-          <Text style={styles.smallText}>No Bitches?</Text>
-        </View>
-        <View style={styles.flexRowContainer}>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>cut me cock</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>cut me balls</Text>
-          </TouchableOpacity>
+          <Text style={styles.h5}>bo o o wo a</Text>
         </View>
       </View>
     </View>
@@ -173,21 +158,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  testContainer: {
+    backgroundColor: 'red'
+  },
   centerContainter: {
     alignItems: "center",
     justifyContent: "center"
   },
   flexRowContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+   // justifyContent: 'space-between'
   },
   ringChartContainer: {
+    flex: 1,
+    paddingVertical: 20,
+    paddingHorizontal: 0,
     width: radius * 2,
     height: radius * 2.5,
   },
   barChartContainer: {
     flex: 1,
-    paddingLeft: 35,
+    minHeight: 220,
   },
   button: {
     marginTop: 20,
@@ -197,27 +188,13 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 10,
   },
-  buttonText: {
-    color: "black",
-    fontSize: 12,
-  },
-  titleText: {
-    color: "black",
-    marginHorizontal: 20,
-    fontSize: 20,
-  },
-  smallText: {
-    color: "black",
-    marginHorizontal: 60,
-    fontSize: 12,
-  },
   box: {
     paddingVertical: 20,
     paddingHorizontal: 20,
     marginVertical: 20,
-    marginHorizontal: 15,
+    marginHorizontal: 20,
     backgroundColor:colors.primary,
-    borderRadius: 4,
+    borderRadius: 10,
     
   },
   smallBox: {
@@ -230,5 +207,39 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     marginRight: 30,
 
+  },
+  h1: {
+    fontFamily: 'Geist',
+    fontWeight: 'semibold',
+    fontSize: 28,
+  },
+  h2: {
+    fontFamily: 'Geist',
+    fontWeight: '800',
+    fontSize: 22,
+  },
+  h3: {
+    fontFamily: 'Metro-Medium',
+    fontSize: 20,
+  },
+  h4: {
+    fontFamily: 'Metro-Medium',
+    fontSize: 18  ,
+  },
+  h5: {
+    fontFamily: 'Metro-SemiBold',
+    fontSize: 17,
+  },
+  h6: {
+    fontFamily: 'Metro-Regular',
+    fontSize: 16,
+  },
+  h7: {
+    fontFamily: 'Metro-Bold',
+    fontSize: 18,
+  },
+  h8: {
+    fontFamily: 'Metro-Regular',
+    fontSize: 14,
   },
 });

@@ -34,7 +34,21 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Metropolis-Medium.ttf", "./assets/fonts/Metropolis-SemiBold.ttf", "./assets/fonts/Geist-VariableFont_wght.ttf"]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

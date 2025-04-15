@@ -1,8 +1,8 @@
-import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, SectionList} from "react-native";
+import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, SectionList, Image} from "react-native";
 import { colors, spacing, typography } from "@/constants/theme";
 import { TouchableOpacity } from "react-native";
 import { Link } from 'expo-router';
-import { NutritionInfo, LongDataTST, shortDataTST, Item} from "@/constants/NutritionInfo";
+import { NutritionInfo, Item} from "@/constants/NutritionInfo";
 import { BarChart } from "../../../constants/BarChart";
 import React, { useContext, useEffect, useState } from 'react';
 import {
@@ -16,12 +16,12 @@ import Animated, {useSharedValue, withTiming, Easing, useDerivedValue} from "rea
 import { useFocusEffect } from '@react-navigation/native';
 import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
 import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { lists, tasks, food, foodItem, Task} from '@/db/schema';
+import { food, foodItem} from '@/db/schema';
 import { sql, eq, sum, and, gte, lt} from 'drizzle-orm';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Context } from "@/app/_layout";
 
-const strokeWidth = PixelRatio.roundToNearestPixel(30);
+const strokeWidth = 40;
 
 export default function Logs() {
   
@@ -32,7 +32,7 @@ export default function Logs() {
   const [show, setShow] = useState(false);
   const { data: breakFast } = useLiveQuery(
     drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-    .where(and(sql`${foodItem.meal} = 1`, 
+    .where(and(
       gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
       lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
     .orderBy(foodItem.timestamp)
@@ -44,19 +44,11 @@ export default function Logs() {
       protein: sql<number>`sum(${food.protein} * ${foodItem.servings})`,
     })
     .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-    .where(and(sql`${foodItem.meal} = 1`, 
+    .where(and( 
       gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
       lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
     .orderBy(food.id)
   , [context.date])
-  const { data: lunch } = useLiveQuery(
-    drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 2`)
-    .orderBy(food.id)
-  )
-  const { data: dinner } = useLiveQuery(
-    drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.meal} = 0`)
-    .orderBy(food.id)
-  )
   const [isLoaded, setIsLoaded] = useState(false)
   
   const carbProgress = useSharedValue(0);
@@ -139,20 +131,22 @@ export default function Logs() {
               onChange={onChange}
           />
       }
-      <TouchableOpacity style={[styles.button]} onPress={showTimepicker}>
-          <Text style={styles.smallText}>DATE</Text>
-      </TouchableOpacity>
+      <View style={[styles.rowContainer, {justifyContent: 'center'}]}>
+        <Text style={[styles.h2, {paddingLeft: 90, paddingTop: 40}]}> {context.date.toDateString()} </Text>
+        <TouchableOpacity style={[{paddingLeft: 40, paddingTop: 40}]} onPress={showTimepicker}>
+          <Image source={require('@/assets/images/Calendar.png')} />
+        </TouchableOpacity>
+      </View>
       <View style={styles.box}>
         <View style={styles.barChartContainer}>
           <BarChart
             backgroundColor="#F0E6DE"
             calorieTarget={calorieTarget}
-            colorProtein="#FBB466"
-            colorfat="#E08766"
-            colorCarbs="#FFF186"
+            colorProtein="#E98A67"
+            colorfat="#FAAE5B"
+            colorCarbs="#F8E559"
             dailyEnd={LiveFood[0]}
             strokeWidth={strokeWidth}
-            font={smallerFont}
           />
         </View>
       </View>
@@ -165,8 +159,6 @@ export default function Logs() {
           </Link>
         </View>
       </View>
-
-      <View style={[styles.container, {marginRight: 30}]}>
         <SectionList
         sections={slData}
           renderItem={({item}) => <Item name={item.food.name} 
@@ -174,24 +166,28 @@ export default function Logs() {
           servings={item.foodItem.servings} 
           nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
           foodItem_id={item.foodItem.id}
-          timestamp={item.foodItem.timestamp}/>}
+          timestamp={item.foodItem.timestamp}
+          is_link={true}
+          backgroundColor={'#FFFFFF'}/>
+          }
+        style={[{margin: 20}]}
         keyExtractor={item => item.foodItem.id.toString()}
         scrollEnabled={false}
         renderSectionHeader={({section: {title}}) => (
           <View style={[styles.rowContainer, {alignItems: 'center'}]}>
-            <Text style={styles.titleText}>{title < 10 ? 0: ''}{title}:00</Text>
+            <Text style={styles.h3}>{title < 10 ? 0: ''}{title}:00</Text>
             <View
               style={{
                 backgroundColor: '#DFDFDF',
-                height: 1,
+                height: 2,
                 flex: 1,
+                marginLeft: 20,
                 
               }}
             />
           </View>
         )}
         />
-      </View>
     </ScrollView>
   );
 }
@@ -235,9 +231,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     marginTop: 10,
-    marginHorizontal: 15,
+    marginHorizontal: 20,
     backgroundColor: colors.primary,
-    borderRadius: 4,
+    borderRadius: 10,
   },
   boxColorless: {
     paddingVertical: 20,
@@ -259,5 +255,39 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     marginRight: 30,
 
+  },
+  h1: {
+    fontFamily: 'Geist',
+    fontWeight: 'semibold',
+    fontSize: 28,
+  },
+  h2: {
+    fontFamily: 'Geist',
+    fontWeight: '800',
+    fontSize: 22,
+  },
+  h3: {
+    fontFamily: 'Metro-Medium',
+    fontSize: 20,
+  },
+  h4: {
+    fontFamily: 'Metro-Medium',
+    fontSize: 18  ,
+  },
+  h5: {
+    fontFamily: 'Metro-SemiBold',
+    fontSize: 17,
+  },
+  h6: {
+    fontFamily: 'Metro-Regular',
+    fontSize: 16,
+  },
+  h7: {
+    fontFamily: 'Metro-Bold',
+    fontSize: 18,
+  },
+  h8: {
+    fontFamily: 'Metro-Regular',
+    fontSize: 14,
   },
 });

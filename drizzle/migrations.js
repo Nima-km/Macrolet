@@ -12,8 +12,10 @@ import m0007 from './0007_mean_deathbird.sql';
 import m0008 from './0008_omniscient_namor.sql';
 import m0009 from './0009_faulty_eternity.sql';
 import m0010 from './0010_groovy_ultimatum.sql';
-import m0011 from './0011_steady_otto_octavius.sql';
-import m0012 from './0012_thankful_sheva_callister.sql';
+import m0011 from './0011_harsh_prowler.sql';
+import m0012 from './0012_outgoing_shocker.sql';
+import m0013 from './0013_tranquil_reavers.sql';
+import m0014 from './0014_tiny_ben_parker.sql';
 
   export default {
     journal,
@@ -30,7 +32,9 @@ m0008,
 m0009,
 m0010,
 m0011,
-m0012
+m0012,
+m0013,
+m0014
     }
   }
   

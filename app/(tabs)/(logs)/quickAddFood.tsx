@@ -10,7 +10,7 @@ import {
     Skia,
     useFont,
   } from "@shopify/react-native-skia";
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSQLiteContext } from "expo-sqlite";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { foodItem, food } from "@/db/schema";
@@ -36,21 +36,27 @@ export default function QuickAddFood() {
     const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
     const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
-    
-      if (!font || !smallerFont) {
-        return <View />;
-      }
+    useEffect(() => {
+        console.log("WEEEEE")
+        console.log("WOOOOO")
+    }, [])
+    if (!font || !smallerFont) {
+    return <View />;
+    }
 
     const handleAddFood = async () => {
+        console.log("FOOD INSERT ADDED")
         const foodObject = await drizzleDb.insert(food).values({name: foodName, 
             description: "TESTTT", 
             protein: Number(protein),
             fat: Number(fat),
             carbs: Number(carbs),}).returning()
         console.log("FOOD INSERT ADDED")
-        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, servings: Number(serving), meal: 1, timestamp: date})
+        console.log(foodObject[0])
+        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, servings: Number(serving), timestamp: date})
         console.log("FOODItem INSERT ADDED")
     }
+    
     return (
         <View style={styles.container}>
             <View style={[styles.box]}>
