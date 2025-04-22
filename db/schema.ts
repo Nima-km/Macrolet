@@ -18,12 +18,12 @@ export const food = sqliteTable('food', {
 
 export const nutritionGoal = sqliteTable('nutritionGoal', {
     id: integer('id').primaryKey({autoIncrement: true}),
-    created_at: text('timestamp')
+    timestamp: text('timestamp')
     .notNull()
     .default(sql`(current_timestamp)`),
     protein: integer('protein').notNull().default(0),
     fat: integer('fat').notNull().default(0),
-    calories: integer('calories').default(0),
+    calories: integer('calories').default(0).notNull(),
     carbs: integer('carbs').notNull().default(0),
 })
 
@@ -36,9 +36,20 @@ export const foodItem = sqliteTable ('foodItem', {
     .notNull()
     .references(() => food.id),
     servings: integer('servings').default(0).notNull(),
+    serving_mult: integer('serving_mult').default(.01).notNull(),
+    serving_type: text('serving_type').default('g').notNull(),
     is_template: integer('is_template', {mode: 'boolean'}).default(false),
 }
 )
+export const Weight = sqliteTable ('weight', {
+    id: integer('id').primaryKey({autoIncrement: true}),
+    timestamp: integer('timestamp', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+    weight: integer('weight').default(0).notNull(),
+    }
+)
+
 export const recipeItem = sqliteTable ('recipeItem', {
     id: integer('id').primaryKey({autoIncrement: true}),
     recipe_id: integer('recipe_id')

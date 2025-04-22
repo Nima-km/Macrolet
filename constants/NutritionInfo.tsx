@@ -3,11 +3,12 @@ import {View, FlatList, StyleSheet, Text, StatusBar, TouchableOpacity, TextInput
 import { Link } from "expo-router";
 import { colors } from "./theme";
 import { is } from "drizzle-orm";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 export type NutritionInfo = {
   protein: number;
   fat: number;
   carbs: number;
+  calories?: number;
 }
 
 export type FoodInfo = {
@@ -17,18 +18,21 @@ export type FoodInfo = {
   nutritionInfo: NutritionInfo;
   timestamp?: Date;
   foodItem_id: number;
+  serving_mult: number,
+  serving_type: string,
   
 }
 export type Chart = {
   y: number;
-  date: Date;
+  x: number;
 }
 
 interface inpProp {
-  serving: string
-
-  setServing: ((text: string) => void); 
-  handleDelete: (() => void);
+  
+  setServing: ((text: string) => void);
+  setServingType: ((text: string) => void);
+  handleDelete?: (() => void);
+  handleServingMult: (mult: number) => void
 }
 type ItemProps = FoodInfo & {is_link: boolean} & {backgroundColor: string}
 type RecipeProps = FoodInfo & inpProp
@@ -45,7 +49,7 @@ export type Section = {
 
 
 export const calculateCalories = (nutrition: NutritionInfo): number => {
-  return (nutrition.protein * 4) + (nutrition.fat * 9) + (nutrition.carbs * 4);
+  return (Math.round((nutrition.protein * 4) + (nutrition.fat * 9) + (nutrition.carbs * 4)));
 };
 
 
@@ -91,25 +95,40 @@ export const SearchItem = ({ name, timestamp, nutritionInfo, servings, foodItem_
     </Link>
   );
 };
-export const RecipeItem = ({ name, timestamp, nutritionInfo, servings, foodItem_id, setServing, handleDelete}: RecipeProps) => {
-  const [servingType, onChangeServingType] = useState('g')
-  const [serving, onChangeServing] = useState(servings.toString())
+export const RecipeItem = ({ name, 
+    timestamp,
+    serving_type,
+    nutritionInfo, 
+    serving_mult, 
+    servings, 
+    foodItem_id, 
+    setServing,
+    handleServingMult,
+    setServingType,
+    handleDelete}: RecipeProps) => {
   const onChange = (text: string) => {
-    onChangeServing(text)
-    if (Number(serving) >= 0)
+    console.log('YAYYY')
       setServing(text)
   }
+  const onMult = (mult: number) => {
+    handleServingMult(mult)
+  }
+  useEffect (() => {
+    console.log('NAYYYy')
+  }, [servings])
   return (
       <View style={styles.item}>
         <View>
           <View style={styles.flexRowContainer}>
             <View style={[{margin: 8}]}>
               <Text style={[styles.h4]}>{name}</Text>
-              <Text style={[styles.h6]}>{serving} {servingType}, {calculateCalories(nutritionInfo) * Number(serving)} cal</Text>
+              <Text style={[styles.h6]}>{Math.round(servings * serving_mult * 100)} {serving_type}, {Math.round(calculateCalories(nutritionInfo) * servings * serving_mult)  } cal</Text>
             </View>
-            <TouchableOpacity style={styles.deletebutton} onPress={handleDelete}>
-                
-            </TouchableOpacity>
+            { handleDelete &&
+              <TouchableOpacity style={styles.deletebutton} onPress={handleDelete}>
+                  
+              </TouchableOpacity>
+            }
           </View>
           <View style={[styles.rowContainer]}>
             <View style={[styles.rowContainer]}>
@@ -117,16 +136,17 @@ export const RecipeItem = ({ name, timestamp, nutritionInfo, servings, foodItem_
               <TextInput 
                 style={[styles.input, styles.smallInput, styles.center]}
                 onChangeText={text => onChange(text)}
-                value={serving}
+                value={servings.toString()}
                 keyboardType="numeric"/>
             </View>
             <View style={[styles.rowContainer, styles.center]}>
-              <Text style={[styles.title, styles.constrainedText, styles.bold]}> Serving Amount </Text>
-              <TextInput 
-                style={[styles.input, styles.smallInput, styles.center]}
-                onChangeText={onChangeServingType}
-                value={servingType}
-                keyboardType="numeric"/>
+              <Text style={[styles.title, styles.constrainedText, styles.bold]}> Serving Type </Text>
+              <TouchableOpacity style={[styles.input, styles.smallInput, styles.center]} onPress={() => onMult(1 / serving_mult)}>
+                <Text 
+                  style={[styles.center]}>
+                  {serving_type}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>

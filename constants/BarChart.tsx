@@ -28,7 +28,7 @@ import { useEffect } from "react";
 interface BarProgressProps {
   strokeWidth: number;
   backgroundColor: string;
-	calorieTarget: number;
+	dailyTarget: NutritionInfo;
   colorProtein: string;
   colorfat: string;
   colorCarbs: string;
@@ -39,7 +39,7 @@ interface BarProgressProps {
 export const BarChart: React.FC<BarProgressProps> = ({
     backgroundColor,
     strokeWidth,
-		calorieTarget,
+		dailyTarget,
     colorProtein,
     colorfat,
     colorCarbs,
@@ -47,8 +47,8 @@ export const BarChart: React.FC<BarProgressProps> = ({
    // font,
     smallerFont ,
 }) => {
-	if (calorieTarget == 0)
-		calorieTarget = 1;
+  const calorieTarget = dailyTarget.calories ? dailyTarget.calories : 1
+	
   const progressDaily = useSharedValue<NutritionInfo>({
     protein: 0,
     fat: 0,
@@ -178,16 +178,16 @@ export const BarChart: React.FC<BarProgressProps> = ({
               text="Carbs"
             />
             <Text
-              x={180}
+              x={150}
               y={210}
               font={titleFont}
               text={carbsDayText}
             />
             <Text
-              x={280}
+              x={250}
               y={210}
               font={titleFont}
-              text={carbsDayText}
+              text={dailyTarget.carbs.toString() + 'g'}
             />
 
             <Text
@@ -197,16 +197,16 @@ export const BarChart: React.FC<BarProgressProps> = ({
               text="Fat"
             />
             <Text
-              x={180}
+              x={150}
               y={250}
               font={titleFont}
               text={fatDayText}
             />
             <Text
-              x={280}
+              x={250}
               y={250}
               font={titleFont}
-              text={fatDayText}
+              text={dailyTarget.fat.toString() + 'g'}
             />
             <Text
               x={20}
@@ -215,16 +215,16 @@ export const BarChart: React.FC<BarProgressProps> = ({
               text="Protein"
             />
             <Text
-              x={180}
+              x={150}
               y={290}
               font={titleFont}
               text={proteinDayText}
             />
             <Text
-              x={280}
+              x={250}
               y={290}
               font={titleFont}
-              text={proteinDayText}
+              text={dailyTarget.protein.toString() + 'g'}
             />
         </Canvas>
     </View>

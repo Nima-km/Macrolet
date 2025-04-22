@@ -16,6 +16,11 @@ import m0011 from './0011_harsh_prowler.sql';
 import m0012 from './0012_outgoing_shocker.sql';
 import m0013 from './0013_tranquil_reavers.sql';
 import m0014 from './0014_tiny_ben_parker.sql';
+import m0015 from './0015_large_golden_guardian.sql';
+import m0016 from './0016_cloudy_anthem.sql';
+import m0017 from './0017_melodic_loners.sql';
+import m0018 from './0018_clever_black_widow.sql';
+import m0019 from './0019_outstanding_otto_octavius.sql';
 
   export default {
     journal,
@@ -34,7 +39,12 @@ m0010,
 m0011,
 m0012,
 m0013,
-m0014
+m0014,
+m0015,
+m0016,
+m0017,
+m0018,
+m0019
     }
   }
   

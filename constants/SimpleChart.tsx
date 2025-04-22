@@ -55,7 +55,7 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
       easing: Easing.inOut(Easing.cubic),
     });
   };
-  const end = useDerivedValue(() => ((progressDaily.value / target) * 120));
+  const end = useDerivedValue(() => (Math.min(((progressDaily.value / target) * 120), 120)));
   const goalText = useDerivedValue(() => (Math.floor(progressDaily.value).toString() + 'g'  + '/' + target.toString() + 'g'));
   useEffect(() => {
     console.log(target)

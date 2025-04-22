@@ -16,8 +16,8 @@ import Animated, {useSharedValue, withTiming, Easing, useDerivedValue} from "rea
 import { useFocusEffect } from '@react-navigation/native';
 import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
 import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { food, foodItem} from '@/db/schema';
-import { sql, eq, sum, and, gte, lt} from 'drizzle-orm';
+import { food, foodItem, nutritionGoal} from '@/db/schema';
+import { sql, eq, sum, and, gte, lt, desc} from 'drizzle-orm';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Context } from "@/app/_layout";
 
@@ -30,6 +30,9 @@ export default function Logs() {
   const calorieTarget = 5000;
   const context = useContext(Context)
   const [show, setShow] = useState(false);
+  const { data: nutriGoals } = useLiveQuery(
+      drizzleDb.select().from(nutritionGoal).orderBy(desc(nutritionGoal.timestamp))
+    )
   const { data: breakFast } = useLiveQuery(
     drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
     .where(and(
@@ -104,7 +107,7 @@ export default function Logs() {
   const displayText = useDerivedValue(() => {
     return `Calories: ${Math.floor(dailyProgress.value.carbs)}`;
   });
-  if (!font || !smallerFont) {
+  if (!font || !smallerFont || nutriGoals[0]?.calories == null) {
     return <Text>LOADING</Text>;
   }
   const onChange = (event: any, selectedDate? : Date) => {
@@ -141,7 +144,7 @@ export default function Logs() {
         <View style={styles.barChartContainer}>
           <BarChart
             backgroundColor="#F0E6DE"
-            calorieTarget={calorieTarget}
+            dailyTarget={nutriGoals[0]}
             colorProtein="#E98A67"
             colorfat="#FAAE5B"
             colorCarbs="#F8E559"

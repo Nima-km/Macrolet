@@ -106,6 +106,41 @@
       "when": 1744224692200,
       "tag": "0014_tiny_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1744839221618,
+      "tag": "0015_large_golden_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1745341606261,
+      "tag": "0016_cloudy_anthem",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1745342995695,
+      "tag": "0017_melodic_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1745343711834,
+      "tag": "0018_clever_black_widow",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1745344025872,
+      "tag": "0019_outstanding_otto_octavius",
+      "breakpoints": true
     }
   ]
 }

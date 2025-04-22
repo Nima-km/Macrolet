@@ -17,8 +17,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useDrizzleStudio} from 'expo-drizzle-studio-plugin'
 import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
 import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { and, eq, gte, lt, sql } from "drizzle-orm";
-import { food, foodItem } from "@/db/schema";
+import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
+import { food, foodItem, nutritionGoal } from "@/db/schema";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Context } from "../_layout";
 
@@ -49,6 +49,9 @@ export default function Index() {
           lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
     .orderBy(food.id)
   , [context.date])
+  const { data: nutriGoals } = useLiveQuery(
+    drizzleDb.select().from(nutritionGoal).orderBy(desc(nutritionGoal.timestamp))
+  )
   const [targetCalorie, setTargetCalorie] = useState(5000)
   const dailyCalorie = 2500;
 
@@ -69,7 +72,7 @@ export default function Index() {
   const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), FONT_SIZE);
   const smallerFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 16);
 
-  if (!font || !smallerFont) {
+  if (!font || !smallerFont || nutriGoals[0]?.calories == null) {
     return <View />;
   }
   const onChange = (event: any, selectedDate? : Date) => {
@@ -107,7 +110,7 @@ export default function Index() {
               backgroundColor="white"
               radius={radius}
               dailyProgress={LiveFood[0].calories}
-              targetPercentage={targetCalorie}
+              targetPercentage={nutriGoals[0].calories}
               font={font}
               smallerFont={smallerFont}
             />
@@ -116,7 +119,7 @@ export default function Index() {
               <SimpleChart
                 strokeWidth={18}
                 backgroundColor="#F3F0EE"
-                target={400}
+                target={nutriGoals[0].carbs}
                 barColor="#F8E559"
                 progress={LiveFood[0].carbs}
                 smallerFont={smallerFont}
@@ -125,7 +128,7 @@ export default function Index() {
               <SimpleChart
                 strokeWidth={18}
                 backgroundColor="#F3F0EE"
-                target={400}
+                target={nutriGoals[0].fat}
                 barColor="#FAAE5B"
                 progress={LiveFood[0].fat}
                 smallerFont={smallerFont}
@@ -134,7 +137,7 @@ export default function Index() {
               <SimpleChart
                 strokeWidth={18}
                 backgroundColor="#F3F0EE"
-                target={400}
+                target={nutriGoals[0].protein}
                 barColor="#E98A67"
                 progress={LiveFood[0].protein}
                 smallerFont={smallerFont}

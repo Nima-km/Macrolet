@@ -5,10 +5,13 @@ import React, { useContext, useEffect, useState } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 import axios from 'axios';
-import { NutritionInfo } from "@/constants/NutritionInfo";
+import { NutritionInfo, RecipeItem } from "@/constants/NutritionInfo";
 import { useSQLiteContext } from "expo-sqlite";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { food, foodItem } from "@/db/schema";
+import { Context } from "@/app/_layout";
+import { sql } from "drizzle-orm";
+import { Link } from "expo-router";
 
 type AndroidMode = 'date' | 'time';
 
@@ -17,27 +20,43 @@ type AndroidMode = 'date' | 'time';
 const BarcodeScanner = () => {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
+    const context = useContext(Context)
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [isScanned, setIsScanned] = useState(false)
     const [foodName, setFoodName] = useState('')
+    const [serving, setServing] = useState('100')
+    const [servingType, setServingType] = useState('g')
+    const [servingMult, setServingMult] = useState(.01)
+    const [servingSize, setServingSize] = useState(.01)
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0});
     const [barcode, setBarcode] = useState(0)
     function toggleCameraFacing() {
         setFacing(current => (current === 'back' ? 'front' : 'back'));
     }
-    const handleAddFood = async (barcode: any) => {
+    const handleAddFood = async () => {
         if (foodName){
-            const foodObject = await drizzleDb.insert(food).values({
-                        name: foodName,
-                        description: foodName,
-                        protein: Number(sumNutrition.protein),
-                        fat: Number(sumNutrition.fat),
-                        carbs: Number(sumNutrition.carbs),
-                        is_recipe: false,
-                        barcode: barcode}).returning()
-            await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, servings: Number(1), timestamp: new Date()})
-            console.log(foodObject)
+            let foodObject = await drizzleDb.select().from(food).where(sql`${food.barcode} = ${barcode}`)
+           // console.log(foodObject)
+            
+            if (foodObject.length == 0)
+                foodObject =  await drizzleDb.insert(food).values({
+                    name: foodName,
+                    description: foodName,
+                    protein: Math.round(Number(sumNutrition.protein)),
+                    fat:  Math.round(Number(sumNutrition.fat)),
+                    carbs:  Math.round(Number(sumNutrition.carbs)),
+                    is_recipe: false,
+                    barcode: barcode}).returning()
+            console.log('HIII')
+            const foodItemObject = await drizzleDb.insert(foodItem).values({
+                food_id: foodObject[0].id, 
+                servings: Number(serving), 
+                timestamp: context.date,
+                serving_mult: servingMult,
+                serving_type: servingType}).returning()
+            console.log('HIII')
+            console.log('THIS ISS IT' + foodItemObject)
         }
     }
     const handleScanned = (barcode: any) => {
@@ -54,8 +73,11 @@ const BarcodeScanner = () => {
                 const data: any = response.data.product
                 if (data){
                     setFoodName(data.product_name)
-                    setSumNutrition({carbs: data.nutriments.carbohydrates, fat: data.nutriments.fat, protein: data.nutriments.proteins})
+                    setSumNutrition({carbs: data.nutriments.carbohydrates_100g, fat: data.nutriments.fat_100g, protein: data.nutriments.proteins_100g})
                     setBarcode(barcode)
+                    setServingMult(data.nutriments.energy_serving / data.nutriments.energy_100g)
+                    setServingSize(data.nutriments.energy_serving / data.nutriments.energy_100g)
+                    setServing('1')
                 }
             }
             catch (error: any) {
@@ -66,10 +88,20 @@ const BarcodeScanner = () => {
             console.log("FOOD INSERT ADDED")
         }
     }
+    const handleServingMult = (mult: number) => {
+      //  setServing((Number(serving) / mult).toString())
+        setServing(servingMult == servingSize ? '100' : '1')
+        setServingType(servingMult == servingSize ? 'g' : 'servings')
+        setServingMult(servingMult == servingSize ? .01 : servingSize)
+    }
+    const resetBarcode = () => {
+        setIsScanned(false)
+        console.log('PRESSED')
+    }
     useEffect(() => {
         console.log(sumNutrition)
         console.log(foodName)
-        handleAddFood(barcode)
+       // handleAddFood(barcode)
     }, [sumNutrition])
     if (!permission) {
         // Camera permissions are still loading.
@@ -88,17 +120,35 @@ const BarcodeScanner = () => {
     
     return (
         <View style={styles.container}>
-            <CameraView style={styles.container} facing={facing} 
-                barcodeScannerSettings={{ barcodeTypes: ['upc_a', 'ean13', 'upc_e'] }} 
-                onBarcodeScanned={({data}) => {!isScanned ? handleScanned(data) : null}}>
-            </CameraView>
+            <TouchableOpacity style={{flex: 1}} onPress={resetBarcode}>
+                <CameraView style={styles.container} facing={facing} 
+                    barcodeScannerSettings={{ barcodeTypes: ['upc_a', 'ean13', 'upc_e'] }} 
+                    onBarcodeScanned={({data}) => {!isScanned ? handleScanned(data) : null}}>
+                    <Text style={styles.titleText}>{foodName}</Text>  
+                </CameraView>
+            </TouchableOpacity>
+            <RecipeItem name={foodName} description={""} servings={Number(serving)} nutritionInfo={{
+                protein: sumNutrition.protein,
+                fat: sumNutrition.fat,
+                carbs: sumNutrition.carbs,
+            }} foodItem_id={0} serving_mult={servingMult} 
+            setServing={setServing} 
+            handleServingMult={handleServingMult} 
+            setServingType={setServingType} 
+            serving_type={servingType}/>
+            <Link style={[styles.button, styles.centerContainer]} href='/(tabs)/(logs)/logs' asChild>
+                <TouchableOpacity style={[styles.button, styles.centerContainer]} onPress={handleAddFood}>
+                    <Text style={styles.buttonText}>Log food</Text>
+                </TouchableOpacity>
+            </Link>
+            
         </View>
     );
 }
 export default BarcodeScanner
 
 const styles = StyleSheet.create({
-    centerContainter: {
+    centerContainer: {
         alignItems: "center",
         justifyContent: "center"
     },
@@ -134,9 +184,11 @@ const styles = StyleSheet.create({
         fontSize: 12,
     },
     titleText: {
-        color: "black",
+        color: "blue",
+        textShadowColor: 'red',
+        textShadowRadius: 10,
         marginHorizontal: 20,
-        fontSize: 20,
+        fontSize: 40,
     },
     smallText: {
         color: "black",

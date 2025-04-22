@@ -56,9 +56,11 @@ const AddFood = () => {
     const [ingredientList, setIngredientList] = useState<FoodInfo[]>();
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0});
     const [mode, setMode] = useState<AndroidMode>('date');
+    const [servingType, setServingType] = useState('g')
+    const [servingMult, setServingMult] = useState(.01)
     const targetPercentage = 60 / 100;
-    const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
-    const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
+    const font = useFont(require("../../../Roboto-Light.ttf"), 14);
+    const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 8);
     
     useEffect(() => {
         setDate(foodObject[0]?.foodItem.timestamp)
@@ -101,7 +103,9 @@ const AddFood = () => {
                         fat: (item.food.fat),
                         protein: (item.food.protein)
                     },
-                    foodItem_id: item.food.id
+                    foodItem_id: item.food.id,
+                    serving_mult: 1,
+                    serving_type: 'serving',
                 })
         }))
       //  console.log(ingredientList[2])
@@ -183,6 +187,20 @@ const AddFood = () => {
             setRefresh(!refresh)
         }
     }
+    const handleServingMult = (mult: number, index: number) => {
+        //  setServing((Number(serving) / mult).toString())
+        //setServing(servingMult == servingSize ? '100' : '1')
+        setServingType(servingMult == servingSize ? 'g' : 'servings')
+        setServingMult(servingMult == servingSize ? .01 : servingSize)
+
+        if (ingredientList) {
+            var newList = ingredientList
+            newList[index].servings = Number(text)
+            setIngredientList(newList)
+            console.log("YOBOYO")
+            setRefresh(!refresh)
+        }
+    }
     const handleChangeServing = (index: number, text: string) => {
         console.log(text)
         console.log(index)
@@ -250,12 +268,12 @@ const AddFood = () => {
                     </View>
                     <View style={[styles.ringChartContainer]}>
                         <DonutChart
-                        backgroundColor="white"
-                        dailyProgress={targetPercentage}
-                        targetPercentage={5000}
-                        font={font}
-                        smallerFont={smallerFont}
-                        />
+                            backgroundColor="white"
+                            dailyProgress={targetPercentage}
+                            targetPercentage={5000}
+                            font={font}
+                            smallerFont={smallerFont} 
+                            radius={50}/>
                         
                     </View>
                 </View>
@@ -283,14 +301,19 @@ const AddFood = () => {
                         <Text style={styles.text}>{ingredientList?.length}</Text>
                         <FlatList
                             data={ingredientList}
-                            renderItem={({item, index}) => <RecipeItem name={item.name} 
-                                description={item.description} 
-                                servings={item.servings} 
-                                nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
-                                foodItem_id={item.foodItem_id}
-                                serving={item.servings.toString()}
-                                setServing={(text) => handleChangeServing(index, text)}
-                                handleDelete={() => handleDeleteIngredient(index)}/>}
+                            renderItem={({item, index}) => <RecipeItem 
+                                    name={item.name} 
+                                    description={item.description} 
+                                    servings={item.servings} 
+                                    nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
+                                    foodItem_id={item.foodItem_id}
+                                    serving_mult={item.servings}
+                                    setServing={(text) => handleChangeServing(index, text)}
+                                    handleDelete={() => handleDeleteIngredient(index)}
+                                    handleServingMult={(mult) => handleServingMult(mult, index)} 
+                                    setServingType={setServingType} 
+                                    serving_type={servingType}
+                                />}
                                 scrollEnabled={false}
                                 extraData={refresh}
                         />

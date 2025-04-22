@@ -83,8 +83,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
           strokeJoin="round"
           strokeWidth={STROKE_WIDTH}
           strokeCap="round"
-          start={0}
-          end={1}
+          
         />
         <Path
           path={path}
