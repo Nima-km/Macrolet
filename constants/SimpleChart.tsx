@@ -48,7 +48,7 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
   const progressDaily = useSharedValue(0)
   const animateChart = () => {
     // Reset daily progress
-    progressDaily.value = 0;
+   // progressDaily.value = 0;
     // Update carbs immutably
     progressDaily.value = withTiming(progress,  {
       duration: 1250,
@@ -56,10 +56,11 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
     });
   };
   const end = useDerivedValue(() => (Math.min(((progressDaily.value / target) * 120), 120)));
-  const goalText = useDerivedValue(() => (Math.floor(progressDaily.value).toString() + 'g'  + '/' + target.toString() + 'g'));
+  const goalText = useDerivedValue(() => (Math.round(progressDaily.value).toString() + 'g'  + '/' + target.toString() + 'g'));
   useEffect(() => {
     console.log(target)
-    animateChart()
+    //if (progress)
+      animateChart()
   }, [target, progress])
   if (!smallerFont) {
     return <View />;

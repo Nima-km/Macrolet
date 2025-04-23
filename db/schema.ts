@@ -14,6 +14,8 @@ export const food = sqliteTable('food', {
     carbs: integer('carbs').default(0).notNull(),
     barcode: integer('barcode').default(0),
     is_recipe: integer('is_recipe', {mode: 'boolean'}).default(false),
+    serving_100g: integer('serving_100g').default(1).notNull(),
+    volume_100g: integer('volume_100g').default(1).notNull(),
 })
 
 export const nutritionGoal = sqliteTable('nutritionGoal', {
@@ -25,6 +27,7 @@ export const nutritionGoal = sqliteTable('nutritionGoal', {
     fat: integer('fat').notNull().default(0),
     calories: integer('calories').default(0).notNull(),
     carbs: integer('carbs').notNull().default(0),
+    
 })
 
 export const foodItem = sqliteTable ('foodItem', {
@@ -36,8 +39,8 @@ export const foodItem = sqliteTable ('foodItem', {
     .notNull()
     .references(() => food.id),
     servings: integer('servings').default(0).notNull(),
-    serving_mult: integer('serving_mult').default(.01).notNull(),
-    serving_type: text('serving_type').default('g').notNull(),
+    serving_mult: integer('serving_mult').default(1).notNull(),
+    serving_type: text('serving_type').notNull(),
     is_template: integer('is_template', {mode: 'boolean'}).default(false),
 }
 )
@@ -59,6 +62,8 @@ export const recipeItem = sqliteTable ('recipeItem', {
     .notNull()
     .references(() => food.id),
     servings: integer('servings').notNull(),
+    serving_mult: integer('serving_mult').default(1).notNull(),
+    serving_type: text('serving_type').notNull(),
     
 },
     (table) => [

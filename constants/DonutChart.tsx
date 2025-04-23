@@ -34,12 +34,14 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
   const percentageComplete = useSharedValue(0);
   const opacity = useSharedValue(0);
   const animateChart = () => {
-    percentageComplete.value = 0;
-    percentageComplete.value = withTiming(dailyProgress, {
-      duration: 1250,
-      easing: Easing.inOut(Easing.cubic),
-    });
-    opacity.value = 0;
+    //percentageComplete.value = 0;
+    console.log(dailyProgress)
+   // if (dailyProgress)
+      percentageComplete.value = withTiming(dailyProgress, {
+        duration: 1250,
+        easing: Easing.inOut(Easing.cubic),
+      });
+    //opacity.value = 0;
     opacity.value = withTiming(1, {
       duration: 1250,
       easing: Easing.inOut(Easing.cubic),
@@ -48,7 +50,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
   const font_size = font.getSize()
   const STROKE_WIDTH = Math.min(font_size * 1, 16);
   const innerRadius = radius - STROKE_WIDTH / 2;
-  const targetText = `${Math.floor(dailyProgress)}`;
+  const targetText = useDerivedValue(() => Math.floor(percentageComplete.value).toString());
   
   const path = Skia.Path.Make();
   path.addCircle(radius, radius, innerRadius);
@@ -65,10 +67,10 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
 
   // Using Reanimated's derived values directly
   const end = useDerivedValue(() => percentageComplete.value / targetPercentage);
-  const width = font.getTextWidth(targetText) - 10;
-  const titleWidth = smallerFont.getTextWidth("Power");
+  const width = useDerivedValue(() => innerRadius - (font.measureText(Math.floor(percentageComplete.value).toString()).width - 10) / 2);
 
   useEffect(() => {
+    
     animateChart()
     console.log(end.value)
   }, [dailyProgress])
@@ -97,7 +99,7 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
         />
         
         <Text
-          x={innerRadius - width / 2}
+          x={width}
           y={60}
           text={targetText}
           font={font}

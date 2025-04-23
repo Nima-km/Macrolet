@@ -27,8 +27,9 @@ const BarcodeScanner = () => {
     const [foodName, setFoodName] = useState('')
     const [serving, setServing] = useState('100')
     const [servingType, setServingType] = useState('g')
+    const [serving100g, setServing100g] = useState(.01)
     const [servingMult, setServingMult] = useState(.01)
-    const [servingSize, setServingSize] = useState(.01)
+   // const [servingSize, setServingSize] = useState(.01)
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0});
     const [barcode, setBarcode] = useState(0)
     function toggleCameraFacing() {
@@ -43,18 +44,21 @@ const BarcodeScanner = () => {
                 foodObject =  await drizzleDb.insert(food).values({
                     name: foodName,
                     description: foodName,
-                    protein: Math.round(Number(sumNutrition.protein)),
-                    fat:  Math.round(Number(sumNutrition.fat)),
-                    carbs:  Math.round(Number(sumNutrition.carbs)),
+                    protein: Number(sumNutrition.protein),
+                    fat:  Number(sumNutrition.fat),
+                    carbs:  Number(sumNutrition.carbs),
                     is_recipe: false,
-                    barcode: barcode}).returning()
+                    barcode: barcode,
+                    serving_100g: serving100g,
+                    volume_100g: 1}).returning()
             console.log('HIII')
             const foodItemObject = await drizzleDb.insert(foodItem).values({
                 food_id: foodObject[0].id, 
                 servings: Number(serving), 
                 timestamp: context.date,
+                serving_type: servingType,
                 serving_mult: servingMult,
-                serving_type: servingType}).returning()
+                }).returning()
             console.log('HIII')
             console.log('THIS ISS IT' + foodItemObject)
         }
@@ -73,11 +77,12 @@ const BarcodeScanner = () => {
                 const data: any = response.data.product
                 if (data){
                     setFoodName(data.product_name)
-                    setSumNutrition({carbs: data.nutriments.carbohydrates_100g, fat: data.nutriments.fat_100g, protein: data.nutriments.proteins_100g})
+                    setSumNutrition({carbs: data.nutriments.carbohydrates_serving, fat: data.nutriments.fat_serving, protein: data.nutriments.proteins_serving})
                     setBarcode(barcode)
-                    setServingMult(data.nutriments.energy_serving / data.nutriments.energy_100g)
-                    setServingSize(data.nutriments.energy_serving / data.nutriments.energy_100g)
+                    setServingMult(data.serving_quantity)
+                    setServing100g(data.serving_quantity)
                     setServing('1')
+                    setServingType('servings')
                 }
             }
             catch (error: any) {
@@ -90,9 +95,9 @@ const BarcodeScanner = () => {
     }
     const handleServingMult = (mult: number) => {
       //  setServing((Number(serving) / mult).toString())
-        setServing(servingMult == servingSize ? '100' : '1')
-        setServingType(servingMult == servingSize ? 'g' : 'servings')
-        setServingMult(servingMult == servingSize ? .01 : servingSize)
+        setServing(servingMult == serving100g ? serving100g.toString() : '1')
+        setServingType(servingMult == serving100g ? 'g' : 'servings')
+        setServingMult(servingMult == serving100g ? 1 : serving100g)
     }
     const resetBarcode = () => {
         setIsScanned(false)
@@ -131,11 +136,11 @@ const BarcodeScanner = () => {
                 protein: sumNutrition.protein,
                 fat: sumNutrition.fat,
                 carbs: sumNutrition.carbs,
-            }} foodItem_id={0} serving_mult={servingMult} 
-            setServing={setServing} 
-            handleServingMult={handleServingMult} 
-            setServingType={setServingType} 
-            serving_type={servingType}/>
+            }} foodItem_id={0} serving_mult={servingMult}
+            setServing={setServing}
+            handleServingMult={handleServingMult}
+            setServingType={setServingType}
+            serving_type={servingType} serving_100g={serving100g} volume_100g={1}/>
             <Link style={[styles.button, styles.centerContainer]} href='/(tabs)/(logs)/logs' asChild>
                 <TouchableOpacity style={[styles.button, styles.centerContainer]} onPress={handleAddFood}>
                     <Text style={styles.buttonText}>Log food</Text>

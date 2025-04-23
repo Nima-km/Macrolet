@@ -18,8 +18,10 @@ export type FoodInfo = {
   nutritionInfo: NutritionInfo;
   timestamp?: Date;
   foodItem_id: number;
-  serving_mult: number,
-  serving_type: string,
+  serving_mult: number;
+  serving_100g: number;
+  volume_100g: number;
+  serving_type: string;
   
 }
 export type Chart = {
@@ -32,7 +34,7 @@ interface inpProp {
   setServing: ((text: string) => void);
   setServingType: ((text: string) => void);
   handleDelete?: (() => void);
-  handleServingMult: (mult: number) => void
+  handleServingMult: (mult: number, type: string) => void
 }
 type ItemProps = FoodInfo & {is_link: boolean} & {backgroundColor: string}
 type RecipeProps = FoodInfo & inpProp
@@ -48,13 +50,15 @@ export type Section = {
 };
 
 
-export const calculateCalories = (nutrition: NutritionInfo): number => {
-  return (Math.round((nutrition.protein * 4) + (nutrition.fat * 9) + (nutrition.carbs * 4)));
+export const calculateCalories = (nutrition: NutritionInfo, serving:number, mult: number): number => {
+  return (Math.round((nutrition.protein * 4 * serving / mult)) 
+    + Math.round((nutrition.fat * 9 * serving / mult)) 
+    + Math.round((nutrition.carbs * 4 * serving / mult)));
 };
 
 
 
-export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is_link, backgroundColor}: ItemProps) => {
+export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is_link, backgroundColor, serving_mult, serving_type}: ItemProps) => {
   return (
     <Link href={{pathname: `${is_link ? "/addFood" : './'}`,
       params: {food_id: foodItem_id}
@@ -63,10 +67,10 @@ export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is
         <View style={[styles.item, {backgroundColor: backgroundColor}]}>
           <View style={[styles.flexRowContainer, {paddingBottom:7}]}>
             <Text style={styles.h4}>{name}</Text>
-            <Text style={styles.h4}>{nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo) * servings) : 0} cal</Text>
+            <Text style={styles.h4}>{nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo , servings , serving_mult)) : 0} cal</Text>
           </View>
           <View style={styles.flexRowContainer}>
-            <Text style={styles.h6}>{servings} servings </Text>
+            <Text style={styles.h6}>{servings} {serving_type} </Text>
             {timestamp &&
             <Text style={styles.h6}>{timestamp.getHours() < 10 ? 0: ''}{timestamp.getHours()}:{timestamp?.getMinutes() < 10 ? 0: ''}{timestamp?.getMinutes()}</Text>
             }
@@ -77,7 +81,7 @@ export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is
     </Link>
   );
 };
-export const SearchItem = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is_link, backgroundColor}: ItemProps) => {
+export const SearchItem = ({ name, timestamp, nutritionInfo, servings, serving_mult, foodItem_id, is_link, backgroundColor}: ItemProps) => {
   return (
     <Link href={{pathname: `${is_link ? "/addFood" : './'}`,
       params: {food_id: foodItem_id}
@@ -88,7 +92,7 @@ export const SearchItem = ({ name, timestamp, nutritionInfo, servings, foodItem_
             <Text style={styles.h4}>{name}</Text>
           </View>
           <View style={styles.flexRowContainer}>
-            <Text style={styles.h6}>{servings} servings, {nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo) * servings) : 0} cal </Text>
+            <Text style={styles.h6}>{servings} servings, {nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo , servings , serving_mult)) : 0} cal </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -99,7 +103,9 @@ export const RecipeItem = ({ name,
     timestamp,
     serving_type,
     nutritionInfo, 
-    serving_mult, 
+    serving_mult,
+    serving_100g,
+    volume_100g,
     servings, 
     foodItem_id, 
     setServing,
@@ -110,8 +116,8 @@ export const RecipeItem = ({ name,
     console.log('YAYYY')
       setServing(text)
   }
-  const onMult = (mult: number) => {
-    handleServingMult(mult)
+  const onMult = (mult: number, type: string) => {
+    handleServingMult(serving_type == 'g' ? serving_100g : 100, serving_type == 'g' ? 'servings' : 'g')
   }
   useEffect (() => {
     console.log('NAYYYy')
@@ -122,7 +128,7 @@ export const RecipeItem = ({ name,
           <View style={styles.flexRowContainer}>
             <View style={[{margin: 8}]}>
               <Text style={[styles.h4]}>{name}</Text>
-              <Text style={[styles.h6]}>{Math.round(servings * serving_mult * 100)} {serving_type}, {Math.round(calculateCalories(nutritionInfo) * servings * serving_mult)  } cal</Text>
+              <Text style={[styles.h6]}>{Math.round(servings * serving_mult)} g, {Math.round(calculateCalories(nutritionInfo , servings , serving_100g / serving_mult))  } cal</Text>
             </View>
             { handleDelete &&
               <TouchableOpacity style={styles.deletebutton} onPress={handleDelete}>
@@ -141,7 +147,7 @@ export const RecipeItem = ({ name,
             </View>
             <View style={[styles.rowContainer, styles.center]}>
               <Text style={[styles.title, styles.constrainedText, styles.bold]}> Serving Type </Text>
-              <TouchableOpacity style={[styles.input, styles.smallInput, styles.center]} onPress={() => onMult(1 / serving_mult)}>
+              <TouchableOpacity style={[styles.input, styles.smallInput, styles.center]} onPress={() => onMult(1 / serving_mult, 'placeHolder')}>
                 <Text 
                   style={[styles.center]}>
                   {serving_type}

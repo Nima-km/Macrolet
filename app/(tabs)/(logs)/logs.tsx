@@ -42,9 +42,9 @@ export default function Logs() {
   , [context.date])
   const { data: LiveFood } = useLiveQuery(
     drizzleDb.select({
-      fat: sql<number>`sum(${food.fat} * ${foodItem.servings})`,
-      carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings})`,
-      protein: sql<number>`sum(${food.protein} * ${foodItem.servings})`,
+      fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      protein: sql<number>`sum(${food.protein} * ${foodItem.servings} * ${foodItem.serving_mult})`,
     })
     .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
     .where(and( 
@@ -73,6 +73,7 @@ export default function Logs() {
   useFocusEffect(
     React.useCallback(() => {
       console.log('Tab is now focused');
+      console.log(LiveFood[0])
       return () => {
         console.log('Tab is unfocused');
       };
@@ -80,9 +81,9 @@ export default function Logs() {
     }, [])
   );
   useEffect(() => {
-   // console.log(date.toDateString())
-   // console.log(Number(new Date(date.getFullYear(), date.getMonth(), date.getDay() + 1)))
-   // console.log(breakFast[1]?.foodItem.timestamp)
+    //console.log(breakFast[0])
+    //console.log(LiveFood)
+    console.log("HAIISISI")
     let tmp: (number)[] = []
     tmp.push(breakFast[0]?.foodItem.timestamp.getHours())
     for (let i = 1; i < 9; i++) {
@@ -164,14 +165,18 @@ export default function Logs() {
       </View>
         <SectionList
         sections={slData}
-          renderItem={({item}) => <Item name={item.food.name} 
-          description={item.food.description} 
-          servings={item.foodItem.servings} 
-          nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
+          renderItem={({item}) => <Item name={item.food.name}
+          description={item.food.description}
+          servings={item.foodItem.servings}
+          nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein }}
           foodItem_id={item.foodItem.id}
           timestamp={item.foodItem.timestamp}
           is_link={true}
-          backgroundColor={'#FFFFFF'}/>
+          backgroundColor={'#FFFFFF'}
+          serving_mult={item.foodItem.serving_mult} 
+          serving_100g={item.food.serving_100g} 
+          volume_100g={item.food.volume_100g} 
+          serving_type={item.foodItem.serving_type}/>
           }
         style={[{margin: 20}]}
         keyExtractor={item => item.foodItem.id.toString()}

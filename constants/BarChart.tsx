@@ -66,12 +66,12 @@ export const BarChart: React.FC<BarProgressProps> = ({
   const endCarb = useDerivedValue(() => ((progressDaily.value.carbs / calorieTarget) * 320 * 4));
   const endFat = useDerivedValue(() => ((progressDaily.value.fat / calorieTarget) * 320 * 9 + endCarb.value));
   const endProtein = useDerivedValue(() => ((progressDaily.value.protein / calorieTarget) * 320 * 4 + endFat.value));
-  const calorieDay = useDerivedValue(() => (Math.floor((progressDaily.value.protein + progressDaily.value.carbs) * 4 + progressDaily.value.fat * 9)));
+  const calorieDay = useDerivedValue(() => (Math.round((progressDaily.value.protein) + Math.round(progressDaily.value.carbs)) * 4 + Math.round(progressDaily.value.fat) * 9));
   const calorieDayText = useDerivedValue(() => (calorieDay.value.toString() + ' / ' + calorieTarget.toString() + ' cal'));
   const caloriesRemaining = useDerivedValue(() => (calorieTarget - calorieDay.value).toString())
-  const carbsDayText = useDerivedValue(() => (Math.floor(progressDaily.value.carbs).toString() + 'g'));
-  const fatDayText = useDerivedValue(() => (Math.floor(progressDaily.value.fat).toString() + 'g'));
-  const proteinDayText = useDerivedValue(() => (Math.floor(progressDaily.value.protein).toString() + 'g'));
+  const carbsDayText = useDerivedValue(() => (Math.round(progressDaily.value.carbs).toString() + 'g'));
+  const fatDayText = useDerivedValue(() => (Math.round(progressDaily.value.fat).toString() + 'g'));
+  const proteinDayText = useDerivedValue(() => (Math.round(progressDaily.value.protein).toString() + 'g'));
   const fontMgr = useFonts({
     Geist: [
       require("@/assets/fonts/Geist-VariableFont_wght.ttf"),

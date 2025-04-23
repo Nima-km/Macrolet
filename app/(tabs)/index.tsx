@@ -38,10 +38,10 @@ export default function Index() {
   useDrizzleStudio(db);
   const { data: LiveFood } = useLiveQuery(
     drizzleDb.select({
-      fat: sql<number>`sum(${food.fat} * ${foodItem.servings})`,
-      carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings})`,
-      protein: sql<number>`sum(${food.protein} * ${foodItem.servings})`,
-      calories: sql<number>`sum((${food.protein} * 4 + ${food.carbs} * 4 + ${food.fat} * 9) * ${foodItem.servings})`,
+      fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      protein: sql<number>`sum(${food.protein} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      calories: sql<number>`sum((${food.protein} * 4 + ${food.carbs} * 4 + ${food.fat} * 9) * ${foodItem.servings} * ${foodItem.serving_mult})`,
     })
     .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
     .where(and( 
@@ -109,7 +109,7 @@ export default function Index() {
             <DonutChart
               backgroundColor="white"
               radius={radius}
-              dailyProgress={LiveFood[0].calories}
+              dailyProgress={LiveFood[0].calories ? LiveFood[0].calories : 0}
               targetPercentage={nutriGoals[0].calories}
               font={font}
               smallerFont={smallerFont}

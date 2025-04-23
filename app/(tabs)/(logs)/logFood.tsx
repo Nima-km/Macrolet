@@ -36,13 +36,17 @@ export default function LogFood() {
                 <FlatList
                     data={filteredData}
                     renderItem={({item}) => 
-                    <SearchItem name={item.food.name} 
-                        description={item.food.description} 
-                        servings={item.foodItem.servings} 
-                        nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
+                    <SearchItem name={item.food.name}
+                        description={item.food.description}
+                        servings={item.foodItem.servings}
+                        nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein }}
                         foodItem_id={item.foodItem.id}
                         is_link={true}
-                        backgroundColor={colors.box}/>
+                        backgroundColor={colors.box} 
+                        serving_mult={item.foodItem.serving_mult}
+                        serving_100g={item.food.serving_100g} 
+                        volume_100g={item.food.volume_100g} 
+                        serving_type={item.foodItem.serving_type}/>
                     }
                     keyExtractor={item => item.foodItem.id.toString()}
                     scrollEnabled={false}

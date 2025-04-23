@@ -23,9 +23,9 @@ export default function Profile() {
   
   const { data: LiveFood } = useLiveQuery(
       drizzleDb.select({
-        fat: sql<number>`sum(${food.fat} * ${foodItem.servings})`,
-        carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings})`,
-        protein: sql<number>`sum(${food.protein} * ${foodItem.servings})`,
+        fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+        carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+        protein: sql<number>`sum(${food.protein} * ${foodItem.servings}* ${foodItem.serving_mult})`,
         date: sql<Date>`strftime('%s', ${foodItem.timestamp}, 'unixepoch')`
       })
       .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
@@ -86,7 +86,7 @@ export default function Profile() {
         <LineChart
           target={LiveFood.map((item) => {
             return (
-              {x: Number(item.date), y: calculateCalories({carbs: item.carbs, fat: item.fat, protein: item.protein})}
+              {x: Number(item.date), y: calculateCalories({carbs: item.carbs, fat: item.fat, protein: item.protein}, 1, 1)}
             )
           })}
           startDate={LiveFood[0].date}
