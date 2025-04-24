@@ -64,6 +64,17 @@ export default function AddIngredient() {
             setRefresh(!refresh)
         }
     }
+    const handleServingMult = (mult: number, type: string, index: number) => {
+        if (ingredientList) {
+            var newList = ingredientList
+            console.log(mult)
+            newList[index].serving_mult = mult
+            newList[index].serving_type = type
+            setIngredientList(newList)
+            console.log("YOBOYO")
+            setRefresh(!refresh)
+        }
+    }
 
     return (
         <ScrollView style={styles.container}>
@@ -79,18 +90,28 @@ export default function AddIngredient() {
                         data={filteredData}
                         renderItem={({item}) => 
                             <TouchableOpacity onPress={() => 
-                                handleAddIngredient({name: item.food.name, 
-                                    description: item.food.description, 
-                                    servings: 1, 
-                                    nutritionInfo: {protein: item.food.protein, fat: item.food.fat, carbs: item.food.carbs},
-                                    foodItem_id: item.food.id})}>
-                                <Item name={item.food.name} 
-                                    description={item.food.description} 
-                                    servings={item.foodItem.servings} 
-                                    nutritionInfo={{carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein}}
+                                handleAddIngredient({
+                                    name: item.food.name,
+                                    description: item.food.description,
+                                    servings: item.foodItem.servings,
+                                    nutritionInfo: { protein: item.food.protein, fat: item.food.fat, carbs: item.food.carbs },
+                                    foodItem_id: item.food.id,
+                                    serving_mult: item.foodItem.serving_mult,
+                                    serving_100g: item.food.serving_100g,
+                                    volume_100g: item.food.volume_100g,
+                                    serving_type: item.foodItem.serving_type
+                                })}>
+                                <Item name={item.food.name}
+                                    description={item.food.description}
+                                    servings={item.foodItem.servings}
+                                    nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein }}
                                     foodItem_id={item.foodItem.id}
-                                    is_link={false}
-                                />
+                                    is_link={false} 
+                                    serving_mult={item.foodItem.serving_mult} 
+                                    serving_100g={item.food.serving_100g} 
+                                    volume_100g={item.food.volume_100g} 
+                                    serving_type={item.foodItem.serving_type} 
+                                    backgroundColor={colors.box}                                />
                             </TouchableOpacity>
                         }
                         keyExtractor={item => item.foodItem.id.toString()}
@@ -112,17 +133,23 @@ export default function AddIngredient() {
             <Text style={styles.text}>Added</Text>
             <FlatList
                 data={ingredientList}
-                renderItem={({item, index}) => <RecipeItem name={item.name} 
-                    description={item.description} 
-                    servings={item.servings} 
-                    nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
-                    foodItem_id={item.foodItem_id}
-                    serving={item.servings.toString()}
-                    setServing={(text) => handleChangeServing(index, text)}
-                    handleDelete={() => handleDeleteIngredient(index)}/>}
-                //keyExtractor={item => item.foodItem_id?.toString()}
-                scrollEnabled={false}
-                extraData={refresh}
+                renderItem={({item, index}) => <RecipeItem 
+                        name={item.name} 
+                        description={item.description} 
+                        servings={item.servings} 
+                        nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
+                        foodItem_id={item.foodItem_id}
+                        serving_mult={item.serving_mult}
+                        setServing={(text) => handleChangeServing(index, text)}
+                        handleDelete={() => handleDeleteIngredient(index)}
+                        handleServingMult={(mult, type) => handleServingMult(mult, type, index)} 
+                        setServingType={() => handleServingMult} 
+                        serving_type={item.serving_type}
+                        volume_100g={item.volume_100g}
+                        serving_100g={item.serving_100g}
+                    />}
+                    scrollEnabled={false}
+                    extraData={refresh}
             />
             <View style={[styles.flexRowContainer, styles.center]}>
                 <Link style={[styles.smallButton, styles.center]} href="/createRecipe" asChild>

@@ -50,10 +50,10 @@ export type Section = {
 };
 
 
-export const calculateCalories = (nutrition: NutritionInfo, serving:number, mult: number): number => {
-  return (Math.round((nutrition.protein * 4 * serving / mult)) 
-    + Math.round((nutrition.fat * 9 * serving / mult)) 
-    + Math.round((nutrition.carbs * 4 * serving / mult)));
+export const calculateCalories = (nutrition: NutritionInfo, mult:number): number => {
+  return (Math.round((nutrition.protein * 4 * mult)) 
+    + Math.round((nutrition.fat * 9 * mult)) 
+    + Math.round((nutrition.carbs * 4 * mult)));
 };
 
 
@@ -67,7 +67,7 @@ export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is
         <View style={[styles.item, {backgroundColor: backgroundColor}]}>
           <View style={[styles.flexRowContainer, {paddingBottom:7}]}>
             <Text style={styles.h4}>{name}</Text>
-            <Text style={styles.h4}>{nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo , servings , serving_mult)) : 0} cal</Text>
+            <Text style={styles.h4}>{nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo , servings * serving_mult)) : 0} cal</Text>
           </View>
           <View style={styles.flexRowContainer}>
             <Text style={styles.h6}>{servings} {serving_type} </Text>
@@ -92,7 +92,7 @@ export const SearchItem = ({ name, timestamp, nutritionInfo, servings, serving_m
             <Text style={styles.h4}>{name}</Text>
           </View>
           <View style={styles.flexRowContainer}>
-            <Text style={styles.h6}>{servings} servings, {nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo , servings , serving_mult)) : 0} cal </Text>
+            <Text style={styles.h6}>{servings} servings, {nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo , servings * serving_mult)) : 0} cal </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -117,7 +117,7 @@ export const RecipeItem = ({ name,
       setServing(text)
   }
   const onMult = (mult: number, type: string) => {
-    handleServingMult(serving_type == 'g' ? serving_100g : 100, serving_type == 'g' ? 'servings' : 'g')
+    handleServingMult(serving_type == 'servings' ? 1 / serving_100g : 1, serving_type == 'servings' ? 'g' : 'servings')
   }
   useEffect (() => {
     console.log('NAYYYy')
@@ -128,7 +128,7 @@ export const RecipeItem = ({ name,
           <View style={styles.flexRowContainer}>
             <View style={[{margin: 8}]}>
               <Text style={[styles.h4]}>{name}</Text>
-              <Text style={[styles.h6]}>{Math.round(servings * serving_mult)} g, {Math.round(calculateCalories(nutritionInfo , servings , serving_100g / serving_mult))  } cal</Text>
+              <Text style={[styles.h6]}>{Math.round(servings)} {serving_type}, {Math.round(calculateCalories(nutritionInfo , servings * serving_mult))  } cal</Text>
             </View>
             { handleDelete &&
               <TouchableOpacity style={styles.deletebutton} onPress={handleDelete}>

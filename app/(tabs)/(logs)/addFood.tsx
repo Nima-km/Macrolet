@@ -38,13 +38,6 @@ const AddFood = () => {
     const { data: recipeObject } = useLiveQuery(
         drizzleDb.select().from(recipeItem).innerJoin(food, eq(recipeItem.ingredient_id, food.id)).where(sql`${recipeItem.recipe_id} = ${foodObject[0]?.food.id}`)
     , [foodObject])
-    const { data: macroObject } = useLiveQuery(
-        drizzleDb.select({
-              fat: sql<number>`sum(${food.fat} * ${recipeItem.servings})`,
-              carbs: sql<number>`sum(${food.carbs} * ${recipeItem.servings})`,
-              protein: sql<number>`sum(${food.protein} * ${recipeItem.servings})`,
-            }).from(recipeItem).innerJoin(food,  eq(recipeItem.ingredient_id, food.id)).where(sql`${recipeItem.recipe_id} = ${foodObject[0]?.food.id}`)
-    , [foodObject])
     const [refresh, setRefresh] = useState<boolean>(false);
     const [date, setDate] = React.useState(new Date());
     const [isRecipe, setIsRecipe] = React.useState(false);
@@ -69,29 +62,30 @@ const AddFood = () => {
         setServingMult(foodObject[0]?.foodItem.serving_mult)
     }, [foodObject, recipeItem])
     useEffect(() => {
-        if (isRecipe == false){
+        //if (isRecipe == false){
             setSumNutrition({carbs: foodObject[0]?.food.carbs, fat: foodObject[0]?.food.fat, protein: foodObject[0]?.food.protein})
-            console.log(foodObject[0]?.food)
-            console.log(sumNutrition)
-        }
+            console.log('A')
+            
+      //  }
     }, [foodObject[0]])
     useEffect(() => {
-        console.log("TEST")
         console.log(sumNutrition)
     }, [sumNutrition])
     useEffect(() => {
         let total: NutritionInfo = {carbs: 0, fat: 0, protein: 0}
-        if (ingredientList && isRecipe == true){
+        if (ingredientList?.length && isRecipe == true){
             for (let i = 0; i < ingredientList.length; i++) {
-                total.carbs += ingredientList[i].nutritionInfo.carbs * ingredientList[i].servings
-                total.fat += ingredientList[i].nutritionInfo.fat * ingredientList[i].servings
-                total.protein += ingredientList[i].nutritionInfo.protein * ingredientList[i].servings
-                console.log(ingredientList[i].servings)
-               // console.log(total.protein)
+                total.carbs += ingredientList[i].nutritionInfo.carbs * ingredientList[i].servings * ingredientList[i].serving_mult
+                total.fat += ingredientList[i].nutritionInfo.fat * ingredientList[i].servings * ingredientList[i].serving_mult
+                total.protein += ingredientList[i].nutritionInfo.protein * ingredientList[i].servings * ingredientList[i].serving_mult
+               
             }
-            console.log(total)
+            total.carbs = Math.round(total.carbs)
+            total.fat = Math.round(total.fat)
+            total.protein = Math.round(total.protein)
+            
             setSumNutrition(total)
-            console.log("updating")
+            console.log('B')
         }
     }, [refresh, recipeObject])
 
@@ -105,35 +99,26 @@ const AddFood = () => {
                         protein: (item.food.protein)
                     },
                     foodItem_id: item.food.id,
-                    serving_mult: 1,
-                    serving_type: 'serving',
+                    serving_mult: item.recipeItem.serving_mult,
+                    serving_type: item.recipeItem.serving_type,
                     serving_100g: item.food.serving_100g,
                     volume_100g: item.food.volume_100g,
                 })
         }))
       //  console.log(ingredientList[2])
       }, [recipeObject])
-    useEffect(() => {
-        if (isRecipe == true)
-            setSumNutrition({carbs: macroObject[0]?.carbs * Number(serving),
-                fat: macroObject[0]?.fat * Number(serving),
-                protein: macroObject[0]?.protein * Number(serving)
-            })
-      }, [foodObject[0], serving])
     if (!font || !smallerFont) {
         return <View />;
     }
     const handleUpdateFood = async () => {
-        console.log("FOOD updated")
-        console.log(serving)
+        
         const foodCheck = await drizzleDb.update(foodItem).set({servings: Number(serving), timestamp: date}).where(eq(foodItem.id, Number(food_id))).returning()
-        console.log(foodCheck[0])
+        
     }
     const handleDeleteFood = async () => {
-        console.log("FOOD Deleted")
-        console.log(serving)
+        
         const foodCheck = await drizzleDb.delete(foodItem).where(eq(foodItem.id, Number(food_id))).returning()
-        console.log(foodCheck[0])
+        
     }
     const handleAddFoodItem = async () => {
         console.log("FOOD INSERT ADDED")
@@ -179,7 +164,7 @@ const AddFood = () => {
             serving_type: foodObject[0].foodItem.serving_type})
         console.log("FOODItem INSERT ADDED")
         console.log("FOOD INSERT ADDED")
-        console.log(foodObject[0])
+        
     }
     
     const onChange = (event: any, selectedDate? : Date) => {
@@ -188,7 +173,7 @@ const AddFood = () => {
         setShowTime(false);
         if (currentDate)
             setDate(currentDate);
-        console.log(date);
+        
       };
     
     const showTimepicker = () => {
@@ -200,39 +185,29 @@ const AddFood = () => {
     const handleDeleteIngredient = async (index: number) => {
         if (ingredientList) {
             ingredientList.splice(index, 1)
-            console.log("DELETED ITEM")
-            console.log(ingredientList)
+            
            // setIngredientList(newList)
-            console.log("YOBOYO")
+            
             setRefresh(!refresh)
         }
     }
     const handleServingMult = (mult: number, type: string, index: number) => {
-        //  setServing((Number(serving) / mult).toString())
-        //setServing(servingMult == servingSize ? '100' : '1')
-      //  setServingType(servingMult == servingSize ? 'g' : 'servings')
-       // setServingMult(servingMult == servingSize ? .01 : servingSize)
-
         if (ingredientList) {
             var newList = ingredientList
             newList[index].serving_mult = mult
             newList[index].serving_type = type
             setIngredientList(newList)
-            console.log("YOBOYO")
+            
             setRefresh(!refresh)
         }
     }
     const handleChangeServing = (index: number, text: string) => {
-        console.log(text)
-        console.log(index)
-        console.log("AYYY")
-        console.log(index)
-        console.log(ingredientList)
+        
         if (ingredientList) {
             var newList = ingredientList
             newList[index].servings = Number(text)
             setIngredientList(newList)
-            console.log("YOBOYO")
+            
             setRefresh(!refresh)
         }
     }
@@ -301,7 +276,7 @@ const AddFood = () => {
                 <View style={[styles.flexRowContainer]}>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Calories</Text>
-                        <Text style={styles.smallText}>{foodObject[0] ? calculateCalories(sumNutrition , Number(serving) , servingMult): null}</Text>
+                        <Text style={styles.smallText}>{foodObject[0] ? calculateCalories(sumNutrition , Number(serving) * servingMult): null}</Text>
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Carbs</Text>
@@ -328,12 +303,12 @@ const AddFood = () => {
                                     servings={item.servings} 
                                     nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
                                     foodItem_id={item.foodItem_id}
-                                    serving_mult={item.servings}
+                                    serving_mult={item.serving_mult}
                                     setServing={(text) => handleChangeServing(index, text)}
                                     handleDelete={() => handleDeleteIngredient(index)}
                                     handleServingMult={(mult, type) => handleServingMult(mult, type, index)} 
-                                    setServingType={setServingType} 
-                                    serving_type={servingType}
+                                    setServingType={() => handleServingMult} 
+                                    serving_type={item.serving_type}
                                     volume_100g={item.volume_100g}
                                     serving_100g={item.serving_100g}
                                 />}

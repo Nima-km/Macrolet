@@ -28,7 +28,7 @@ const BarcodeScanner = () => {
     const [serving, setServing] = useState('100')
     const [servingType, setServingType] = useState('g')
     const [serving100g, setServing100g] = useState(.01)
-    const [servingMult, setServingMult] = useState(.01)
+    const [servingMult, setServingMult] = useState(1)
    // const [servingSize, setServingSize] = useState(.01)
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0});
     const [barcode, setBarcode] = useState(0)
@@ -79,7 +79,7 @@ const BarcodeScanner = () => {
                     setFoodName(data.product_name)
                     setSumNutrition({carbs: data.nutriments.carbohydrates_serving, fat: data.nutriments.fat_serving, protein: data.nutriments.proteins_serving})
                     setBarcode(barcode)
-                    setServingMult(data.serving_quantity)
+                    setServingMult(1)
                     setServing100g(data.serving_quantity)
                     setServing('1')
                     setServingType('servings')
@@ -93,11 +93,11 @@ const BarcodeScanner = () => {
             console.log("FOOD INSERT ADDED")
         }
     }
-    const handleServingMult = (mult: number) => {
+    const handleServingMult = (mult: number, type: string) => {
       //  setServing((Number(serving) / mult).toString())
-        setServing(servingMult == serving100g ? serving100g.toString() : '1')
-        setServingType(servingMult == serving100g ? 'g' : 'servings')
-        setServingMult(servingMult == serving100g ? 1 : serving100g)
+        setServingMult(mult)
+        setServingType(type)
+        setServing(type == 'servings' ? '1' : serving100g.toString())
     }
     const resetBarcode = () => {
         setIsScanned(false)

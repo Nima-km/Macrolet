@@ -35,6 +35,7 @@ const CreateRecipe = () => {
     const [serving, onChangeServing] = useState(``);
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0});
     const [calories, setCalories] = useState(0);
+    const [servingType, setServingType] = useState('servings')
     const [refresh, setRefresh] = useState<boolean>(false);
     const [fat, setFat] = useState(0);
     const targetPercentage = 60 / 100;
@@ -46,12 +47,15 @@ const CreateRecipe = () => {
     useEffect(() => {
         var total: NutritionInfo = {carbs: 0, fat: 0, protein: 0}
         for (let i = 0; i < ingredientObject.ingredientList.length; i++) {
-            total.carbs += ingredientObject.ingredientList[i].nutritionInfo.carbs * ingredientObject.ingredientList[i].servings
-            total.fat += ingredientObject.ingredientList[i].nutritionInfo.fat * ingredientObject.ingredientList[i].servings
-            total.protein += ingredientObject.ingredientList[i].nutritionInfo.protein * ingredientObject.ingredientList[i].servings 
+            total.carbs += ingredientObject.ingredientList[i].nutritionInfo.carbs * ingredientObject.ingredientList[i].servings * ingredientObject.ingredientList[i].serving_mult
+            total.fat += ingredientObject.ingredientList[i].nutritionInfo.fat * ingredientObject.ingredientList[i].servings * ingredientObject.ingredientList[i].serving_mult
+            total.protein += ingredientObject.ingredientList[i].nutritionInfo.protein * ingredientObject.ingredientList[i].servings * ingredientObject.ingredientList[i].serving_mult
         }
+        total.carbs = Math.round(total.carbs)
+        total.fat = Math.round(total.fat)
+        total.protein = Math.round(total.protein)
         setSumNutrition(total)
-        console.log("updating")
+      //  console.log(ingredientObject.ingredientList[0].serving_mult)
       }, [refresh])
     if (!font || !smallerFont) {
         return <View />;
@@ -65,12 +69,16 @@ const CreateRecipe = () => {
     const handleCreateRecipe = async (log: boolean) => {
         const recipe = await drizzleDb.insert(food).values({name:foodName, description: "test", is_recipe: true}).returning()
         const plist = ingredientObject.ingredientList.map((item) => {
-            return( {recipe_id: recipe[0].id, ingredient_id: item.foodItem_id, servings: item.servings})})
+            return( {recipe_id: recipe[0].id, ingredient_id: item.foodItem_id, servings: item.servings, serving_mult: item.serving_mult, serving_type: item.serving_type})})
         await drizzleDb.update(food).set({fat: sumNutrition.fat, protein: sumNutrition.protein, carbs: sumNutrition.carbs}).where(eq(food.id, recipe[0].id))
         await drizzleDb.insert(recipeItem).values(plist)
         if (log == true)
-            await drizzleDb.insert(foodItem).values({food_id: recipe[0].id, servings: 1, timestamp: new Date()})
-            console.log("ADDED FOODITEM")
+            await drizzleDb.insert(foodItem).values({
+                food_id: recipe[0].id, servings: 1, 
+                serving_mult: 1, 
+                serving_type: 'serving', 
+                timestamp: new Date()})
+        console.log("ADDED FOODITEM")
     }
     const handleAddIngredient = async () => {
         
@@ -98,9 +106,18 @@ const CreateRecipe = () => {
             setRefresh(!refresh)
         }
     }
+    const handleServingMult = (mult: number, type: string, index: number) => {
+        if (ingredientObject.ingredientList) {
+            var newList = ingredientObject.ingredientList
+            newList[index].serving_mult = mult
+            newList[index].serving_type = type
+            ingredientObject.setIngredientList(newList)
+            console.log("YOBOYO")
+            setRefresh(!refresh)
+        }
+    }
     return (
         <ScrollView style={styles.container}>
-            <View style={[styles.box]}>
                 <Text style={styles.titleText}>Create Recipe</Text>
                 <TextInput
                     style={styles.input}
@@ -111,7 +128,7 @@ const CreateRecipe = () => {
                 <View style={[styles.flexRowContainer]}>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Calories</Text>
-                        <Text style={styles.smallText}>{calculateCalories(sumNutrition)}</Text>
+                        <Text style={styles.smallText}>{calculateCalories(sumNutrition, 1 * 1)}</Text>
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Carbs</Text>
@@ -135,16 +152,23 @@ const CreateRecipe = () => {
                 <View style={[]}>
                     <FlatList
                         data={ingredientObject.ingredientList}
-                        renderItem={({item, index}) => <RecipeItem name={item.name} 
-                        description={item.description} 
-                        servings={item.servings} 
-                        nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
-                        foodItem_id={item.foodItem_id}
-                        serving={item.servings.toString()}
-                        setServing={(text) => handleChangeServing(index, text)}
-                        handleDelete={() => handleDeleteIngredient(index)}/>}
-                        scrollEnabled={false}
-                        extraData={refresh}
+                        renderItem={({item, index}) => <RecipeItem 
+                                name={item.name} 
+                                description={item.description} 
+                                servings={item.servings} 
+                                nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
+                                foodItem_id={item.foodItem_id}
+                                serving_mult={item.serving_mult}
+                                setServing={(text) => handleChangeServing(index, text)}
+                                handleDelete={() => handleDeleteIngredient(index)}
+                                handleServingMult={(mult, type) => handleServingMult(mult, type, index)} 
+                                setServingType={() => handleServingMult} 
+                                serving_type={item.serving_type}
+                                volume_100g={item.volume_100g}
+                                serving_100g={item.serving_100g}
+                            />}
+                            scrollEnabled={false}
+                            extraData={refresh}
                     />
                 </View>
                 
@@ -159,11 +183,11 @@ const CreateRecipe = () => {
                     </TouchableOpacity>
                 </Link>
                 <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
-                    <TouchableOpacity style={[styles.button, styles.centerContainter]} onPress={() => handleCreateRecipe(false)}>
+                    <TouchableOpacity style={[]} onPress={() => handleCreateRecipe(false)}>
                         <Text style={styles.buttonText}>Create Recipe</Text>
                     </TouchableOpacity>
                 </Link>
-            </View>
+        
         </ScrollView>
     );
 }
@@ -190,7 +214,7 @@ const styles = StyleSheet.create({
         height: 300,
     },
     button: {
-        backgroundColor: colors.secondary,
+        backgroundColor: colors.primary,
         paddingHorizontal: 40,
         paddingVertical: 15,
         marginVertical: 10,
