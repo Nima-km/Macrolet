@@ -1,0 +1,1 @@
+ALTER TABLE `foodItem` RENAME COLUMN "timestamp1" TO "timestamp";

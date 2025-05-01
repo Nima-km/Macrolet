@@ -42,8 +42,7 @@ export default function Profile() {
       console.log('LiveFood.length')
      // console.log('HIII ')
     }, [LiveFood])
-  if (!LiveFood[0])
-    return <View></View>
+  
   return (
     <ScrollView style={styles.container}>
       <View style={styles.box}>
@@ -83,15 +82,16 @@ export default function Profile() {
         </View>
       </View>
       <View style={[styles.box, styles.barChartContainer]}>
+        { LiveFood[0] && 
         <LineChart
           target={LiveFood.map((item) => {
             return (
-              {x: Number(item.date), y: calculateCalories({carbs: item.carbs, fat: item.fat, protein: item.protein}, 1, 1)}
+              {x: Number(item.date), y: calculateCalories({carbs: item.carbs, fat: item.fat, protein: item.protein}, 1 * 1)}
             )
           })}
           startDate={LiveFood[0].date}
           endDate={LiveFood[LiveFood.length - 1].date}
-        />
+        />}
       </View>
       <View style={styles.box}>
         <Text style={styles.h1}>Weight Goals</Text>

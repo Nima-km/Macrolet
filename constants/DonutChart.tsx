@@ -31,6 +31,8 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
   dailyProgress,
   smallerFont,
 }) => {
+  if (!targetPercentage)
+    targetPercentage = 1
   const percentageComplete = useSharedValue(0);
   const opacity = useSharedValue(0);
   const animateChart = () => {

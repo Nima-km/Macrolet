@@ -52,9 +52,6 @@ export default function Logs() {
       lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
     .orderBy(food.id)
   , [context.date])
-  const [isLoaded, setIsLoaded] = useState(false)
-  
-  const carbProgress = useSharedValue(0);
   const timeSections = (start : number, stop: number, step: number) =>
     Array.from(
     { length: (stop - start) / step + 1 },
@@ -87,7 +84,7 @@ export default function Logs() {
     let tmp: (number)[] = []
     tmp.push(breakFast[0]?.foodItem.timestamp.getHours())
     for (let i = 1; i < 9; i++) {
-      const tst1 = breakFast?.find((item) => item.foodItem.timestamp.getHours() > tmp[i - 1] + 3)?.foodItem.timestamp.getHours()
+      const tst1 = breakFast?.find((item) => item.foodItem.timestamp.getHours() >= tmp[i - 1] + 3)?.foodItem.timestamp.getHours()
       if (tst1)
         tmp.push(tst1)
 
@@ -108,7 +105,7 @@ export default function Logs() {
   const displayText = useDerivedValue(() => {
     return `Calories: ${Math.floor(dailyProgress.value.carbs)}`;
   });
-  if (!font || !smallerFont || nutriGoals[0]?.calories == null) {
+  if (!font || !smallerFont) {
     return <Text>LOADING</Text>;
   }
   const onChange = (event: any, selectedDate? : Date) => {
@@ -127,13 +124,13 @@ export default function Logs() {
   return (
     <ScrollView style={styles.container}>
       {show && 
-          <DateTimePicker
-              testID="dateTimePicker"
-              value={context.date}
-              mode='date'
-              is24Hour={true}
-              onChange={onChange}
-          />
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={context.date}
+          mode='date'
+          is24Hour={true}
+          onChange={onChange}
+        />
       }
       <View style={[styles.rowContainer, {justifyContent: 'center'}]}>
         <Text style={[styles.h2, {paddingLeft: 90, paddingTop: 40}]}> {context.date.toDateString()} </Text>

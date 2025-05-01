@@ -12,6 +12,7 @@ import { food, foodItem } from "@/db/schema";
 import { Context } from "@/app/_layout";
 import { sql } from "drizzle-orm";
 import { Link } from "expo-router";
+import { FetchBarcode } from "@/constants/FetchData";
 
 type AndroidMode = 'date' | 'time';
 
@@ -73,23 +74,21 @@ const BarcodeScanner = () => {
         if (isScanned == false){
             setIsScanned(true)
             try {
-                const response = await axios.get(`https://world.openfoodfacts.org/api/v3/product/${barcode}.json`)
-                const data: any = response.data.product
-                if (data){
-                    setFoodName(data.product_name)
-                    setSumNutrition({carbs: data.nutriments.carbohydrates_serving, fat: data.nutriments.fat_serving, protein: data.nutriments.proteins_serving})
+                const res = await FetchBarcode(barcode)
+                if (res){
+                    setFoodName(res.name)
+                    setSumNutrition(res?.nutritionInfo)
                     setBarcode(barcode)
                     setServingMult(1)
-                    setServing100g(data.serving_quantity)
+                    setServing100g(res.serving_100g)
                     setServing('1')
                     setServingType('servings')
                 }
             }
-            catch (error: any) {
+            catch (error: any){
                 console.log("SOMETHING WENT WRONG")
             }
             console.log(barcode)
-            
             console.log("FOOD INSERT ADDED")
         }
     }

@@ -62,11 +62,8 @@ const AddFood = () => {
         setServingMult(foodObject[0]?.foodItem.serving_mult)
     }, [foodObject, recipeItem])
     useEffect(() => {
-        //if (isRecipe == false){
-            setSumNutrition({carbs: foodObject[0]?.food.carbs, fat: foodObject[0]?.food.fat, protein: foodObject[0]?.food.protein})
-            console.log('A')
-            
-      //  }
+        setSumNutrition({carbs: foodObject[0]?.food.carbs, fat: foodObject[0]?.food.fat, protein: foodObject[0]?.food.protein})
+
     }, [foodObject[0]])
     useEffect(() => {
         console.log(sumNutrition)

@@ -72,7 +72,7 @@ export default function Index() {
   const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), FONT_SIZE);
   const smallerFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 16);
 
-  if (!font || !smallerFont || nutriGoals[0]?.calories == null) {
+  if (!font || !smallerFont) {
     return <View />;
   }
   const onChange = (event: any, selectedDate? : Date) => {
@@ -110,7 +110,7 @@ export default function Index() {
               backgroundColor="white"
               radius={radius}
               dailyProgress={LiveFood[0].calories ? LiveFood[0].calories : 0}
-              targetPercentage={nutriGoals[0].calories}
+              targetPercentage={nutriGoals[0]?.calories}
               font={font}
               smallerFont={smallerFont}
             />
@@ -119,7 +119,7 @@ export default function Index() {
               <SimpleChart
                 strokeWidth={18}
                 backgroundColor="#F3F0EE"
-                target={nutriGoals[0].carbs}
+                target={nutriGoals[0]?.carbs}
                 barColor="#F8E559"
                 progress={LiveFood[0].carbs}
                 smallerFont={smallerFont}
@@ -128,7 +128,7 @@ export default function Index() {
               <SimpleChart
                 strokeWidth={18}
                 backgroundColor="#F3F0EE"
-                target={nutriGoals[0].fat}
+                target={nutriGoals[0]?.fat}
                 barColor="#FAAE5B"
                 progress={LiveFood[0].fat}
                 smallerFont={smallerFont}
@@ -137,7 +137,7 @@ export default function Index() {
               <SimpleChart
                 strokeWidth={18}
                 backgroundColor="#F3F0EE"
-                target={nutriGoals[0].protein}
+                target={nutriGoals[0]?.protein}
                 barColor="#E98A67"
                 progress={LiveFood[0].protein}
                 smallerFont={smallerFont}

@@ -41,8 +41,8 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
     progress,
     smallerFont,
 }) => {
-    if (target == 0)
-        target = 1;
+    if (!target)
+        target = 0;
 //	const endCarb = useDerivedValue(() => ((progressCarbs.value / calorieTarget) * 320 * 4));
   //const endFat = useDerivedValue(() => ((progressFat.value / calorieTarget) * 320 * 4 + progressDaily.value.carbs));
   const progressDaily = useSharedValue(0)
@@ -55,7 +55,7 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
       easing: Easing.inOut(Easing.cubic),
     });
   };
-  const end = useDerivedValue(() => (Math.min(((progressDaily.value / target) * 120), 120)));
+  const end = useDerivedValue(() => (target ? Math.min(((progressDaily.value / target) * 120), 120) : 0));
   const goalText = useDerivedValue(() => (Math.round(progressDaily.value).toString() + 'g'  + '/' + target.toString() + 'g'));
   useEffect(() => {
     console.log(target)

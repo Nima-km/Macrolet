@@ -1,7 +1,7 @@
 import { Container } from "@shopify/react-native-skia/lib/typescript/src/renderer/Container";
 import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ScrollView, Image } from "react-native";
 import { colors, spacing, typography } from "@/constants/theme";
-import { NutritionInfo, Item, SearchItem} from "@/constants/NutritionInfo";
+import { NutritionInfo, Item, SearchItem, FoodInfo} from "@/constants/NutritionInfo";
 import { useEffect, useState } from "react";
 import { Link } from 'expo-router';
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
@@ -9,7 +9,9 @@ import { useSQLiteContext } from "expo-sqlite";
 import { food, foodItem } from "@/db/schema";
 import { like, sql, eq, sum} from 'drizzle-orm';
 import { RoundedRect } from "@shopify/react-native-skia";
+import { FetchSearch } from "@/constants/FetchData";
 export default function LogFood() {
+    const [searchHistory, setSearchHistory] = useState('');
     const [search, setSearch] = useState('');
     
     const db = useSQLiteContext();
@@ -20,17 +22,54 @@ export default function LogFood() {
         .orderBy(foodItem.timestamp).limit(4)
     )
     const [filteredData, setFilteredData] = useState(history);
+    const [searchData, setSearchData] = useState<FoodInfo[]>();
+
+    const handleSearch = async () => {
+        const res = await FetchSearch(search)
+        if (res)
+            setSearchData(res)
+    }
     useEffect(() => {
-        setFilteredData(history.filter((item) => item.food.name.toLowerCase().includes(`${search}`.toLowerCase())))
-    }, [search, history])
+        setFilteredData(history.filter((item) => item.food.name.toLowerCase().includes(`${searchHistory}`.toLowerCase())))
+    }, [searchHistory, history])
     return (
         <ScrollView style={styles.container}>
+            <Text style={[styles.h1, {margin: 20}]}>Log Food</Text>
+            <TextInput
+                style={[styles.h6, styles.input, {backgroundColor: colors.primary, margin: 20}]}
+                onChangeText={setSearch}
+                value={search}
+                placeholder="Search all foods"
+                onSubmitEditing={handleSearch}
+            />
+            { searchData && 
+            <View style={styles.box}>
+                <FlatList
+                    data={searchData}
+                    renderItem={({item}) => 
+                    <SearchItem name={item.name}
+                        description={item.description}
+                        servings={item.servings}
+                        nutritionInfo={{ carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein }}
+                        foodItem_id={item.foodItem_id}
+                        is_link={true}
+                        barcode={item.barcode}
+                        backgroundColor={colors.box} 
+                        serving_mult={item.serving_mult}
+                        serving_100g={item.serving_100g} 
+                        volume_100g={item.volume_100g} 
+                        serving_type={item.serving_type}/>
+                    }
+                    //keyExtractor={item => item.foodItem_id.toString()}
+                    scrollEnabled={false}
+                />
+            </View>}
             <View style={styles.box}>
                 <Text style={styles.h1}>History</Text>
                 <TextInput
                     style={[styles.h6, styles.input]}
-                    onChangeText={setSearch}
-                    value={search}
+                    onChangeText={setSearchHistory}
+                    value={searchHistory}
                     placeholder="Search"
                 />
                 <FlatList

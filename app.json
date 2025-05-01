@@ -9,14 +9,19 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.Macrolet"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.Macrolet"
+      "package": "com.anonymous.Macrolet",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -46,12 +51,38 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/Metropolis-Medium.ttf", "./assets/fonts/Metropolis-SemiBold.ttf", "./assets/fonts/Geist-VariableFont_wght.ttf"]
+          "fonts": [
+            "./assets/fonts/Metropolis-Medium.ttf",
+            "./assets/fonts/Metropolis-SemiBold.ttf",
+            "./assets/fonts/Geist-VariableFont_wght.ttf"
+          ]
         }
-      ]
+      ],
+      [
+      "expo-build-properties",
+      {
+        "android": {
+          "compileSdkVersion": 35,
+          "targetSdkVersion": 35,
+          "buildToolsVersion": "35.0.0"
+        },
+        "ios": {
+          "deploymentTarget": "15.1"
+        }
+      }]
+
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "41e4efd1-f080-4962-bfbd-847944d1cc71"
+      }
+    },
+    "owner": "nima_km2"
   }
 }

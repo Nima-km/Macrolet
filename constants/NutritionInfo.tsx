@@ -1,9 +1,11 @@
 import { SharedValue } from "react-native-reanimated";
 import {View, FlatList, StyleSheet, Text, StatusBar, TouchableOpacity, TextInput} from 'react-native';
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { colors } from "./theme";
 import { is } from "drizzle-orm";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { InsertFood } from "./FetchData";
+import { useSQLiteContext } from "expo-sqlite";
 export type NutritionInfo = {
   protein: number;
   fat: number;
@@ -18,6 +20,7 @@ export type FoodInfo = {
   nutritionInfo: NutritionInfo;
   timestamp?: Date;
   foodItem_id: number;
+  barcode?: number;
   serving_mult: number;
   serving_100g: number;
   volume_100g: number;
@@ -81,12 +84,38 @@ export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is
     </Link>
   );
 };
-export const SearchItem = ({ name, timestamp, nutritionInfo, servings, serving_mult, foodItem_id, is_link, backgroundColor}: ItemProps) => {
-  return (
-    <Link href={{pathname: `${is_link ? "/addFood" : './'}`,
+export const SearchItem = ({ name, timestamp, barcode, nutritionInfo, servings, serving_mult, foodItem_id, is_link, backgroundColor, serving_100g, serving_type}: ItemProps) => {
+  const router = useRouter();
+  const db = useSQLiteContext();
+  const handlePress = async () => {
+    if (barcode != 0){
+      console.log('sups')
+      foodItem_id = await InsertFood(db, {
+        name: name,
+        description: "",
+        servings: servings,
+        nutritionInfo: {
+          protein: nutritionInfo.protein,
+          fat: nutritionInfo.fat,
+          carbs: nutritionInfo.carbs,
+          calories: 0
+        },
+        foodItem_id: 0,
+        serving_mult: serving_mult,
+        serving_100g: serving_100g,
+        volume_100g: 0,
+        serving_type: serving_type,
+        barcode: barcode
+      })
+      console.log("TESSSSSSSSST" + foodItem_id)
+    }
+    router.push({pathname: `${is_link ? "/addFood" : './'}`,
       params: {food_id: foodItem_id}
-    }} asChild>
-      <TouchableOpacity disabled={!is_link}>
+    })
+  }
+  
+  return (
+      <TouchableOpacity disabled={!is_link} onPress={handlePress}>
         <View style={[styles.item, {backgroundColor: backgroundColor, paddingBottom: 20, marginBottom: 0}]}>
           <View style={[styles.flexRowContainer, {paddingBottom:1}]}>
             <Text style={styles.h4}>{name}</Text>
@@ -96,7 +125,6 @@ export const SearchItem = ({ name, timestamp, nutritionInfo, servings, serving_m
           </View>
         </View>
       </TouchableOpacity>
-    </Link>
   );
 };
 export const RecipeItem = ({ name, 

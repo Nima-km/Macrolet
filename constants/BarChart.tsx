@@ -47,7 +47,9 @@ export const BarChart: React.FC<BarProgressProps> = ({
    // font,
     smallerFont ,
 }) => {
-  const calorieTarget = dailyTarget.calories ? dailyTarget.calories : 1
+  if (!dailyTarget)
+    dailyTarget = {protein: 0, fat: 0, carbs: 0, calories: 0}
+  const calorieTarget = dailyTarget.calories ? dailyTarget.calories : 0
 	
   const progressDaily = useSharedValue<NutritionInfo>({
     protein: 0,
@@ -63,12 +65,12 @@ export const BarChart: React.FC<BarProgressProps> = ({
       easing: Easing.inOut(Easing.cubic),
     });
   };
-  const endCarb = useDerivedValue(() => ((progressDaily.value.carbs / calorieTarget) * 320 * 4));
-  const endFat = useDerivedValue(() => ((progressDaily.value.fat / calorieTarget) * 320 * 9 + endCarb.value));
+  const endCarb = useDerivedValue(() => (calorieTarget ? (progressDaily.value.carbs / calorieTarget) * 320 * 4 : 0));
+  const endFat = useDerivedValue(() => (calorieTarget ? (progressDaily.value.fat / calorieTarget) * 320 * 9 + endCarb.value : 0));
   const endProtein = useDerivedValue(() => ((progressDaily.value.protein / calorieTarget) * 320 * 4 + endFat.value));
   const calorieDay = useDerivedValue(() => (Math.round(((progressDaily.value.protein) + Math.round(progressDaily.value.carbs)) * 4 + (progressDaily.value.fat) * 9)));
   const calorieDayText = useDerivedValue(() => (calorieDay.value.toString() + ' / ' + calorieTarget.toString() + ' cal'));
-  const caloriesRemaining = useDerivedValue(() => (calorieTarget - calorieDay.value).toString())
+  const caloriesRemaining = useDerivedValue(() => (calorieTarget ? calorieTarget - calorieDay.value : 0).toString())
   const carbsDayText = useDerivedValue(() => (Math.round(progressDaily.value.carbs).toString() + 'g'));
   const fatDayText = useDerivedValue(() => (Math.round(progressDaily.value.fat).toString() + 'g'));
   const proteinDayText = useDerivedValue(() => (Math.round(progressDaily.value.protein).toString() + 'g'));
