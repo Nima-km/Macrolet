@@ -13,7 +13,7 @@ export const FetchBarcode = async (barcode: any) => {
         if (data){
             const result: FoodInfo = {
                 name: data.product_name,
-                nutritionInfo: { carbs: data.nutriments.carbohydrates_serving, fat: data.nutriments.fat_serving, protein: data.nutriments.proteins_serving },
+                nutritionInfo: { carbs: data.nutriments.carbohydrates_serving, fat: data.nutriments.fat_serving, protein: data.nutriments.proteins_serving, fiber: data.nutriments.fiber_serving },
                 barcode: barcode,
                 serving_mult: 1,
                 serving_100g: data.serving_quantity,
@@ -38,7 +38,7 @@ export const FetchSearch = async (search: string) => {
             const result: FoodInfo[] = data.map((item : any) => {
                 return {
                     name: item.product_name,
-                    nutritionInfo: { carbs: item.nutriments.carbohydrates_serving, fat: item.nutriments.fat_serving, protein: item.nutriments.proteins_serving },
+                    nutritionInfo: { carbs: item.nutriments.carbohydrates_serving, fat: item.nutriments.fat_serving, protein: item.nutriments.proteins_serving, fiber: data.nutriments.fiber_serving},
                     barcode: item._id,
                     serving_mult: 1,
                     serving_100g: item.serving_quantity,

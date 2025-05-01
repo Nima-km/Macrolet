@@ -66,6 +66,7 @@ export default function Logs() {
     protein: 0,
     fat: 0,
     carbs: 0,
+    fiber: 0,
   });
   useFocusEffect(
     React.useCallback(() => {
@@ -165,7 +166,7 @@ export default function Logs() {
           renderItem={({item}) => <Item name={item.food.name}
           description={item.food.description}
           servings={item.foodItem.servings}
-          nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein }}
+          nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein, fiber: item.food.fiber}}
           foodItem_id={item.foodItem.id}
           timestamp={item.foodItem.timestamp}
           is_link={true}

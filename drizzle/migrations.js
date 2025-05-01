@@ -22,6 +22,7 @@ import m0017 from './0017_melodic_loners.sql';
 import m0018 from './0018_clever_black_widow.sql';
 import m0019 from './0019_outstanding_otto_octavius.sql';
 import m0020 from './0020_nebulous_nightcrawler.sql';
+import m0021 from './0021_purple_ultimatum.sql';
 
   export default {
     journal,
@@ -46,7 +47,8 @@ m0016,
 m0017,
 m0018,
 m0019,
-m0020
+m0020,
+m0021
     }
   }
   

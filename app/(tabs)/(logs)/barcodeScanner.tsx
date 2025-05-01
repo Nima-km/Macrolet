@@ -31,7 +31,7 @@ const BarcodeScanner = () => {
     const [serving100g, setServing100g] = useState(.01)
     const [servingMult, setServingMult] = useState(1)
    // const [servingSize, setServingSize] = useState(.01)
-    const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0});
+    const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0, fiber: 0});
     const [barcode, setBarcode] = useState(0)
     function toggleCameraFacing() {
         setFacing(current => (current === 'back' ? 'front' : 'back'));
@@ -48,6 +48,7 @@ const BarcodeScanner = () => {
                     protein: Number(sumNutrition.protein),
                     fat:  Number(sumNutrition.fat),
                     carbs:  Number(sumNutrition.carbs),
+                    fiber:  Number(sumNutrition.fiber),
                     is_recipe: false,
                     barcode: barcode,
                     serving_100g: serving100g,
@@ -135,6 +136,7 @@ const BarcodeScanner = () => {
                 protein: sumNutrition.protein,
                 fat: sumNutrition.fat,
                 carbs: sumNutrition.carbs,
+                fiber: sumNutrition.fiber,
             }} foodItem_id={0} serving_mult={servingMult}
             setServing={setServing}
             handleServingMult={handleServingMult}

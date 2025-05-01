@@ -10,6 +10,7 @@ export type NutritionInfo = {
   protein: number;
   fat: number;
   carbs: number;
+  fiber?: number;
   calories?: number;
 }
 
@@ -56,7 +57,7 @@ export type Section = {
 export const calculateCalories = (nutrition: NutritionInfo, mult:number): number => {
   return (Math.round((nutrition.protein * 4 * mult)) 
     + Math.round((nutrition.fat * 9 * mult)) 
-    + Math.round((nutrition.carbs * 4 * mult)));
+    + Math.round(((nutrition.carbs - (nutrition.fiber ? nutrition.fiber : 0)) * 4 * mult)));
 };
 
 
@@ -98,6 +99,7 @@ export const SearchItem = ({ name, timestamp, barcode, nutritionInfo, servings, 
           protein: nutritionInfo.protein,
           fat: nutritionInfo.fat,
           carbs: nutritionInfo.carbs,
+          fiber: nutritionInfo.fiber,
           calories: 0
         },
         foodItem_id: 0,

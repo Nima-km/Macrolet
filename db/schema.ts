@@ -12,6 +12,7 @@ export const food = sqliteTable('food', {
     fat: integer('fat').default(0).notNull(),
     calories: integer('calories'),
     carbs: integer('carbs').default(0).notNull(),
+    fiber: integer('fiber').default(0).notNull(),
     barcode: integer('barcode').default(0),
     is_recipe: integer('is_recipe', {mode: 'boolean'}).default(false),
     serving_100g: integer('serving_100g').default(1).notNull(),

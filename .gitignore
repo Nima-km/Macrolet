@@ -38,8 +38,8 @@ yarn-error.*
 app-example
 
 .apk
-android
-ios
+android/
+ios/
 
 # Ignore Gradle project-specific cache directory
 .gradle

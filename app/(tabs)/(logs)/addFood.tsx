@@ -47,7 +47,7 @@ const AddFood = () => {
     const [showDate, setShowDate] = useState(false);
     const [showTime, setShowTime] = useState(false);
     const [ingredientList, setIngredientList] = useState<FoodInfo[]>();
-    const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0});
+    const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0, fiber: 0});
     const [mode, setMode] = useState<AndroidMode>('date');
     const [servingType, setServingType] = useState('g')
     const [servingMult, setServingMult] = useState(.01)
@@ -62,14 +62,14 @@ const AddFood = () => {
         setServingMult(foodObject[0]?.foodItem.serving_mult)
     }, [foodObject, recipeItem])
     useEffect(() => {
-        setSumNutrition({carbs: foodObject[0]?.food.carbs, fat: foodObject[0]?.food.fat, protein: foodObject[0]?.food.protein})
+        setSumNutrition({carbs: foodObject[0]?.food.carbs, fat: foodObject[0]?.food.fat, protein: foodObject[0]?.food.protein, fiber: foodObject[0]?.food.fiber})
 
     }, [foodObject[0]])
     useEffect(() => {
         console.log(sumNutrition)
     }, [sumNutrition])
     useEffect(() => {
-        let total: NutritionInfo = {carbs: 0, fat: 0, protein: 0}
+        let total: NutritionInfo = {carbs: 0, fat: 0, protein: 0, fiber: 0}
         if (ingredientList?.length && isRecipe == true){
             for (let i = 0; i < ingredientList.length; i++) {
                 total.carbs += ingredientList[i].nutritionInfo.carbs * ingredientList[i].servings * ingredientList[i].serving_mult
@@ -93,7 +93,8 @@ const AddFood = () => {
                     servings: item.recipeItem.servings,
                     nutritionInfo: {carbs: (item.food.carbs), 
                         fat: (item.food.fat),
-                        protein: (item.food.protein)
+                        protein: (item.food.protein),
+                        fiber: (item.food.fiber),
                     },
                     foodItem_id: item.food.id,
                     serving_mult: item.recipeItem.serving_mult,
@@ -298,7 +299,7 @@ const AddFood = () => {
                                     name={item.name} 
                                     description={item.description} 
                                     servings={item.servings} 
-                                    nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
+                                    nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein, fiber: item.nutritionInfo.fiber}}
                                     foodItem_id={item.foodItem_id}
                                     serving_mult={item.serving_mult}
                                     setServing={(text) => handleChangeServing(index, text)}

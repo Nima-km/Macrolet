@@ -50,7 +50,7 @@ export default function LogFood() {
                     <SearchItem name={item.name}
                         description={item.description}
                         servings={item.servings}
-                        nutritionInfo={{ carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein }}
+                        nutritionInfo={{ carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein, fiber: item.nutritionInfo.fiber}}
                         foodItem_id={item.foodItem_id}
                         is_link={true}
                         barcode={item.barcode}
@@ -78,7 +78,7 @@ export default function LogFood() {
                     <SearchItem name={item.food.name}
                         description={item.food.description}
                         servings={item.foodItem.servings}
-                        nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein }}
+                        nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein, fiber: item.food.fiber }}
                         foodItem_id={item.foodItem.id}
                         is_link={true}
                         backgroundColor={colors.box} 
