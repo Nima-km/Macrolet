@@ -6,6 +6,7 @@ import { is } from "drizzle-orm";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { InsertFood } from "./FetchData";
 import { useSQLiteContext } from "expo-sqlite";
+import { BarMacroChart } from "./BarMacroChart";
 export type NutritionInfo = {
   protein: number;
   fat: number;
@@ -79,7 +80,30 @@ export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is
             <Text style={styles.h6}>{timestamp.getHours() < 10 ? 0: ''}{timestamp.getHours()}:{timestamp?.getMinutes() < 10 ? 0: ''}{timestamp?.getMinutes()}</Text>
             }
           </View>
-          
+          <View style={[{marginVertical: 10, minHeight: 20, minWidth: 20}]}>
+              <BarMacroChart strokeWidth={15} dailyTarget={nutritionInfo}
+                colorProtein={colors.protein}
+                colorfat={colors.fat}
+                colorCarbs={colors.carbs}
+              />
+          </View>
+          <View style={[styles.flexRowContainer, {marginHorizontal: 0}]}>
+            <View style={[styles.flexRowContainer, {marginHorizontal: 0}]}>
+              <View style={{backgroundColor: colors.protein, height: 10, width: 10, borderRadius: 10, marginTop: 3, marginHorizontal: 5}}/>
+              <Text style={[styles.h7, {fontSize: 14}]}>Protein </Text>
+              <Text style={[styles.h6, {fontSize: 14}]}>{Math.round(nutritionInfo.protein * servings * serving_mult)} g </Text>
+            </View>
+            <View style={[styles.flexRowContainer, {marginHorizontal: 0}]}>
+              <View style={{backgroundColor: colors.carbs, height: 10, width: 10, borderRadius: 10, marginTop: 3, marginHorizontal: 5}}/>
+              <Text style={[styles.h7, {fontSize: 14}]}>Carbs </Text>
+              <Text style={[styles.h6, {fontSize: 14}]}>{Math.round(nutritionInfo.carbs * servings * serving_mult)} g </Text>
+            </View>
+            <View style={[styles.flexRowContainer, {marginHorizontal: 0}]}>
+              <View style={{backgroundColor: colors.fat, height: 10, width: 10, borderRadius: 10, marginTop: 3, marginHorizontal: 5}}/>
+              <Text style={[styles.h7, {fontSize: 14}]}>Fat </Text>
+              <Text style={[styles.h6, {fontSize: 14}]}>{Math.round(nutritionInfo.fat * servings * serving_mult)} g </Text>
+            </View>
+          </View>
         </View>
       </TouchableOpacity>
     </Link>

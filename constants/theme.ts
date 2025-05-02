@@ -5,6 +5,9 @@ export const colors = {
     background: "#EEEAE7",
     text: "#212121",
     error: "#B00020",
+    fat: "#F8E559",
+    protein: "#E98A67",
+    carbs: "#FAAE5B",
   } as const; // Use `as const` for literal type inference
 
 export const spacing = {

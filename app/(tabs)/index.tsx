@@ -115,35 +115,35 @@ export default function Index() {
               smallerFont={smallerFont}
             />
           </View>
-            <View style={styles.barChartContainer}>
-              <SimpleChart
-                strokeWidth={18}
-                backgroundColor="#F3F0EE"
-                target={nutriGoals[0]?.carbs}
-                barColor="#F8E559"
-                progress={LiveFood[0].carbs}
-                smallerFont={smallerFont}
-                mainText="Carbs"
-              />
-              <SimpleChart
-                strokeWidth={18}
-                backgroundColor="#F3F0EE"
-                target={nutriGoals[0]?.fat}
-                barColor="#FAAE5B"
-                progress={LiveFood[0].fat}
-                smallerFont={smallerFont}
-                mainText="Fat"
-              />
-              <SimpleChart
-                strokeWidth={18}
-                backgroundColor="#F3F0EE"
-                target={nutriGoals[0]?.protein}
-                barColor="#E98A67"
-                progress={LiveFood[0].protein}
-                smallerFont={smallerFont}
-                mainText="Protein"
-              />
-            </View>
+          <View style={styles.barChartContainer}>
+            <SimpleChart
+              strokeWidth={18}
+              backgroundColor="#F3F0EE"
+              target={nutriGoals[0]?.protein}
+              barColor={colors.protein}
+              progress={LiveFood[0].protein}
+              smallerFont={smallerFont}
+              mainText="Protein"
+            />
+            <SimpleChart
+              strokeWidth={18}
+              backgroundColor="#F3F0EE"
+              target={nutriGoals[0]?.carbs}
+              barColor={colors.carbs}
+              progress={LiveFood[0].carbs}
+              smallerFont={smallerFont}
+              mainText="Carbs"
+            />
+            <SimpleChart
+              strokeWidth={18}
+              backgroundColor="#F3F0EE"
+              target={nutriGoals[0]?.fat}
+              barColor={colors.fat}
+              progress={LiveFood[0].fat}
+              smallerFont={smallerFont}
+              mainText="Fat"
+            />
+          </View>
       </View> 
       
       <View style={styles.flexRowContainer}>

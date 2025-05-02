@@ -94,7 +94,7 @@ export default function Profile() {
         />}
       </View>
       <View style={styles.box}>
-        <Text style={styles.h1}>Weight Goals</Text>
+        <Text style={styles.h1}>Macro Goals</Text>
         <View style={[styles.rowContainer, {justifyContent: 'center', alignItems: 'center'}]}>
           <Text style={[styles.h4]}>Calories</Text>
           <TextInput 
@@ -112,7 +112,7 @@ export default function Profile() {
             style={[styles.h2, styles.input]}
             onChangeText={setFatGoal}
             value={fatGoal}
-            placeholder="g"
+            placeholder='75g'
             textAlign="center"
             keyboardType="numeric"
           />
@@ -123,7 +123,7 @@ export default function Profile() {
             style={[styles.h2, styles.input]}
             onChangeText={setproteinGoal}
             value={proteinGoal}
-            placeholder="g"
+            placeholder="160g"
             textAlign="center"
             keyboardType="numeric"
           />
@@ -134,7 +134,7 @@ export default function Profile() {
             style={[styles.h2, styles.input]}
             onChangeText={setCarbsGoal}
             value={carbsGoal}
-            placeholder="g"
+            placeholder={((Number(calorieGoal) - Number(proteinGoal) * 4 - Number(fatGoal) * 9) / 4).toString() + 'g'}
             textAlign="center"
             keyboardType="numeric"
           />

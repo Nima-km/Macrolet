@@ -47,6 +47,19 @@ export const BarChart: React.FC<BarProgressProps> = ({
    // font,
     smallerFont ,
 }) => {
+  const titleFont = useFont(require("@/assets/fonts/Metropolis-Medium.ttf"), 20);
+  const remainFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 16);
+  const fontStyle = {
+    fontFamily: "Geist",
+    fontWeight: 'bold',
+    fontSize: 30
+  } as const;
+  const fontMgr = useFonts({
+    Geist: [
+      require("@/assets/fonts/Geist-VariableFont_wght.ttf"),
+    ]
+  });
+  
   if (!dailyTarget)
     dailyTarget = {protein: 0, fat: 0, carbs: 0, calories: 0}
   const calorieTarget = dailyTarget.calories ? dailyTarget.calories : 0
@@ -65,37 +78,32 @@ export const BarChart: React.FC<BarProgressProps> = ({
       easing: Easing.inOut(Easing.cubic),
     });
   };
-  const endCarb = useDerivedValue(() => (calorieTarget ? (progressDaily.value.carbs / calorieTarget) * 320 * 4 : 0));
+  const endProtein = useDerivedValue(() => ((progressDaily.value.protein / calorieTarget) * 320 * 4 ));
+  const endCarb = useDerivedValue(() => (calorieTarget ? (progressDaily.value.carbs / calorieTarget) * 320 * 4 + endProtein.value: 0));
   const endFat = useDerivedValue(() => (calorieTarget ? (progressDaily.value.fat / calorieTarget) * 320 * 9 + endCarb.value : 0));
-  const endProtein = useDerivedValue(() => ((progressDaily.value.protein / calorieTarget) * 320 * 4 + endFat.value));
+  
   const calorieDay = useDerivedValue(() => (Math.round(((progressDaily.value.protein) + Math.round(progressDaily.value.carbs)) * 4 + (progressDaily.value.fat) * 9)));
   const calorieDayText = useDerivedValue(() => (calorieDay.value.toString() + ' / ' + calorieTarget.toString() + ' cal'));
-  const caloriesRemaining = useDerivedValue(() => (calorieTarget ? calorieTarget - calorieDay.value : 0).toString())
+  const caloriesRemaining = useDerivedValue(() => (calorieTarget ? calorieTarget - calorieDay.value : 0).toString() + ' remaining')
   const carbsDayText = useDerivedValue(() => (Math.round(progressDaily.value.carbs).toString() + 'g'));
   const fatDayText = useDerivedValue(() => (Math.round(progressDaily.value.fat).toString() + 'g'));
   const proteinDayText = useDerivedValue(() => (Math.round(progressDaily.value.protein).toString() + 'g'));
-  const fontMgr = useFonts({
-    Geist: [
-      require("@/assets/fonts/Geist-VariableFont_wght.ttf"),
-    ]
-  });
-  const titleFont = useFont(require("@/assets/fonts/Metropolis-Medium.ttf"), 20);
-  const remainFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 20);
+  
+  
+  
   useEffect(() => {
     console.log(dailyEnd)
     animateChart()
   }, [dailyEnd])
-  if (!fontMgr) {
+  
+  
+  const remainWidth = useDerivedValue(() => 250 - ((remainFont?.measureText(caloriesRemaining.value) ? remainFont?.measureText(caloriesRemaining.value).width : 0) - 10) / 2);
+  const calorieFont = matchFont(fontStyle, fontMgr ? fontMgr : undefined);
+  const chartHeight = 80;
+
+  if (!remainFont || !titleFont || !fontMgr) {
     return <View></View>;
   }
-  const fontStyle = {
-    fontFamily: "Geist",
-    fontWeight: 'bold',
-    fontSize: 30
-  } as const;
-  const calorieFont = matchFont(fontStyle, fontMgr);
-  const chartHeight = 80;
-  
   return (
     <View style={styles.container}>
         <Canvas style={{ flex: 1 }}>
@@ -119,14 +127,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
                 r={10}
                 color={backgroundColor}
             />
-            <RoundedRect
-                x={0}
-                y={chartHeight}
-                width={endProtein}
-                height={strokeWidth}
-                r={10}
-                color={colorProtein}
-            />
+            
             <RoundedRect
                 x={0}
                 y={chartHeight}
@@ -145,11 +146,19 @@ export const BarChart: React.FC<BarProgressProps> = ({
             />
             <RoundedRect
                 x={0}
+                y={chartHeight}
+                width={endProtein}
+                height={strokeWidth}
+                r={10}
+                color={colorProtein}
+            />
+            <RoundedRect
+                x={0}
                 y={192}
                 width={10}
                 height={25}
                 r={10}
-                color={colorCarbs}
+                color={colorProtein}
             />
             <RoundedRect
                 x={0}
@@ -157,7 +166,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
                 width={10}
                 height={25}
                 r={10}
-                color={colorfat}
+                color={colorCarbs}
             />
             <RoundedRect
                 x={0}
@@ -165,10 +174,10 @@ export const BarChart: React.FC<BarProgressProps> = ({
                 width={10}
                 height={25}
                 r={10}
-                color={colorProtein}
+                color={colorfat}
             />
             <Text
-              x={260}
+              x={remainWidth}
               y={chartHeight + 25}
               font={remainFont}
               text={caloriesRemaining}
@@ -177,57 +186,58 @@ export const BarChart: React.FC<BarProgressProps> = ({
               x={20}
               y={210}
               font={titleFont}
-              text="Carbs"
+              text="Protein"
             />
             <Text
               x={150}
               y={210}
               font={titleFont}
-              text={carbsDayText}
+              text={proteinDayText}
             />
             <Text
               x={250}
               y={210}
+              font={titleFont}
+              text={dailyTarget.protein.toString() + 'g'}
+            />
+            <Text
+              x={20}
+              y={250}
+              font={titleFont}
+              text="Carbs"
+            />
+            <Text
+              x={150}
+              y={250}
+              font={titleFont}
+              text={carbsDayText}
+            />
+            <Text
+              x={250}
+              y={250}
               font={titleFont}
               text={dailyTarget.carbs.toString() + 'g'}
             />
 
             <Text
               x={20}
-              y={250}
+              y={290}
               font={titleFont}
               text="Fat"
             />
             <Text
               x={150}
-              y={250}
+              y={290}
               font={titleFont}
               text={fatDayText}
             />
             <Text
               x={250}
-              y={250}
+              y={290}
               font={titleFont}
               text={dailyTarget.fat.toString() + 'g'}
             />
-            <Text
-              x={20}
-              y={290}
-              font={titleFont}
-              text="Protein"
-            />
-            <Text
-              x={150}
-              y={290}
-              font={titleFont}
-              text={proteinDayText}
-            />
-            <Text
-              x={250}
-              y={290}
-              font={titleFont}
-              text={dailyTarget.protein.toString() + 'g'}
-            />
+            
         </Canvas>
     </View>
   );

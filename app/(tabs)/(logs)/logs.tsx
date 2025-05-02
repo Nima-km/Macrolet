@@ -144,9 +144,9 @@ export default function Logs() {
           <BarChart
             backgroundColor="#F0E6DE"
             dailyTarget={nutriGoals[0]}
-            colorProtein="#E98A67"
-            colorfat="#FAAE5B"
-            colorCarbs="#F8E559"
+            colorProtein={colors.protein}
+            colorfat={colors.fat}
+            colorCarbs={colors.carbs}
             dailyEnd={LiveFood[0]}
             strokeWidth={strokeWidth}
           />
