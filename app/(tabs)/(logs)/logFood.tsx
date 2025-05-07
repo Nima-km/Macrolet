@@ -63,7 +63,8 @@ export default function LogFood() {
                     //keyExtractor={item => item.foodItem_id.toString()}
                     scrollEnabled={false}
                 />
-            </View>}
+            </View>
+            }
             <View style={styles.box}>
                 <Text style={styles.h1}>History</Text>
                 <TextInput

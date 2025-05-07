@@ -3,6 +3,7 @@ export const colors = {
     secondary: "#F3F0EE",
     box: '#F7EDEB',
     background: "#EEEAE7",
+    button: "#1A8199",
     text: "#212121",
     error: "#B00020",
     fat: "#F8E559",

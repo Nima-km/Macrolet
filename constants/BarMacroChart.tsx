@@ -27,6 +27,8 @@ import { useEffect } from "react";
 
 interface BarProgressProps {
   strokeWidth: number;
+  radius: number;
+  width: number;
 	dailyTarget: NutritionInfo;
   colorProtein: string;
   colorfat: string;
@@ -37,9 +39,12 @@ interface BarProgressProps {
 export const BarMacroChart: React.FC<BarProgressProps> = ({
     strokeWidth,
 		dailyTarget,
+    radius,
+    width,
     colorProtein,
     colorfat,
     colorCarbs,
+
    // font,
     smallerFont ,
 }) => {
@@ -48,13 +53,13 @@ export const BarMacroChart: React.FC<BarProgressProps> = ({
   const total = dailyTarget.carbs + dailyTarget.fat + dailyTarget.protein
 	
   
-  const endProtein = useDerivedValue(() => ((dailyTarget.protein / total) * 337 ));
-  const endCarb = useDerivedValue(() => ((dailyTarget.carbs / total) * 337) + endProtein.value);
-  const endFat = useDerivedValue(() => ((dailyTarget.fat / total) * 337 + endCarb.value));
+  const endProtein = useDerivedValue(() => ((dailyTarget.protein / total) * width ));
+  const endCarb = useDerivedValue(() => ((dailyTarget.carbs / total) * width) + endProtein.value);
+  const endFat = useDerivedValue(() => ((dailyTarget.fat / total) * width + endCarb.value));
   const chartHeight = 1;
 
   return (
-    <View style={styles.container}>
+    <View style={[{height: strokeWidth + 1, width: width}]}>
         <Canvas style={{ flex: 1}}>
           
           <RoundedRect
@@ -62,7 +67,7 @@ export const BarMacroChart: React.FC<BarProgressProps> = ({
               y={chartHeight}
               width={endFat}
               height={strokeWidth}
-              r={4}
+              r={radius}
               color={colorfat}
           />
           <RoundedRect
@@ -70,7 +75,7 @@ export const BarMacroChart: React.FC<BarProgressProps> = ({
               y={chartHeight}
               width={endCarb}
               height={strokeWidth}
-              r={4}
+              r={radius}
               color={colorCarbs}
           />
           <RoundedRect
@@ -78,7 +83,7 @@ export const BarMacroChart: React.FC<BarProgressProps> = ({
               y={chartHeight}
               width={endProtein}
               height={strokeWidth}
-              r={4}
+              r={radius}
               color={colorProtein}
           />
         </Canvas>
@@ -87,9 +92,6 @@ export const BarMacroChart: React.FC<BarProgressProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   centerText: {
     flex: 1,
     justifyContent: "center",

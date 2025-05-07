@@ -5,20 +5,25 @@ import React, { useContext, useEffect, useState } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 import axios from 'axios';
-import { NutritionInfo, RecipeItem } from "@/constants/NutritionInfo";
+import { FoodInfo, NutritionInfo, RecipeItem } from "@/constants/NutritionInfo";
 import { useSQLiteContext } from "expo-sqlite";
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { food, foodItem } from "@/db/schema";
+import { food, foodItem, recipeItem } from "@/db/schema";
 import { Context } from "@/app/_layout";
 import { sql } from "drizzle-orm";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import { FetchBarcode } from "@/constants/FetchData";
+import { IngredientObject } from "./_layout";
 
 type AndroidMode = 'date' | 'time';
 
+export type barcodeScannerType = {
+    ingredientList?: FoodInfo[];
+    setIngredientList?: (newList: FoodInfo[]) => void;
+    setIsScanner?: (tmp: boolean) => void;
+  }
 
-
-const BarcodeScanner = () => {
+export default function BarcodeScanner({ingredientList, setIngredientList, setIsScanner} : barcodeScannerType) {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
     const context = useContext(Context)
@@ -39,8 +44,7 @@ const BarcodeScanner = () => {
     const handleAddFood = async () => {
         if (foodName){
             let foodObject = await drizzleDb.select().from(food).where(sql`${food.barcode} = ${barcode}`)
-           // console.log(foodObject)
-            
+
             if (foodObject.length == 0)
                 foodObject =  await drizzleDb.insert(food).values({
                     name: foodName,
@@ -54,15 +58,39 @@ const BarcodeScanner = () => {
                     serving_100g: serving100g,
                     volume_100g: 1}).returning()
             console.log('HIII')
-            const foodItemObject = await drizzleDb.insert(foodItem).values({
-                food_id: foodObject[0].id, 
-                servings: Number(serving), 
-                timestamp: context.date,
-                serving_type: servingType,
-                serving_mult: servingMult,
-                }).returning()
+            if (setIngredientList && setIsScanner) {
+                const newIng: FoodInfo = {
+                    name: foodObject[0].name,
+                    description: "",
+                    servings: Number(serving),
+                    nutritionInfo: {
+                        protein: foodObject[0].protein,
+                        fat: foodObject[0].fat,
+                        carbs: foodObject[0].carbs,
+                        fiber: foodObject[0].fiber,
+                        calories: 0
+                    },
+                    foodItem_id: foodObject[0].id,
+                    serving_mult: servingMult,
+                    serving_100g: foodObject[0].serving_100g,
+                    volume_100g: 0,
+                    serving_type: servingType
+                }
+                const newList = ingredientList ? ingredientList.concat(newIng) : [newIng]
+                setIngredientList(newList)
+                setIsScanner(false)
+            }
+            else {
+                const foodItemObject = await drizzleDb.insert(foodItem).values({
+                    food_id: foodObject[0].id, 
+                    servings: Number(serving), 
+                    timestamp: context.date,
+                    serving_type: servingType,
+                    serving_mult: servingMult,
+                    }).returning()
+            }
             console.log('HIII')
-            console.log('THIS ISS IT' + foodItemObject)
+           // console.log('THIS ISS IT' + foodItemObject)
         }
     }
     const handleScanned = (barcode: any) => {
@@ -122,7 +150,14 @@ const BarcodeScanner = () => {
         </View>
         );
     }
-    
+    console.log(setIngredientList)
+    if (setIngredientList && setIsScanner) {
+        console.log('its a recipe')
+    }
+    else {
+        console.log('its NOT a recipe')
+        console.log(ingredientList && setIngredientList)
+    }
     return (
         <View style={styles.container}>
             <TouchableOpacity style={{flex: 1}} onPress={resetBarcode}>
@@ -141,8 +176,10 @@ const BarcodeScanner = () => {
             setServing={setServing}
             handleServingMult={handleServingMult}
             setServingType={setServingType}
-            serving_type={servingType} serving_100g={serving100g} volume_100g={1}/>
-            <Link style={[styles.button, styles.centerContainer]} href='/(tabs)/(logs)/logs' asChild>
+            serving_type={servingType} serving_100g={serving100g} volume_100g={1}
+            backgroundColor={colors.primary}
+            />
+            <Link style={[styles.button, styles.centerContainer]} href={setIngredientList && setIsScanner ? '/addIngredient': '/(tabs)/(logs)/logs'} asChild>
                 <TouchableOpacity style={[styles.button, styles.centerContainer]} onPress={handleAddFood}>
                     <Text style={styles.buttonText}>Log food</Text>
                 </TouchableOpacity>
@@ -151,7 +188,7 @@ const BarcodeScanner = () => {
         </View>
     );
 }
-export default BarcodeScanner
+
 
 const styles = StyleSheet.create({
     centerContainer: {

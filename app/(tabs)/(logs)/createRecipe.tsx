@@ -20,6 +20,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { calculateCalories, FoodInfo, Item, NutritionInfo, RecipeItem } from "@/constants/NutritionInfo";
 import { Context } from "@/app/_layout";
 import { IngredientObject } from "./_layout";
+import { BarMacroChart } from "@/constants/BarMacroChart";
 const FONT_SIZE = 18
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 8;
@@ -32,7 +33,7 @@ const CreateRecipe = () => {
     const drizzleDb = drizzle(db);
     const context = useContext(Context)
     const [foodName, onChangeFoodName] = useState('');
-    const [serving, onChangeServing] = useState(``);
+    const [serving, onChangeServing] = useState(`1`);
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0});
     const [calories, setCalories] = useState(0);
     const [servingType, setServingType] = useState('servings')
@@ -118,93 +119,103 @@ const CreateRecipe = () => {
     }
     return (
         <ScrollView style={styles.container}>
-                <Text style={styles.titleText}>Create Recipe</Text>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={onChangeFoodName}
-                    value={foodName}
-                    
-                />
-                <View style={[styles.flexRowContainer]}>
-                    <View style={[styles.container, {alignItems: "center"}]}>
-                        <Text style={styles.smallText}>Calories</Text>
-                        <Text style={styles.smallText}>{calculateCalories(sumNutrition, 1 * 1)}</Text>
-                    </View>
-                    <View style={[styles.container, {alignItems: "center"}]}>
-                        <Text style={styles.smallText}>Carbs</Text>
-                        <Text style={styles.smallText}>{sumNutrition.carbs}</Text> 
-                    </View>
-                    <View style={[styles.container, {alignItems: "center"}]}>
-                        <Text style={styles.smallText}>Fat</Text>
-                        <Text style={styles.smallText}>{sumNutrition.protein}</Text> 
-                    </View>
-                    <View style={[styles.container, {alignItems: "center"}]}>
-                        <Text style={styles.smallText}>Protein</Text>
-                        <Text style={styles.smallText}>{sumNutrition.fat}</Text>
-                    </View>
-
-                </View>
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/addIngredient' asChild>
-                    <TouchableOpacity onPress={handleAddIngredient}>
-                        <Text style={styles.buttonText}>+ Add ingredient</Text>
-                    </TouchableOpacity>
-                </Link>
-                <View style={[]}>
-                    <FlatList
-                        data={ingredientObject.ingredientList}
-                        renderItem={({item, index}) => <RecipeItem 
-                                name={item.name} 
-                                description={item.description} 
-                                servings={item.servings} 
-                                nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
-                                foodItem_id={item.foodItem_id}
-                                serving_mult={item.serving_mult}
-                                setServing={(text) => handleChangeServing(index, text)}
-                                handleDelete={() => handleDeleteIngredient(index)}
-                                handleServingMult={(mult, type) => handleServingMult(mult, type, index)} 
-                                setServingType={() => handleServingMult} 
-                                serving_type={item.serving_type}
-                                volume_100g={item.volume_100g}
-                                serving_100g={item.serving_100g}
-                            />}
-                            scrollEnabled={false}
-                            extraData={refresh}
-                    />
-                </View>
+            <Text style={[styles.h1, {margin: 20}]}>Create Recipe</Text>
+            <TextInput
+                style={[styles.input, {margin: 20}]}
+                onChangeText={onChangeFoodName}
+                value={foodName}
+                placeholder="Enter Recipe Name"
                 
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
-                    <TouchableOpacity onPress={handleDeleteFood}>
-                        <Text style={styles.buttonText}>Cancel</Text>
+            />
+            <Text style={[styles.h1, {marginHorizontal: 20, marginTop: 20}]}>{calculateCalories(sumNutrition, 1)} Cal</Text>
+            <View style={[{flex: 1, marginVertical: 10, height: 20, marginHorizontal: 20}]}>
+                <BarMacroChart strokeWidth={20} 
+                    dailyTarget={sumNutrition}
+                    colorProtein={colors.protein}
+                    colorfat={colors.fat}
+                    colorCarbs={colors.carbs}
+                    radius={10}
+                    width={372}
+                />
+            </View>
+            <View style={[styles.rowContainer, {justifyContent: 'space-around', marginRight: 20}]}>
+                <View style={[styles.rowContainer, {marginHorizontal: 0}]}>
+                    <View style={{backgroundColor: colors.protein, height: 20, width: 10, borderRadius: 10, marginTop: 3, marginHorizontal: 5}}/>
+                    <View>
+                        <Text style={[styles.h3]}>Protein </Text>
+                        <Text style={[styles.h4]}>{Math.round(sumNutrition.protein * Number(serving))} g </Text>
+                    </View>
+                </View>
+                <View style={[styles.rowContainer, {marginHorizontal: 0}]}>
+                    <View style={{backgroundColor: colors.carbs, height: 20, width: 10, borderRadius: 10, marginTop: 3, marginHorizontal: 5}}/>
+                    <View>
+                        <Text style={[styles.h3]}>Carbs </Text>
+                        <Text style={[styles.h4]}>{Math.round(sumNutrition.carbs * Number(serving))} g </Text>
+                    </View>
+                </View>
+                <View style={[styles.rowContainer, {marginHorizontal: 0}]}>
+                    <View style={{backgroundColor: colors.fat, height: 20, width: 10, borderRadius: 10, marginTop: 3, marginHorizontal: 5}}/>
+                    <View>
+                        <Text style={[styles.h3]}>Fat </Text>
+                        <Text style={[styles.h4]}>{Math.round(sumNutrition.fat * Number(serving))} g </Text>
+                    </View>
+                </View>
+            </View>
+            
+            <FlatList
+                data={ingredientObject.ingredientList}
+                renderItem={({item, index}) => <RecipeItem 
+                    name={item.name}
+                    description={item.description}
+                    servings={item.servings}
+                    nutritionInfo={{ carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein }}
+                    foodItem_id={item.foodItem_id}
+                    serving_mult={item.serving_mult}
+                    setServing={(text) => handleChangeServing(index, text)}
+                    handleDelete={() => handleDeleteIngredient(index)}
+                    handleServingMult={(mult, type) => handleServingMult(mult, type, index)}
+                    setServingType={() => handleServingMult}
+                    serving_type={item.serving_type}
+                    volume_100g={item.volume_100g}
+                    serving_100g={item.serving_100g} backgroundColor={colors.primary}                            />}
+                    scrollEnabled={false}
+                    extraData={refresh}
+                    style={[{margin: 20}]}
+            />
+            <Link style={[styles.buttonMain, styles.centerContainer, {marginHorizontal: 20}]} href='/(tabs)/(logs)/addIngredient' asChild>
+                <TouchableOpacity onPress={handleAddIngredient}>
+                    <Text style={[styles.h7, {color: colors.primary}]}>+ Add ingredient</Text>
+                </TouchableOpacity>
+            </Link>
+            <View style={[styles.rowContainer, {margin: 20, justifyContent: 'space-between'}]}>
+                <Link style={[styles.buttonMain, styles.centerContainer]} href='/(tabs)/(logs)/logs' asChild>
+                    <TouchableOpacity onPress={() => handleCreateRecipe(true)}>
+                        <Text style={[styles.h7, {color: colors.primary}]}>Create and Log</Text>
                     </TouchableOpacity>
                 </Link>
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
-                    <TouchableOpacity style={[styles.button, styles.centerContainter]} onPress={() => handleCreateRecipe(true)}>
-                        <Text style={styles.buttonText}>Create and Log</Text>
+                <Link style={[styles.buttonMain, styles.centerContainer]} href='/(tabs)/(logs)/logs' asChild>
+                    <TouchableOpacity  onPress={() => handleCreateRecipe(false)}>
+                        <Text style={[styles.h7, {color: colors.primary}]}>Create Recipe</Text>
                     </TouchableOpacity>
                 </Link>
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
-                    <TouchableOpacity style={[]} onPress={() => handleCreateRecipe(false)}>
-                        <Text style={styles.buttonText}>Create Recipe</Text>
-                    </TouchableOpacity>
-                </Link>
-        
+            </View>
+            <Link style={[styles.buttonSub, styles.centerContainer, {margin: 20}]} href='/(tabs)/(logs)/logs' asChild>
+                <TouchableOpacity onPress={handleDeleteFood}>
+                    <Text style={[styles.h4, {color: colors.button}]}>Cancel</Text>
+                </TouchableOpacity>
+            </Link>
         </ScrollView>
     );
 }
 export default CreateRecipe
 
 const styles = StyleSheet.create({
-    centerContainter: {
+    container: {
+        flex: 1,
+    },
+    centerContainer: {
         alignItems: "center",
         justifyContent: "center"
-    },
-    ringChartContainer: {
-        width: radius * 2,
-        height: radius * 2,
-        marginTop: 30
-      },
-    testContainer: {
-        backgroundColor: 'red',
     },
     rowContainer: {
         flexDirection: 'row',
@@ -213,26 +224,42 @@ const styles = StyleSheet.create({
         width: 320,
         height: 300,
     },
-    button: {
+    input: {
+        flex: 1,
         backgroundColor: colors.primary,
-        paddingHorizontal: 40,
-        paddingVertical: 15,
+        borderRadius: 10,
+        padding: 13,
+
         marginVertical: 10,
+    },
+    buttonMain: {
+        backgroundColor: colors.button,
+        paddingHorizontal: 30,
+        paddingVertical: 15,
         borderRadius: 10,
     },
-    buttonText: {
-        color: "black",
-        fontSize: 12,
+    buttonSub: {
+        backgroundColor: colors.primary,
+        borderColor: colors.button,
+        borderWidth:2,
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        borderRadius: 10,
     },
-    titleText: {
-        color: "black",
+    box: {
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        marginTop: 10,
         marginHorizontal: 20,
-        fontSize: 20,
+        backgroundColor: colors.primary,
+        borderRadius: 10,
     },
-    smallText: {
-        color: "black",
-        marginHorizontal: 0,
-        fontSize: 16,
+    boxColorless: {
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        marginTop: 10,
+        marginHorizontal: 15,
+        borderRadius: 4,
     },
     constrainedBox: {
         height: 350
@@ -246,46 +273,39 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: colors.secondary,
         marginRight: 30,
-
     },
-    container: {
-        flex: 1,
-        padding: 10,
+    h1: {
+        fontFamily: 'Geist',
+        fontWeight: '600',
+        fontSize: 28,
     },
-    text: {
+    h2: {
+        fontFamily: 'Geist',
+        fontWeight: '800',
+        fontSize: 22,
+    },
+    h3: {
+        fontFamily: 'Metro-Medium',
         fontSize: 20,
-
     },
-    box: {
-        padding: 10,
-        marginVertical: 20,
-        backgroundColor: colors.primary,
-        borderRadius: 7,
-        minHeight: 100,
-        minWidth: 190,
+    h4: {
+        fontFamily: 'Metro-Medium',
+        fontSize: 18  ,
     },
-    center: {
-        justifyContent: "center",
-        alignItems: "center",
+    h5: {
+        fontFamily: 'Metro-SemiBold',
+        fontSize: 17,
     },
-    flexRowContainer: {
-        flexDirection: "row",
-        alignItems: "center"
-       // justifyContent: "space-between"
+    h6: {
+        fontFamily: 'Metro-Regular',
+        fontSize: 16,
     },
-    spaceInbetween: {
-        justifyContent: "space-between",
-       // backgroundColor: "red"
+    h7: {
+        fontFamily: 'Metro-Bold',
+        fontSize: 18,
     },
-    input: {
-        height: 30,
-        margin: 5,
-        borderWidth: 1,
-        padding: 0,
-        borderRadius: 10,
-        backgroundColor: colors.secondary,
+    h8: {
+        fontFamily: 'Metro-Regular',
+        fontSize: 14,
     },
-    smallInput: {
-        minWidth: 50,
-    }
 });

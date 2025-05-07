@@ -1,5 +1,5 @@
 import { Container } from "@shopify/react-native-skia/lib/typescript/src/renderer/Container";
-import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ScrollView } from "react-native";
+import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ScrollView, Image } from "react-native";
 import { colors, spacing, typography } from "@/constants/theme";
 import { FoodInfo, Item, RecipeItem} from "@/constants/NutritionInfo";
 import { useContext, useEffect, useState } from "react";
@@ -9,8 +9,12 @@ import { useSQLiteContext } from "expo-sqlite";
 import { food, foodItem } from "@/db/schema";
 import { like, sql, eq, sum} from 'drizzle-orm';
 import { IngredientObject } from "./_layout";
+import { center } from "@shopify/react-native-skia";
+import BarcodeScanner from "./barcodeScanner";
+
 export default function AddIngredient() {
     const [search, setSearch] = useState('');
+    const [isScanner, setIsScanner] = useState(false)
     const [refresh, setRefresh] = useState<boolean>(false);
     const ingredientObject = useContext(IngredientObject);
     const [ingredientList, setIngredientList] = useState<FoodInfo[]>();
@@ -75,62 +79,71 @@ export default function AddIngredient() {
             setRefresh(!refresh)
         }
     }
-
+    if (isScanner) {
+        console.log('this is')
+        console.log(ingredientList)
+        return (
+            <BarcodeScanner ingredientList={ingredientList} setIngredientList={setIngredientList} setIsScanner={setIsScanner}
+            />
+        )
+    }
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView style={styles.container}> 
+            <Text style={[styles.h1, {margin: 20}]}>Add Ingredient</Text>
             <View style={styles.box}>
-                <Text style={styles.text}>Add Ingredient</Text>
+                
                 <TextInput
-                    style={styles.input}
+                    style={[styles.h6, styles.input]}
                     onChangeText={setSearch}
+                    placeholder="Search"
                     value={search}
                 />
-                <View style={styles.box}>
-                    <FlatList
-                        data={filteredData}
-                        renderItem={({item}) => 
-                            <TouchableOpacity onPress={() => 
-                                handleAddIngredient({
-                                    name: item.food.name,
-                                    description: item.food.description,
-                                    servings: item.foodItem.servings,
-                                    nutritionInfo: { protein: item.food.protein, fat: item.food.fat, carbs: item.food.carbs },
-                                    foodItem_id: item.food.id,
-                                    serving_mult: item.foodItem.serving_mult,
-                                    serving_100g: item.food.serving_100g,
-                                    volume_100g: item.food.volume_100g,
-                                    serving_type: item.foodItem.serving_type
-                                })}>
-                                <Item name={item.food.name}
-                                    description={item.food.description}
-                                    servings={item.foodItem.servings}
-                                    nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein }}
-                                    foodItem_id={item.foodItem.id}
-                                    is_link={false} 
-                                    serving_mult={item.foodItem.serving_mult} 
-                                    serving_100g={item.food.serving_100g} 
-                                    volume_100g={item.food.volume_100g} 
-                                    serving_type={item.foodItem.serving_type} 
-                                    backgroundColor={colors.box}                                />
-                            </TouchableOpacity>
-                        }
-                        keyExtractor={item => item.foodItem.id.toString()}
-                        scrollEnabled={false}
-                    />
-                </View>
+                
+                <FlatList
+                    data={filteredData}
+                    renderItem={({item}) => 
+                        <TouchableOpacity onPress={() => 
+                            handleAddIngredient({
+                                name: item.food.name,
+                                description: item.food.description,
+                                servings: item.foodItem.servings,
+                                nutritionInfo: { protein: item.food.protein, fat: item.food.fat, carbs: item.food.carbs },
+                                foodItem_id: item.food.id,
+                                serving_mult: item.foodItem.serving_mult,
+                                serving_100g: item.food.serving_100g,
+                                volume_100g: item.food.volume_100g,
+                                serving_type: item.foodItem.serving_type
+                            })}>
+                            <Item name={item.food.name}
+                                description={item.food.description}
+                                servings={item.foodItem.servings}
+                                nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein }}
+                                foodItem_id={item.foodItem.id}
+                                is_link={false} 
+                                serving_mult={item.foodItem.serving_mult} 
+                                serving_100g={item.food.serving_100g} 
+                                volume_100g={item.food.volume_100g} 
+                                serving_type={item.foodItem.serving_type} 
+                                backgroundColor={colors.box}/>
+                        </TouchableOpacity>
+                    }
+                    keyExtractor={item => item.foodItem.id.toString()}
+                    scrollEnabled={false}
+                />
             </View>
-            <View style={[styles.flexRowContainer]}>
-                <View style={[styles.box, styles.center]}>
-                    <Text style={styles.text}>Scan Barcode</Text>
-                </View>
-                <Link style={[styles.box, styles.center]} href="/quickAddFood" asChild>
+            <View style={[styles.rowContainer, {justifyContent: 'space-between'}]}>
+                <TouchableOpacity style={[styles.box, styles.centerContainer, {flex: 1, marginLeft: 20}]} onPress={() => setIsScanner(true)}>
+                    <Text style={[styles.h4, {paddingBottom: 20}]}>Scan Barcode</Text>
+                    <Image source={require('@/assets/images/Barcode.png')} />
+                </TouchableOpacity>
+                <Link style={[styles.box, styles.centerContainer, {flex: 1, marginLeft: 0}]} href="/quickAddFood" asChild>
                     <TouchableOpacity>
-                        <Text style={styles.text}>Quick Add</Text>
+                        <Text style={[styles.h4, {paddingBottom: 20}]}>Quick Add</Text>
                     </TouchableOpacity>
                 </Link>
                 
             </View>
-            <Text style={styles.text}>Added</Text>
+            <Text style={[styles.h1, {marginHorizontal: 20, marginTop: 40}]}>Added</Text>
             <FlatList
                 data={ingredientList}
                 renderItem={({item, index}) => <RecipeItem 
@@ -147,19 +160,21 @@ export default function AddIngredient() {
                         serving_type={item.serving_type}
                         volume_100g={item.volume_100g}
                         serving_100g={item.serving_100g}
+                        backgroundColor={colors.primary}
                     />}
                     scrollEnabled={false}
                     extraData={refresh}
+                    style={[{margin: 20}]}
             />
-            <View style={[styles.flexRowContainer, styles.center]}>
-                <Link style={[styles.smallButton, styles.center]} href="/createRecipe" asChild>
-                    <TouchableOpacity style={[styles.smallButton, styles.center]} onPress={handleConfirm}>
-                        <Text style={styles.buttonText}>Confirm</Text>
+            <View style={[styles.rowContainer, {justifyContent: 'space-between'}]}>
+                <Link style={[styles.box, styles.centerContainer, {flex: 1}]} href="/createRecipe" asChild>
+                    <TouchableOpacity onPress={handleConfirm}>
+                        <Text style={styles.h7}>Confirm</Text>
                     </TouchableOpacity>
                 </Link>
-                <Link style={[styles.smallButton, styles.center]} href="/createRecipe" asChild>
-                    <TouchableOpacity style={[styles.smallButton, styles.center]} onPress={handleCancel}>
-                        <Text style={styles.buttonText}>Cancel</Text>
+                <Link style={[styles.box, styles.centerContainer, {flex: 1}]} href="/createRecipe" asChild>
+                    <TouchableOpacity onPress={handleCancel}>
+                        <Text style={styles.h7}>Cancel</Text>
                     </TouchableOpacity>
                 </Link>
             </View>
@@ -170,56 +185,91 @@ export default function AddIngredient() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 10
     },
-    text: {
-        fontSize: 20,
-
-    },
-    box: {
-        padding: 10,
-        marginVertical: 20,
-        backgroundColor: colors.primary,
-        borderRadius: 4,
-        minHeight: 100,
-        minWidth: 190,
-    },
-    center: {
-        justifyContent: "center",
+    centerContainer: {
         alignItems: "center",
+        justifyContent: "center"
     },
-    flexRowContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between"
+    rowContainer: {
+        flexDirection: 'row',
     },
-    flexRowChild: {
-        
-    },
-    button: {
-        backgroundColor: colors.primary,
-        paddingHorizontal: 40,
-        paddingVertical: 15,
-        marginVertical: 10,
-        borderRadius: 10,
-    },
-    smallButton: {
-        backgroundColor: colors.primary,
-        paddingHorizontal: 60,
-        paddingVertical: 15,
-        marginVertical: 10,
-        marginHorizontal: 10,
-        borderRadius: 10,
-    },
-    buttonText: {
-        color: "black",
-        fontSize: 12,
+    barChartContainer: {
+        width: 320,
+        height: 300,
     },
     input: {
-        height: 40,
-        margin: 12,
-        borderWidth: 1,
-        padding: 0,
+        flex: 1,
+        backgroundColor: colors.box,
         borderRadius: 10,
+        padding: 13,
+        marginVertical: 10,
+    },
+    button: {
         backgroundColor: colors.secondary,
+        paddingHorizontal: 40,
+        paddingVertical: 15,
+        borderRadius: 10,
+    },
+    box: {
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        marginTop: 10,
+        marginHorizontal: 20,
+        backgroundColor: colors.primary,
+        borderRadius: 10,
+    },
+    boxColorless: {
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        marginTop: 10,
+        marginHorizontal: 15,
+        borderRadius: 4,
+    },
+    constrainedBox: {
+        height: 350
+    },
+    smallBox: {
+        width: 180,
+        height: 180,
+        marginHorizontal: 5,
+    },
+    item: {
+        padding: 10,
+        backgroundColor: colors.secondary,
+        marginRight: 30,
+    },
+    h1: {
+        fontFamily: 'Geist',
+        fontWeight: '600',
+        fontSize: 28,
+    },
+    h2: {
+        fontFamily: 'Geist',
+        fontWeight: '800',
+        fontSize: 22,
+    },
+    h3: {
+        fontFamily: 'Metro-Medium',
+        fontSize: 20,
+    },
+    h4: {
+        fontFamily: 'Metro-Medium',
+        fontSize: 18  ,
+    },
+    h5: {
+        fontFamily: 'Metro-SemiBold',
+        fontSize: 17,
+    },
+    h6: {
+        fontFamily: 'Metro-Regular',
+        fontSize: 16,
+    },
+    h7: {
+        fontFamily: 'Metro-Bold',
+        fontSize: 18,
+    },
+    h8: {
+        fontFamily: 'Metro-Regular',
+        fontSize: 14,
     },
 })

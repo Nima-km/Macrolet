@@ -161,39 +161,39 @@ export default function Logs() {
           </Link>
         </View>
       </View>
-        <SectionList
-        sections={slData}
-          renderItem={({item}) => <Item name={item.food.name}
-          description={item.food.description}
-          servings={item.foodItem.servings}
-          nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein, fiber: item.food.fiber}}
-          foodItem_id={item.foodItem.id}
-          timestamp={item.foodItem.timestamp}
-          is_link={true}
-          backgroundColor={'#FFFFFF'}
-          serving_mult={item.foodItem.serving_mult} 
-          serving_100g={item.food.serving_100g} 
-          volume_100g={item.food.volume_100g} 
-          serving_type={item.foodItem.serving_type}/>
-          }
-        style={[{margin: 20}]}
-        keyExtractor={item => item.foodItem.id.toString()}
-        scrollEnabled={false}
-        renderSectionHeader={({section: {title}}) => (
-          <View style={[styles.rowContainer, {alignItems: 'center'}]}>
-            <Text style={styles.h3}>{title < 10 ? 0: ''}{title}:00</Text>
-            <View
-              style={{
-                backgroundColor: '#DFDFDF',
-                height: 2,
-                flex: 1,
-                marginLeft: 20,
-                
-              }}
-            />
-          </View>
-        )}
-        />
+      <SectionList
+      sections={slData}
+        renderItem={({item}) => <Item name={item.food.name}
+        description={item.food.description}
+        servings={item.foodItem.servings}
+        nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein, fiber: item.food.fiber}}
+        foodItem_id={item.foodItem.id}
+        timestamp={item.foodItem.timestamp}
+        is_link={true}
+        backgroundColor={'#FFFFFF'}
+        serving_mult={item.foodItem.serving_mult} 
+        serving_100g={item.food.serving_100g} 
+        volume_100g={item.food.volume_100g} 
+        serving_type={item.foodItem.serving_type}/>
+        }
+      style={[{margin: 20}]}
+      keyExtractor={item => item.foodItem.id.toString()}
+      scrollEnabled={false}
+      renderSectionHeader={({section: {title}}) => (
+        <View style={[styles.rowContainer, {alignItems: 'center'}]}>
+          <Text style={styles.h3}>{title < 10 ? 0: ''}{title}:00</Text>
+          <View
+            style={{
+              backgroundColor: '#DFDFDF',
+              height: 2,
+              flex: 1,
+              marginLeft: 20,
+              
+            }}
+          />
+        </View>
+      )}
+      />
     </ScrollView>
   );
 }

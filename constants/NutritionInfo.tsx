@@ -42,7 +42,7 @@ interface inpProp {
   handleServingMult: (mult: number, type: string) => void
 }
 type ItemProps = FoodInfo & {is_link: boolean} & {backgroundColor: string}
-type RecipeProps = FoodInfo & inpProp
+type RecipeProps = FoodInfo & inpProp & {backgroundColor: string}
 
 export type SharedNutritionInfo = {
   protein: SharedValue<number>;
@@ -85,6 +85,8 @@ export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is
                 colorProtein={colors.protein}
                 colorfat={colors.fat}
                 colorCarbs={colors.carbs}
+                radius={4}
+                width={337}
               />
           </View>
           <View style={[styles.flexRowContainer, {marginHorizontal: 0}]}>
@@ -161,7 +163,8 @@ export const RecipeItem = ({ name,
     serving_100g,
     volume_100g,
     servings, 
-    foodItem_id, 
+    foodItem_id,
+    backgroundColor,
     setServing,
     handleServingMult,
     setServingType,
@@ -177,8 +180,7 @@ export const RecipeItem = ({ name,
     console.log('NAYYYy')
   }, [servings])
   return (
-      <View style={styles.item}>
-        <View>
+      <View style={[styles.item, {backgroundColor: backgroundColor}]}>
           <View style={styles.flexRowContainer}>
             <View style={[{margin: 8}]}>
               <Text style={[styles.h4]}>{name}</Text>
@@ -209,7 +211,6 @@ export const RecipeItem = ({ name,
               </TouchableOpacity>
             </View>
           </View>
-        </View>
       </View>
       
   );

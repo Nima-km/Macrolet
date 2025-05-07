@@ -209,6 +209,10 @@ const AddFood = () => {
             setRefresh(!refresh)
         }
     }
+    if (food_id)
+        console.log('IT IS RECIPE')
+    else
+        console.log('its NOT RECIPE')
     return (
         <ScrollView style={styles.container}>
             {showDate && 
@@ -309,6 +313,7 @@ const AddFood = () => {
                                     serving_type={item.serving_type}
                                     volume_100g={item.volume_100g}
                                     serving_100g={item.serving_100g}
+                                    backgroundColor={colors.primary}
                                 />}
                                 scrollEnabled={false}
                                 extraData={refresh}
