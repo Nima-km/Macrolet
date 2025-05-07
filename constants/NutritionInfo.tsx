@@ -61,6 +61,14 @@ export const calculateCalories = (nutrition: NutritionInfo, mult:number): number
     + Math.round(((nutrition.carbs - (nutrition.fiber ? nutrition.fiber : 0)) * 4 * mult)));
 };
 
+export const assignNutrition = (calories: number, bw_lbs: number, height: number, protein_mult: number) : NutritionInfo => {
+  const protein = Math.min(bw_lbs, height) * protein_mult
+  const fat = bw_lbs * .4
+  const carbs = (calories - fat * 9 - protein * 4) / 4
+  const goal: NutritionInfo = {protein: protein, fat: fat, carbs: carbs}
+
+  return goal
+}
 
 
 export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is_link, backgroundColor, serving_mult, serving_type}: ItemProps) => {

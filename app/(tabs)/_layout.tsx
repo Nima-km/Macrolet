@@ -34,7 +34,7 @@ export default function RootLayout() {
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="(goals)" options={{ title: 'Home' }} />
       <Tabs.Screen name="recipes" options={{ title: 'Recipes' }} />
       <Tabs.Screen name="(logs)" options={{ title: 'Logs' }} />
       <Tabs.Screen name="profile" options={{ title: 'Profile' }} />

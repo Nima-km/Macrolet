@@ -1,5 +1,5 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, Image } from "react-native";
-import { colors, spacing, typography } from "../../constants/theme";
+import { colors, spacing, typography } from "@/constants/theme";
 import { TouchableOpacity } from "react-native";
 import { DonutChart } from "@/constants/DonutChart";
 import { SimpleChart } from "@/constants/SimpleChart";
@@ -20,17 +20,15 @@ import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { food, foodItem, nutritionGoal } from "@/db/schema";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Context } from "../_layout";
+import { Context } from "../../_layout";
+import { useRouter } from "expo-router";
 
 const FONT_SIZE = 22
 const radius = 82;
-const STROKE_WIDTH = 16;
-const DATABASE_NAME = 'tasks';
+
 
 export default function Index() {
-
-  
-  const progress = useSharedValue(0);
+  const router = useRouter();
   const context = useContext(Context)
   const [show, setShow] = useState(false);
   const db = useSQLiteContext();
@@ -52,8 +50,7 @@ export default function Index() {
   const { data: nutriGoals } = useLiveQuery(
     drizzleDb.select().from(nutritionGoal).orderBy(desc(nutritionGoal.timestamp))
   )
-  const [targetCalorie, setTargetCalorie] = useState(5000)
-  const dailyCalorie = 2500;
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -104,7 +101,7 @@ export default function Index() {
           <Image source={require('@/assets/images/Calendar.png')} />
         </TouchableOpacity>
       </View>
-      <View style={[styles.box, styles.flexRowContainer]}>
+      <TouchableOpacity style={[styles.box, styles.flexRowContainer]} onPress={() => router.navigate('/nutritionGoal')}>
           <View style={[styles.ringChartContainer]}>
             <DonutChart
               backgroundColor="white"
@@ -144,7 +141,7 @@ export default function Index() {
               mainText="Fat"
             />
           </View>
-      </View> 
+      </TouchableOpacity> 
       
       <View style={styles.flexRowContainer}>
         <View style={[styles.smallBox, styles.box]}>
