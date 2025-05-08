@@ -12,13 +12,18 @@ export default function nutritionGoals() {
     const [calories, setCalories] = useState(2000)
     const [proteinMult, setProteinMult] = useState(.4)
     const [dietOption, setDietOption] = useState(1)
+    const [autoIntake, setAutoIntake] = useState(true)
     
     
-    const bw = 170
+    const bw = 165
     const height = 180
     const WeightOptions = [
         { label: 'Gain', value: 1 },
         { label: 'Lose', value: -1 },
+    ];
+    const AutoCalorie = [
+        { label: 'Auto', value: 1 },
+        { label: 'Manual', value: 0 },
     ];
     const ProteinOptions = [
         { label: 'Min', value: .4 },
@@ -36,8 +41,10 @@ export default function nutritionGoals() {
     const handleSelectIntake = (selectedValue: number) => {
         console.log('SelectedIntake:', selectedValue);
         setDietOption(selectedValue)
-       // setProteinMult(selectedValue)
-    // Handle the selection here
+    };
+    const handleAutoIntake = (selectedValue: number) => {
+        console.log('AutoIntake:', selectedValue);
+        setAutoIntake(selectedValue == 1)
     };
     useEffect(() => {
         const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
@@ -47,6 +54,10 @@ export default function nutritionGoals() {
         const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
         setSumNutrition(goal)
     }, [dietOption, weightChange])
+    useEffect(() => {
+        const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
+        setSumNutrition(goal)
+    }, [calories])
     return (
         <ScrollView style={styles.container}>
             <Text style={[styles.h1, styles.text]}>Nutrition Calculator</Text>
@@ -102,6 +113,18 @@ export default function nutritionGoals() {
                             <Text style={[styles.h4]}>{Math.round(sumNutrition.fat)} g </Text>
                         </View>
                     </View>
+                </View>
+                <Text style={[styles.h3, {marginTop: 30}]}>Maintenance calories </Text>
+                <View style={[styles.rowContainer, {marginTop: 0}]}>
+                    <RadioButton options={AutoCalorie} onSelect={handleAutoIntake}/>
+                    <TextInput
+                        style={[styles.input, {marginLeft:10, flex: .5,}]}
+                        onChangeText={(inp) => setCalories(Number(inp))}
+                        value={calories.toString()}
+                        keyboardType="numeric"
+                        placeholder="2000"
+                        
+                    />
                 </View>
             </View>
         </ScrollView>

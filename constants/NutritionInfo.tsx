@@ -63,7 +63,7 @@ export const calculateCalories = (nutrition: NutritionInfo, mult:number): number
 
 export const assignNutrition = (calories: number, bw_lbs: number, height: number, protein_mult: number) : NutritionInfo => {
   const protein = Math.min(bw_lbs, height) * protein_mult
-  const fat = bw_lbs * .4
+  const fat = bw_lbs * .3
   const carbs = (calories - fat * 9 - protein * 4) / 4
   const goal: NutritionInfo = {protein: protein, fat: fat, carbs: carbs}
 

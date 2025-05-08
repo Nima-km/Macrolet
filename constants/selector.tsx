@@ -72,10 +72,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333333',
     },
-    selectedText: {
-        color: '#007AFF',
-        fontWeight: '600',
-    },
     h1: {
         fontFamily: 'Geist',
         fontWeight: '600',
