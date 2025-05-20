@@ -1,20 +1,64 @@
+import { autoCalorie, MaintenanceCalories, WeighIn } from "@/constants/AutoCalorieCalculator";
 import { BarMacroChart } from "@/constants/BarMacroChart";
-import { assignNutrition, calculateCalories, NutritionInfo } from "@/constants/NutritionInfo";
+import { assignNutrition, calculateCalories, NutritionInfo, NutritionInfoFull } from "@/constants/NutritionInfo";
 import RadioButton from "@/constants/selector";
 import { colors } from "@/constants/theme";
+import { food, foodItem, macroGoal, macroProfile, nutritionGoal, WeightItem } from "@/db/schema";
+import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
+import { and, desc, eq, gte, inArray, lt, notInArray, sql } from "drizzle-orm";
+import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
-import { ScrollView, View, StyleSheet, Text, TextInput } from "react-native";
+import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
+import { timestamp } from "drizzle-orm/gel-core";
 
 
+
+type nutriDate = {
+    enabled: boolean
+    protein: number
+    carbs: number
+    fat: number
+    timestamp: string
+}
 export default function nutritionGoals() {
+    const db = useSQLiteContext();
+    const drizzleDb = drizzle(db);
+    const [refresh, setRefresh] = useState<boolean>(false);
     const [weightChange, setWeightChange] = useState('')
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 200, fat: 80, protein: 190});
     const [calories, setCalories] = useState(2000)
     const [proteinMult, setProteinMult] = useState(.4)
     const [dietOption, setDietOption] = useState(1)
     const [autoIntake, setAutoIntake] = useState(true)
-    
-    
+    const [calorieIntake, setCalorieIntake] = useState<nutriDate[]>([])
+    const [dates, setDates] = useState<Date[]>([])
+    const [excludeIntake, setExludeIntake] = useState<string[]>([])
+    const tmpDate = new Date(2025, 4, 15)
+    tmpDate.setDate(tmpDate.getDate() - 14)
+    const TESTcalorieIntake = [
+        { fiber: 0, fat: 50, carbs: 170, protein: 183},
+        { fiber: 0, fat: 50, carbs: 178, protein: 186},
+        { fiber: 0, fat: 52, carbs: 177, protein: 182},
+        { fiber: 0, fat: 45, carbs: 170, protein: 183},
+        { fiber: 0, fat: 49, carbs: 170, protein: 183},
+        { fiber: 0, fat: 55, carbs: 170, protein: 180},
+        { fiber: 0, fat: 50, carbs: 170, protein: 183},
+        { fiber: 0, fat: 50, carbs: 178, protein: 186},
+        { fiber: 0, fat: 52, carbs: 177, protein: 182},
+        { fiber: 0, fat: 52, carbs: 177, protein: 182},
+        { fiber: 0, fat: 50, carbs: 170, protein: 183},
+    ];
+
+    const TESTweightLogs = [
+      { weight: 160.5, timestamp: new Date(2025, 5, 1)},
+      { weight: 162.5, timestamp: new Date(2025, 5, 2)},
+      { weight: 162.5, timestamp: new Date(2025, 5, 4)},
+      { weight: 163.5, timestamp: new Date(2025, 5, 5)},
+      { weight: 164.5, timestamp: new Date(2025, 5, 7)},
+      { weight: 162.2, timestamp: new Date(2025, 5, 10)},
+      { weight: 161.0, timestamp: new Date(2025, 5, 11)},
+      { weight: 162.0, timestamp: new Date(2025, 5, 14)},
+    ];
     const bw = 165
     const height = 180
     const WeightOptions = [
@@ -22,14 +66,17 @@ export default function nutritionGoals() {
         { label: 'Lose', value: -1 },
     ];
     const AutoCalorie = [
-        { label: 'Auto', value: 1 },
         { label: 'Manual', value: 0 },
+        { label: 'Auto', value: 1 },
     ];
     const ProteinOptions = [
         { label: 'Min', value: .4 },
         { label: 'Moderate', value: .7 },
         { label: 'Max', value: 1 },
     ];
+    const formatDate = (item: Date) => {
+        return `${item.getFullYear()}-${(item.getMonth() + 1).toString().padStart(2, "0")}-${(item.getDate()).toString().padStart(2, "0")}`
+    }
     const handleSelectProtein = (selectedValue: number) => {
         console.log('SelectedProtein:', selectedValue);
         setProteinMult(selectedValue)
@@ -38,17 +85,109 @@ export default function nutritionGoals() {
         console.log(sumNutrition)
     // Handle the selection here
     };
+    const handleAddGoal = async () => {
+        const macro_profile : NutritionInfoFull[]= await drizzleDb.select({
+            fat: macroGoal.fat,
+            carbs: macroGoal.carbs,
+            protein: macroGoal.protein,
+            calories: macroGoal.calories,
+        }).from(macroProfile).innerJoin(macroGoal, eq(macroGoal.macro_profile, macroProfile.id))
+        console.log('macro profile', macro_profile)
+        const macro_goal = autoCalorie({
+            macro_profile: macro_profile, 
+            calories: calories, 
+            })
+        console.log('macro goal', macro_goal)
+        if (macro_goal != "OUT OF BOUNDS"){
+            await drizzleDb.insert(nutritionGoal).values(
+                {calories: macro_goal.calories, 
+                carbs: macro_goal.carbs, 
+                fat: macro_goal.fat,
+                protein: macro_goal.protein
+                })
+            console.log('new macros Set', macro_goal)
+        }
+    }
+    const FetchIntake = async () => {
+        const tmpDate = new Date()
+        tmpDate.setDate(tmpDate.getDate() - 14)
+        const intake : nutriDate[] = await drizzleDb.select({
+            fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+            carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+            protein: sql<number>`sum(${food.protein} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+            timestamp: sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch')`,
+            enabled: sql<boolean>`${true}`
+        })
+        .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+        .where(and(gte(foodItem.timestamp, tmpDate),
+            (notInArray(sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch')`, excludeIntake))
+        ))
+        .groupBy(sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch')`)
+        .orderBy(foodItem.timestamp)
+        console.log('i like boobs', intake[0].timestamp)
+        //setCalorieIntake(intake)
+        return intake
+    }
+    const FetchWeight = async () => {
+        const tmpDate = new Date()
+        tmpDate.setDate(tmpDate.getDate() - 14)
+        const weight : WeighIn[] = await drizzleDb.select()
+            .from(WeightItem)
+            .where(gte(WeightItem.timestamp, tmpDate))
+        return weight
+    }
     const handleSelectIntake = (selectedValue: number) => {
         console.log('SelectedIntake:', selectedValue);
         setDietOption(selectedValue)
     };
-    const handleAutoIntake = (selectedValue: number) => {
+    const handleAutoIntake = async (selectedValue: number) => {
         console.log('AutoIntake:', selectedValue);
+        if (selectedValue == 1){
+            const tmpin = calorieIntake.filter((item) => item.enabled == true)
+            const tmpw = await FetchWeight()
+            console.log('weigh_in', tmpw)
+            console.log('Intake', tmpin)
+            const maintenance = MaintenanceCalories({calorie_intake: tmpin, weigh_in: tmpw})
+            if (maintenance != "WEIGHT NOT LOGGED")
+                setCalories(maintenance)
+            else
+                console.log(maintenance)
+            console.log(calories)
+        }
         setAutoIntake(selectedValue == 1)
     };
+    const setupIntakeDate = async () => {
+        const calint = await FetchIntake()
+        let cnt = 0
+        const tday = new Date()
+        const tmpDate = new Date()
+        tmpDate.setDate(tday.getDate() - 14)
+        console.log('dateFormat', formatDate(tmpDate))
+        let res : nutriDate[] = []
+        for (let i = tmpDate; i <= tday; i.setDate(i.getDate() + 1)) {
+            if (calint[cnt].timestamp === formatDate(i)){
+                res.push(calint[cnt])
+                if (cnt < calint.length - 1)
+                    cnt++
+            }
+            else
+                console.log("did not find it", `${formatDate(i)} ${calint[cnt].timestamp}`)
+                res.push({carbs: 0, fat: 0, protein: 0, timestamp: formatDate(i), enabled: true})
+        }
+        console.log('res', res)
+        setCalorieIntake(res)
+    }
+
+    const modifyDateList = (index: number) => {
+        let newList = calorieIntake
+        newList[index].enabled = !newList[index].enabled
+        setCalorieIntake(newList)
+        setRefresh(!refresh)
+    }
     useEffect(() => {
         const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
         setSumNutrition(goal)
+        setupIntakeDate()
     }, [])
     useEffect(() => {
         const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
@@ -58,6 +197,8 @@ export default function nutritionGoals() {
         const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
         setSumNutrition(goal)
     }, [calories])
+
+    
     return (
         <ScrollView style={styles.container}>
             <Text style={[styles.h1, styles.text]}>Nutrition Calculator</Text>
@@ -79,6 +220,7 @@ export default function nutritionGoals() {
                 <View style={[styles.rowContainer]}>
                     <RadioButton options={ProteinOptions} onSelect={handleSelectProtein}/>
                 </View>
+                
                 <Text style={[styles.h1, {marginTop: 20}]}>Nutrition Goals</Text>
                 <Text style={[styles.h3, {marginTop: 20}]}>{calculateCalories(sumNutrition, 1)} Cal</Text>
                 <View style={[{flex: 1, marginVertical: 10, height: 20}]}>
@@ -126,7 +268,26 @@ export default function nutritionGoals() {
                         
                     />
                 </View>
+            </View> 
+            <View style={styles.box}>
+                <FlatList
+                    data={calorieIntake}
+                    renderItem={({index, item}) => 
+                        <TouchableOpacity onPress={() => modifyDateList(index)}>
+                            <View style={[styles.box, {backgroundColor: item.enabled == true ? 'green' : 'red'}]}>
+                                <Text style={[styles.h3]}>{calculateCalories(item, 1)}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    }
+                    scrollEnabled={false}
+                    numColumns={3}
+                    extraData={refresh}
+                />
+
             </View>
+            <TouchableOpacity style={styles.button} onPress={handleAddGoal}>
+                <Text style={styles.h5}>Set Goals</Text>
+            </TouchableOpacity>
         </ScrollView>
     )
 }
@@ -170,6 +331,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 15,
         borderRadius: 10,
+    },
+    button: {
+        backgroundColor: colors.primary,
+        paddingHorizontal: 40,
+        paddingVertical: 15,
+        borderRadius: 10,
+        margin: 20,
     },
     box: {
         paddingVertical: 20,

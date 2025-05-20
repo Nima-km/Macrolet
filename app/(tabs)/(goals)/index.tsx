@@ -1,4 +1,4 @@
-import { PixelRatio, Pressable, StyleSheet, Text, View, Image } from "react-native";
+import { PixelRatio, Pressable, StyleSheet, Text, View, Image, TextInput } from "react-native";
 import { colors, spacing, typography } from "@/constants/theme";
 import { TouchableOpacity } from "react-native";
 import { DonutChart } from "@/constants/DonutChart";
@@ -18,10 +18,13 @@ import { useDrizzleStudio} from 'expo-drizzle-studio-plugin'
 import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
 import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
-import { food, foodItem, nutritionGoal } from "@/db/schema";
+import { food, foodItem, nutritionGoal, WeightItem } from "@/db/schema";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Context } from "../../_layout";
 import { useRouter } from "expo-router";
+import { autoCalorie, MaintenanceCalories } from "@/constants/AutoCalorieCalculator";
+import { NutritionInfoFull } from "@/constants/NutritionInfo";
+
 
 const FONT_SIZE = 22
 const radius = 82;
@@ -31,6 +34,8 @@ export default function Index() {
   const router = useRouter();
   const context = useContext(Context)
   const [show, setShow] = useState(false);
+  const [showLogWeight, setShowLogWeight] = useState(false);
+  const [curWeight, setCurWeight] = useState(0);
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
   useDrizzleStudio(db);
@@ -51,6 +56,11 @@ export default function Index() {
     drizzleDb.select().from(nutritionGoal).orderBy(desc(nutritionGoal.timestamp))
   )
 
+  const {data: currentWeight } = useLiveQuery(
+    drizzleDb.select()
+    .from(WeightItem)
+    .orderBy(desc(WeightItem.timestamp))
+  )
 
   useFocusEffect(
     React.useCallback(() => {
@@ -64,8 +74,9 @@ export default function Index() {
     }, [])
   );
   useEffect(() => {
-    console.log(radius)
-    }, [])
+    
+      console.log("showLog", showLogWeight)
+    }, [showLogWeight])
   const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), FONT_SIZE);
   const smallerFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 16);
 
@@ -80,7 +91,15 @@ export default function Index() {
       context.setDate(currentDate);
     console.log(context.date);
   };
-
+  const logWeight = async () => {
+    if (showLogWeight == true){
+      const tmp = await drizzleDb.insert(WeightItem)
+        .values({weight: curWeight}).returning()
+      
+      console.log('inserted', tmp)
+    }
+    setShowLogWeight(!showLogWeight)
+  }
   const showTimepicker = () => {
     setShow(true);
   };
@@ -143,10 +162,45 @@ export default function Index() {
           </View>
       </TouchableOpacity> 
       
+
       <View style={styles.flexRowContainer}>
-        <View style={[styles.smallBox, styles.box]}>
-          <Text style={styles.h5}>WAIT!</Text>
-        </View>
+        <TouchableOpacity onPress={() => logWeight()}>
+          <View style={[styles.smallBox, styles.box]}>
+            <View>
+              <Text style={styles.h5}>Weight</Text>
+            </View>
+            <View style={[styles.centerContainter, {marginTop: 20}]}>
+
+              
+              { showLogWeight ?
+                <>
+                  <Text style={styles.h5}>Log Weight</Text>
+                  <TextInput 
+                    style={[styles.h1, {fontWeight: 800, backgroundColor: colors.background, paddingHorizontal: 10}]}
+                    onChangeText={(inp) => setCurWeight(Number(inp))}
+                    value={curWeight.toString()}
+                    placeholder="Search all foods"
+                    
+                  />
+                </>
+                :
+                <>
+                  <Text style={styles.h5}>Current</Text>
+                  <Text style={[styles.h1, {fontWeight: 800}]}>{currentWeight[0].weight} lbs</Text>
+                </>
+              }
+            </View>
+            {
+              currentWeight[1] &&
+              <View style={[styles.centerContainter, {marginTop: 10}]}>
+                <Text style={[styles.h5, 
+                  {color: currentWeight[0].weight - currentWeight[1].weight <= 0? 'red' : 'green'}]}>
+                    {currentWeight[0].weight - currentWeight[1].weight} lbs
+                </Text>
+              </View>
+            }
+          </View>
+        </TouchableOpacity>
         <View style={[styles.box, styles.smallBox]}>
           <Text style={styles.h5}>bo o o wo a</Text>
         </View>

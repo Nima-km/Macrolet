@@ -14,6 +14,12 @@ export type NutritionInfo = {
   fiber?: number;
   calories?: number;
 }
+export type NutritionInfoFull = {
+  protein: number;
+  fat: number;
+  carbs: number;
+  calories: number;
+}
 
 export type FoodInfo = {
   name: string;

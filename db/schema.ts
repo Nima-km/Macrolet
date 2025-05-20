@@ -19,6 +19,22 @@ export const food = sqliteTable('food', {
     volume_100g: integer('volume_100g').default(1).notNull(),
 })
 
+export const macroProfile = sqliteTable('macroProfile', {
+    id: integer('id').primaryKey({autoIncrement: true}),
+    name: text('name').notNull(),
+})
+
+export const macroGoal = sqliteTable('macroGoal', {
+    id: integer('id').primaryKey({autoIncrement: true}),
+    protein: integer('protein').default(0).notNull(),
+    fat: integer('fat').default(0).notNull(),
+    carbs: integer('carbs').default(0).notNull(),
+    calories: integer('calories').default(0).notNull(),
+    macro_profile: integer('macro_profile')
+    .notNull()
+    .references(() => food.id),
+})
+
 export const nutritionGoal = sqliteTable('nutritionGoal', {
     id: integer('id').primaryKey({autoIncrement: true}),
     timestamp: text('timestamp')
@@ -45,7 +61,7 @@ export const foodItem = sqliteTable ('foodItem', {
     is_template: integer('is_template', {mode: 'boolean'}).default(false),
 }
 )
-export const Weight = sqliteTable ('weight', {
+export const WeightItem = sqliteTable ('weightItem', {
     id: integer('id').primaryKey({autoIncrement: true}),
     timestamp: integer('timestamp', { mode: 'timestamp' })
     .notNull()

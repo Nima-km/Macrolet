@@ -23,6 +23,9 @@ import m0018 from './0018_clever_black_widow.sql';
 import m0019 from './0019_outstanding_otto_octavius.sql';
 import m0020 from './0020_nebulous_nightcrawler.sql';
 import m0021 from './0021_purple_ultimatum.sql';
+import m0022 from './0022_oval_dagger.sql';
+import m0023 from './0023_mysterious_miek.sql';
+import m0024 from './0024_huge_madame_web.sql';
 
   export default {
     journal,
@@ -48,7 +51,10 @@ m0017,
 m0018,
 m0019,
 m0020,
-m0021
+m0021,
+m0022,
+m0023,
+m0024
     }
   }
   
