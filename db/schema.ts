@@ -32,7 +32,7 @@ export const macroGoal = sqliteTable('macroGoal', {
     calories: integer('calories').default(0).notNull(),
     macro_profile: integer('macro_profile')
     .notNull()
-    .references(() => food.id),
+    .references(() => macroProfile.id),
 })
 
 export const nutritionGoal = sqliteTable('nutritionGoal', {

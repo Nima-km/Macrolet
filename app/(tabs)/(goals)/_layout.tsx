@@ -30,6 +30,8 @@ export default function RootLayout() {
     }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="nutritionGoal" options={{ headerShown: false }} />
+      <Stack.Screen name="macroProfile" options={{ headerShown: false }} />
+      <Stack.Screen name="weightLogs" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -198,7 +198,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
               x={250}
               y={210}
               font={titleFont}
-              text={dailyTarget.protein.toString() + 'g'}
+              text={Math.round(dailyTarget.protein).toString() + 'g'}
             />
             <Text
               x={20}
@@ -216,7 +216,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
               x={250}
               y={250}
               font={titleFont}
-              text={dailyTarget.carbs.toString() + 'g'}
+              text={Math.round(dailyTarget.carbs).toString() + 'g'}
             />
 
             <Text
@@ -235,7 +235,7 @@ export const BarChart: React.FC<BarProgressProps> = ({
               x={250}
               y={290}
               font={titleFont}
-              text={dailyTarget.fat.toString() + 'g'}
+              text={Math.round(dailyTarget.fat).toString() + 'g'}
             />
             
         </Canvas>

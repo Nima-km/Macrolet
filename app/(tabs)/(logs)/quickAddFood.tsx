@@ -53,7 +53,7 @@ export default function QuickAddFood() {
             carbs: Number(carbs),}).returning()
         console.log("FOOD INSERT ADDED")
         console.log(foodObject[0])
-        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, servings: Number(serving), timestamp: date})
+        await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, servings: Number(serving), serving_type: servingSize, serving_mult: 1, timestamp: date}) 
         console.log("FOODItem INSERT ADDED")
     }
     
@@ -99,10 +99,11 @@ export default function QuickAddFood() {
                     <View style={[styles.ringChartContainer]}>
                         <DonutChart
                             backgroundColor="white"
-                            dailyProgress={10}
-                            targetPercentage={10}
+                            dailyProgress={targetPercentage}
+                            targetPercentage={5000}
                             font={font}
-                            smallerFont={smallerFont}
+                            smallerFont={smallerFont} 
+                            radius={50}
                         />
                         
                     </View>
@@ -123,7 +124,7 @@ export default function QuickAddFood() {
                             onChangeText={onChangeCarbs}
                             keyboardType = 'numeric'
                             value={carbs}
-                            /> 
+                        /> 
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Fat</Text>

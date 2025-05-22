@@ -42,27 +42,31 @@ const AddFood = () => {
     const [date, setDate] = React.useState(new Date());
     const [isRecipe, setIsRecipe] = React.useState(false);
     const context = useContext(Context)
-    const [serving, onChangeServing] = React.useState(``);
+    const [serving, onChangeServing] = React.useState('');
+    const [foodName, onChangeFoodName] = React.useState('');
     const [servingSize, onChangeServingSize] = React.useState('');
     const [showDate, setShowDate] = useState(false);
     const [showTime, setShowTime] = useState(false);
     const [ingredientList, setIngredientList] = useState<FoodInfo[]>();
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0, fiber: 0});
     const [mode, setMode] = useState<AndroidMode>('date');
-    const [servingType, setServingType] = useState('g')
-    const [servingMult, setServingMult] = useState(.01)
+    const [servingType, setServingType] = useState('serving')
+    const [servingMult, setServingMult] = useState(1)
     const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), 14);
     const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 8);
     
     useEffect(() => {
-        setDate(foodObject[0]?.foodItem.timestamp)
-        setIsRecipe(foodObject[0]?.food.is_recipe ? foodObject[0]?.food.is_recipe : false)
-        onChangeServing(`${foodObject[0]?.foodItem.servings}`) 
-        setServingMult(foodObject[0]?.foodItem.serving_mult)
+        if (food_id){
+            setDate(foodObject[0]?.foodItem.timestamp)
+            setIsRecipe(foodObject[0]?.food.is_recipe ? foodObject[0]?.food.is_recipe : false)
+            onChangeServing(`${foodObject[0]?.foodItem.servings}`) 
+            setServingMult(foodObject[0]?.foodItem.serving_mult)
+        }
     }, [foodObject, recipeItem])
     useEffect(() => {
-        setSumNutrition({carbs: foodObject[0]?.food.carbs, fat: foodObject[0]?.food.fat, protein: foodObject[0]?.food.protein, fiber: foodObject[0]?.food.fiber})
+        if (food_id)
+            setSumNutrition({carbs: foodObject[0]?.food.carbs, fat: foodObject[0]?.food.fat, protein: foodObject[0]?.food.protein, fiber: foodObject[0]?.food.fiber})
 
     }, [foodObject[0]])
     useEffect(() => {
@@ -70,7 +74,7 @@ const AddFood = () => {
     }, [sumNutrition])
     useEffect(() => {
         let total: NutritionInfo = {carbs: 0, fat: 0, protein: 0, fiber: 0}
-        if (ingredientList?.length && isRecipe == true){
+        if (ingredientList?.length && isRecipe == true && food_id){
             for (let i = 0; i < ingredientList.length; i++) {
                 total.carbs += ingredientList[i].nutritionInfo.carbs * ingredientList[i].servings * ingredientList[i].serving_mult
                 total.fat += ingredientList[i].nutritionInfo.fat * ingredientList[i].servings * ingredientList[i].serving_mult
@@ -89,19 +93,19 @@ const AddFood = () => {
     useEffect(() => {
         setIngredientList(recipeObject.map((item) => {
             return ({name: item.food.name, 
-                    description: item.food.description, 
-                    servings: item.recipeItem.servings,
-                    nutritionInfo: {carbs: (item.food.carbs), 
-                        fat: (item.food.fat),
-                        protein: (item.food.protein),
-                        fiber: (item.food.fiber),
-                    },
-                    foodItem_id: item.food.id,
-                    serving_mult: item.recipeItem.serving_mult,
-                    serving_type: item.recipeItem.serving_type,
-                    serving_100g: item.food.serving_100g,
-                    volume_100g: item.food.volume_100g,
-                })
+                description: item.food.description, 
+                servings: item.recipeItem.servings,
+                nutritionInfo: {carbs: (item.food.carbs), 
+                    fat: (item.food.fat),
+                    protein: (item.food.protein),
+                    fiber: (item.food.fiber),
+                },
+                foodItem_id: item.food.id,
+                serving_mult: item.recipeItem.serving_mult,
+                serving_type: item.recipeItem.serving_type,
+                serving_100g: item.food.serving_100g,
+                volume_100g: item.food.volume_100g,
+            })
         }))
       //  console.log(ingredientList[2])
       }, [recipeObject])
@@ -131,7 +135,8 @@ const AddFood = () => {
 
     const handleAddFood = async () => {
         console.log("FOOD INSERT ADDED")
-        if (foodObject[0].food.is_recipe){
+        if (foodObject[0]?.food.is_recipe){
+            console.log('wtf')
             const recipe = await drizzleDb.insert(food).values({
                 name: foodObject[0].food.name,
                 description: foodObject[0].food.name,
@@ -154,12 +159,33 @@ const AddFood = () => {
                 timestamp: date, serving_mult: 1, 
                 serving_type: 'servings'})
         }
-        else
+        else if (food_id){
+            console.log('its not quick add')
             await drizzleDb.insert(foodItem).values({food_id: foodObject[0].food.id, 
             servings: Number(serving), 
             timestamp: date, 
             serving_mult: foodObject[0].foodItem.serving_mult,
-            serving_type: foodObject[0].foodItem.serving_type})
+            serving_type: foodObject[0].foodItem.serving_type})}
+        else if (food_id == undefined) {
+            console.log('its quick add')
+            const tmpFoodObject = await drizzleDb.insert(food).values({name: foodName, 
+                description: " ", 
+                protein: Number(sumNutrition.protein),
+                fat: Number(sumNutrition.fat),
+                carbs: Number(sumNutrition.carbs),
+                is_recipe: false}).returning()
+                
+            await drizzleDb.insert(foodItem).values({food_id: tmpFoodObject[0].id, 
+            servings: Number(serving), 
+            timestamp: date, 
+            serving_mult: 1,
+            serving_type: servingType})
+        }
+        else {
+            console.log('NON')
+        }
+        console.log('NON')
+        console.log(!food_id)
         console.log("FOODItem INSERT ADDED")
         console.log("FOOD INSERT ADDED")
         
@@ -184,8 +210,6 @@ const AddFood = () => {
         if (ingredientList) {
             ingredientList.splice(index, 1)
             
-           // setIngredientList(newList)
-            
             setRefresh(!refresh)
         }
     }
@@ -209,10 +233,6 @@ const AddFood = () => {
             setRefresh(!refresh)
         }
     }
-    if (food_id)
-        console.log('IT IS RECIPE')
-    else
-        console.log('its NOT RECIPE')
     return (
         <ScrollView style={styles.container}>
             {showDate && 
@@ -228,7 +248,15 @@ const AddFood = () => {
                 <Text style={styles.smallText}>DATE</Text>
             </TouchableOpacity>
             <View style={[styles.box]}>
-                <Text style={styles.titleText}>{foodObject[0]?.food.name}</Text>
+                {
+                    food_id 
+                    ?   <Text style={styles.titleText}>{foodObject[0]?.food.name}</Text>
+                    :   <TextInput
+                            style={[styles.input, styles.smallInput]}
+                            onChangeText={(inp) => (onChangeFoodName(inp))}
+                            value={foodName}
+                        /> 
+                }
                 <View style={styles.flexRowContainer}>
                     <View style={styles.spaceInbetween}>
                         <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
@@ -278,19 +306,58 @@ const AddFood = () => {
                 <View style={[styles.flexRowContainer]}>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Calories</Text>
-                        <Text style={styles.smallText}>{foodObject[0] ? calculateCalories(sumNutrition , Number(serving) * servingMult): null}</Text>
+                        <Text style={styles.smallText}>{ calculateCalories(sumNutrition , Number(serving) * servingMult)}</Text>
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Carbs</Text>
-                        <Text style={styles.smallText}>{Math.round(sumNutrition.carbs * Number(serving) * servingMult)}</Text> 
+                        {
+                            food_id 
+                            ?   <Text style={styles.smallText}>{Math.round(sumNutrition.carbs * Number(serving) * servingMult)}</Text> 
+                            :   <TextInput
+                                style={[styles.input, styles.smallInput]}
+                                onChangeText={(inp) => setSumNutrition({
+                                    carbs: Number(inp), 
+                                    protein: sumNutrition.protein, 
+                                    fat: sumNutrition.fat, 
+                                    })}
+                                keyboardType = 'numeric'
+                                value={sumNutrition.carbs.toString()}
+                                /> 
+                        }
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Fat</Text>
-                        <Text style={styles.smallText}>{Math.round(sumNutrition.protein * Number(serving) * servingMult)}</Text> 
+                        {
+                            food_id 
+                            ?   <Text style={styles.smallText}>{Math.round(sumNutrition.fat * Number(serving) * servingMult)}</Text> 
+                            :   <TextInput
+                                style={[styles.input, styles.smallInput]}
+                                onChangeText={(inp) => setSumNutrition({
+                                    fat: Number(inp), 
+                                    protein: sumNutrition.protein, 
+                                    carbs: sumNutrition.carbs, 
+                                    })}
+                                keyboardType = 'numeric'
+                                value={sumNutrition.fat.toString()}
+                                /> 
+                        }
                     </View>
                     <View style={[styles.container, {alignItems: "center"}]}>
                         <Text style={styles.smallText}>Protein</Text>
-                        <Text style={styles.smallText}>{Math.round(sumNutrition.fat * Number(serving) * servingMult)}</Text>
+                        {
+                            food_id 
+                            ?   <Text style={styles.smallText}>{Math.round(sumNutrition.protein * Number(serving) * servingMult)}</Text> 
+                            :   <TextInput
+                                style={[styles.input, styles.smallInput]}
+                                onChangeText={(inp) => setSumNutrition({
+                                    fat: sumNutrition.fat, 
+                                    protein: Number(inp), 
+                                    carbs: sumNutrition.carbs, 
+                                    })}
+                                keyboardType = 'numeric'
+                                value={sumNutrition.protein.toString()}
+                                /> 
+                        }
                     </View>
 
                 </View>

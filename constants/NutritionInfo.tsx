@@ -71,8 +71,8 @@ export const assignNutrition = (calories: number, bw_lbs: number, height: number
   const protein = Math.min(bw_lbs, height) * protein_mult
   const fat = bw_lbs * .3
   const carbs = (calories - fat * 9 - protein * 4) / 4
-  const goal: NutritionInfo = {protein: protein, fat: fat, carbs: carbs}
-
+  const goal: NutritionInfoFull = {protein: protein, fat: fat, carbs: carbs, calories: calories}
+  console.log('assign nut', goal)
   return goal
 }
 

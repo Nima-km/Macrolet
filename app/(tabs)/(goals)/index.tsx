@@ -36,9 +36,16 @@ export default function Index() {
   const [show, setShow] = useState(false);
   const [showLogWeight, setShowLogWeight] = useState(false);
   const [curWeight, setCurWeight] = useState(0);
+  const [weightMult, setweightMult] = useState(2.20);
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
   useDrizzleStudio(db);
+
+  const WeightOptions = [
+      { label: 'Kg', value: 2.2 },
+      { label: 'Lbs', value: 1 },
+  ];
+
   const { data: LiveFood } = useLiveQuery(
     drizzleDb.select({
       fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
@@ -94,7 +101,7 @@ export default function Index() {
   const logWeight = async () => {
     if (showLogWeight == true){
       const tmp = await drizzleDb.insert(WeightItem)
-        .values({weight: curWeight}).returning()
+        .values({weight: curWeight * weightMult}).returning()
       
       console.log('inserted', tmp)
     }
@@ -102,6 +109,9 @@ export default function Index() {
   }
   const showTimepicker = () => {
     setShow(true);
+  };
+  const logWeightCancel = () => {
+    setShowLogWeight(!showLogWeight)
   };
   return (
     <View style={styles.container}>
@@ -135,7 +145,7 @@ export default function Index() {
             <SimpleChart
               strokeWidth={18}
               backgroundColor="#F3F0EE"
-              target={nutriGoals[0]?.protein}
+              target={Math.round(nutriGoals[0]?.protein)}
               barColor={colors.protein}
               progress={LiveFood[0].protein}
               smallerFont={smallerFont}
@@ -144,7 +154,7 @@ export default function Index() {
             <SimpleChart
               strokeWidth={18}
               backgroundColor="#F3F0EE"
-              target={nutriGoals[0]?.carbs}
+              target={Math.round(nutriGoals[0]?.carbs)}
               barColor={colors.carbs}
               progress={LiveFood[0].carbs}
               smallerFont={smallerFont}
@@ -153,22 +163,35 @@ export default function Index() {
             <SimpleChart
               strokeWidth={18}
               backgroundColor="#F3F0EE"
-              target={nutriGoals[0]?.fat}
+              target={Math.round(nutriGoals[0]?.fat)}
               barColor={colors.fat}
               progress={LiveFood[0].fat}
               smallerFont={smallerFont}
               mainText="Fat"
             />
           </View>
-      </TouchableOpacity> 
-      
-
+      </TouchableOpacity>
       <View style={styles.flexRowContainer}>
-        <TouchableOpacity onPress={() => logWeight()}>
+        <TouchableOpacity onLongPress={() => logWeight()}>
           <View style={[styles.smallBox, styles.box]}>
-            <View>
-              <Text style={styles.h5}>Weight</Text>
-            </View>
+            { showLogWeight ?
+                <View style={[styles.flexRowContainer, { justifyContent: 'space-between'}]}>
+                  <TouchableOpacity onPress={() => setweightMult(weightMult == 1 ? 2.2 : 1)} >
+                    <View style={{minHeight: 25, width: 45}}>
+                      <Text style={styles.h7}>{weightMult == 2.2 ? 'Kg' : 'lbs'}</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{}} onPress={logWeightCancel} >
+                    <View style={{padding: 5}}>
+                      <Text style={styles.h8}>Cancel</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                :
+                <>
+                  <Text style={styles.h5}>Weight</Text>
+                </>
+              }
             <View style={[styles.centerContainter, {marginTop: 20}]}>
 
               

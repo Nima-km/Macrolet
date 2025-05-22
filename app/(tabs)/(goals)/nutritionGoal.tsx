@@ -10,6 +10,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
 import { timestamp } from "drizzle-orm/gel-core";
+import { Link } from "expo-router";
 
 
 
@@ -29,36 +30,16 @@ export default function nutritionGoals() {
     const [calories, setCalories] = useState(2000)
     const [proteinMult, setProteinMult] = useState(.4)
     const [dietOption, setDietOption] = useState(1)
-    const [autoIntake, setAutoIntake] = useState(true)
+    const [macro_profile_id, setMacro_profile_id] = useState(0)
+    const [autoIntake, setAutoIntake] = useState(false)
     const [calorieIntake, setCalorieIntake] = useState<nutriDate[]>([])
     const [dates, setDates] = useState<Date[]>([])
     const [excludeIntake, setExludeIntake] = useState<string[]>([])
-    const tmpDate = new Date(2025, 4, 15)
-    tmpDate.setDate(tmpDate.getDate() - 14)
-    const TESTcalorieIntake = [
-        { fiber: 0, fat: 50, carbs: 170, protein: 183},
-        { fiber: 0, fat: 50, carbs: 178, protein: 186},
-        { fiber: 0, fat: 52, carbs: 177, protein: 182},
-        { fiber: 0, fat: 45, carbs: 170, protein: 183},
-        { fiber: 0, fat: 49, carbs: 170, protein: 183},
-        { fiber: 0, fat: 55, carbs: 170, protein: 180},
-        { fiber: 0, fat: 50, carbs: 170, protein: 183},
-        { fiber: 0, fat: 50, carbs: 178, protein: 186},
-        { fiber: 0, fat: 52, carbs: 177, protein: 182},
-        { fiber: 0, fat: 52, carbs: 177, protein: 182},
-        { fiber: 0, fat: 50, carbs: 170, protein: 183},
-    ];
+    const { data: macroProfileList } = useLiveQuery(
+        drizzleDb.select()
+        .from(macroProfile)
+        )
 
-    const TESTweightLogs = [
-      { weight: 160.5, timestamp: new Date(2025, 5, 1)},
-      { weight: 162.5, timestamp: new Date(2025, 5, 2)},
-      { weight: 162.5, timestamp: new Date(2025, 5, 4)},
-      { weight: 163.5, timestamp: new Date(2025, 5, 5)},
-      { weight: 164.5, timestamp: new Date(2025, 5, 7)},
-      { weight: 162.2, timestamp: new Date(2025, 5, 10)},
-      { weight: 161.0, timestamp: new Date(2025, 5, 11)},
-      { weight: 162.0, timestamp: new Date(2025, 5, 14)},
-    ];
     const bw = 165
     const height = 180
     const WeightOptions = [
@@ -79,6 +60,7 @@ export default function nutritionGoals() {
     }
     const handleSelectProtein = (selectedValue: number) => {
         console.log('SelectedProtein:', selectedValue);
+        setMacro_profile_id(0)
         setProteinMult(selectedValue)
         const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, selectedValue)
         setSumNutrition(goal)
@@ -86,27 +68,32 @@ export default function nutritionGoals() {
     // Handle the selection here
     };
     const handleAddGoal = async () => {
+        await drizzleDb.insert(nutritionGoal).values(
+            {calories: sumNutrition.calories, 
+            carbs: sumNutrition.carbs, 
+            fat: sumNutrition.fat,
+            protein: sumNutrition.protein
+            })
+        console.log('new macros Set', sumNutrition)
+    }
+    const FetchMacroProfile = async (profile_id : number) => {
+        setMacro_profile_id(profile_id)
         const macro_profile : NutritionInfoFull[]= await drizzleDb.select({
             fat: macroGoal.fat,
             carbs: macroGoal.carbs,
             protein: macroGoal.protein,
             calories: macroGoal.calories,
-        }).from(macroProfile).innerJoin(macroGoal, eq(macroGoal.macro_profile, macroProfile.id))
+        }).from(macroProfile).innerJoin(macroGoal, eq(macroGoal.macro_profile, macroProfile.id)).where(eq(macroProfile.id, profile_id))
         console.log('macro profile', macro_profile)
         const macro_goal = autoCalorie({
             macro_profile: macro_profile, 
-            calories: calories, 
+            calories: calculateCalories(sumNutrition, 1), 
             })
-        console.log('macro goal', macro_goal)
         if (macro_goal != "OUT OF BOUNDS"){
-            await drizzleDb.insert(nutritionGoal).values(
-                {calories: macro_goal.calories, 
-                carbs: macro_goal.carbs, 
-                fat: macro_goal.fat,
-                protein: macro_goal.protein
-                })
-            console.log('new macros Set', macro_goal)
+            setSumNutrition(macro_goal)
         }
+        else
+            console.log(macro_goal)
     }
     const FetchIntake = async () => {
         const tmpDate = new Date()
@@ -138,6 +125,7 @@ export default function nutritionGoals() {
     }
     const handleSelectIntake = (selectedValue: number) => {
         console.log('SelectedIntake:', selectedValue);
+        
         setDietOption(selectedValue)
     };
     const handleAutoIntake = async (selectedValue: number) => {
@@ -194,11 +182,15 @@ export default function nutritionGoals() {
         setSumNutrition(goal)
     }, [dietOption, weightChange])
     useEffect(() => {
-        const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
-        setSumNutrition(goal)
+        if (macro_profile_id == 0){
+            const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
+            setSumNutrition(goal)
+        }
     }, [calories])
+    useEffect(() => {
+        handleAutoIntake(Number(autoIntake))
+    }, [refresh])
 
-    
     return (
         <ScrollView style={styles.container}>
             <Text style={[styles.h1, styles.text]}>Nutrition Calculator</Text>
@@ -222,7 +214,7 @@ export default function nutritionGoals() {
                 </View>
                 
                 <Text style={[styles.h1, {marginTop: 20}]}>Nutrition Goals</Text>
-                <Text style={[styles.h3, {marginTop: 20}]}>{calculateCalories(sumNutrition, 1)} Cal</Text>
+                <Text style={[styles.h3, {marginTop: 20}]}>{sumNutrition.calories} Cal</Text>
                 <View style={[{flex: 1, marginVertical: 10, height: 20}]}>
                     <BarMacroChart strokeWidth={20} 
                         dailyTarget={sumNutrition}
@@ -261,10 +253,12 @@ export default function nutritionGoals() {
                     <RadioButton options={AutoCalorie} onSelect={handleAutoIntake}/>
                     <TextInput
                         style={[styles.input, {marginLeft:10, flex: .5,}]}
-                        onChangeText={(inp) => setCalories(Number(inp))}
+                        onChangeText={(inp) => setCalories(Number(inp) ? Number(inp) : 0)}
                         value={calories.toString()}
                         keyboardType="numeric"
                         placeholder="2000"
+                        editable={!autoIntake} 
+                        selectTextOnFocus={!autoIntake }
                         
                     />
                 </View>
@@ -285,9 +279,37 @@ export default function nutritionGoals() {
                 />
 
             </View>
+            <View style={styles.box}>
+                <FlatList
+                    data={macroProfileList}
+                    renderItem={({index, item}) => 
+                        <TouchableOpacity onPress={() => FetchMacroProfile(item.id)}>
+                            <View style={[styles.box, {backgroundColor: item.id == macro_profile_id ? 'green' : 'red'}]}>
+                                <Text style={[styles.h3]}>{item.name}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    }
+                    scrollEnabled={false}
+                    
+                    extraData={refresh}
+                />
+
+            </View>
             <TouchableOpacity style={styles.button} onPress={handleAddGoal}>
                 <Text style={styles.h5}>Set Goals</Text>
             </TouchableOpacity>
+            <Link style={[styles.button, styles.centerContainer]} href='/(tabs)/(goals)/macroProfile' asChild>
+                <TouchableOpacity>
+                    <Text style={styles.h5}>create MacroProfile</Text>
+                </TouchableOpacity>
+            </Link>
+            <Link style={[styles.button, styles.centerContainer]} href={{pathname: '/(tabs)/(goals)/macroProfile',
+                params: {pfId: macro_profile_id}
+                }} asChild>
+                <TouchableOpacity>
+                    <Text style={styles.h5}>modify MacroProfile</Text>
+                </TouchableOpacity>
+            </Link>
         </ScrollView>
     )
 }

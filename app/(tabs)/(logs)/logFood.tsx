@@ -99,7 +99,7 @@ export default function LogFood() {
                         <Image source={require('@/assets/images/Barcode.png')} />
                     </TouchableOpacity>
                 </Link>
-                <Link style={[styles.box, styles.centerContainter, {flex: 1, marginLeft: 0}]} href="/quickAddFood" asChild>
+                <Link style={[styles.box, styles.centerContainter, {flex: 1, marginLeft: 0}]} href="/addFood" asChild>
                     <TouchableOpacity>
                         <Text style={[styles.h4, {paddingBottom: 20}]}>Quick Add</Text>
                         <Image style={{paddingBottom: 50}} source={require('@/assets/images/plus-circle.png')} />

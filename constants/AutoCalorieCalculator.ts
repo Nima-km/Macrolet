@@ -69,9 +69,9 @@ function average(values: NutritionInfo[]): number {
 const findMiddleMacro = (x: NutritionInfoFull, y: NutritionInfoFull, mid: number) => {
   const par = (mid - x.calories) / (y.calories - x.calories)
   const result : NutritionInfoFull = {
-    protein: Math.round((y.protein - x.protein) * par + x.protein),
-    fat: Math.round((y.fat - x.fat) * par + x.fat),
-    carbs: Math.round((y.carbs - x.carbs) * par + x.carbs),
+    protein: (y.protein - x.protein) * par + x.protein,
+    fat: (y.fat - x.fat) * par + x.fat,
+    carbs: (y.carbs - x.carbs) * par + x.carbs,
     calories: mid,
   }
   return result
