@@ -1,4 +1,4 @@
-import { PixelRatio, Pressable, StyleSheet, Text, View, Image, TextInput } from "react-native";
+import { PixelRatio, Pressable, StyleSheet, Text, View, Image, TextInput, ScrollView } from "react-native";
 import { colors, spacing, typography } from "@/constants/theme";
 import { TouchableOpacity } from "react-native";
 import { DonutChart } from "@/constants/DonutChart";
@@ -114,7 +114,7 @@ export default function Index() {
     setShowLogWeight(!showLogWeight)
   };
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {show && 
         <DateTimePicker
             testID="dateTimePicker"
@@ -200,16 +200,17 @@ export default function Index() {
                   <Text style={styles.h5}>Log Weight</Text>
                   <TextInput 
                     style={[styles.h1, {fontWeight: 800, backgroundColor: colors.background, paddingHorizontal: 10}]}
-                    onChangeText={(inp) => setCurWeight(Number(inp))}
+                    onChangeText={(inp) => setCurWeight(Number(inp) ? Number(inp): 0)}
                     value={curWeight.toString()}
-                    placeholder="Search all foods"
+                    placeholder="0"
+                    keyboardType="numeric"
                     
                   />
                 </>
                 :
                 <>
                   <Text style={styles.h5}>Current</Text>
-                  <Text style={[styles.h1, {fontWeight: 800}]}>{currentWeight[0].weight} lbs</Text>
+                  <Text style={[styles.h1, {fontWeight: 800}]}>{currentWeight[0]?.weight} lbs</Text>
                 </>
               }
             </View>
@@ -217,7 +218,7 @@ export default function Index() {
               currentWeight[1] &&
               <View style={[styles.centerContainter, {marginTop: 10}]}>
                 <Text style={[styles.h5, 
-                  {color: currentWeight[0].weight - currentWeight[1].weight <= 0? 'red' : 'green'}]}>
+                  {color: currentWeight[0]?.weight - currentWeight[1]?.weight <= 0? 'red' : 'green'}]}>
                     {currentWeight[0].weight - currentWeight[1].weight} lbs
                 </Text>
               </View>
@@ -228,7 +229,7 @@ export default function Index() {
           <Text style={styles.h5}>bo o o wo a</Text>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 const styles = StyleSheet.create({
