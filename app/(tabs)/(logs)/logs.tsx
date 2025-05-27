@@ -168,6 +168,7 @@ export default function Logs() {
         servings={item.foodItem.servings}
         nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein, fiber: item.food.fiber}}
         foodItem_id={item.foodItem.id}
+        food_id={item.food.id}
         timestamp={item.foodItem.timestamp}
         is_link={true}
         backgroundColor={'#FFFFFF'}

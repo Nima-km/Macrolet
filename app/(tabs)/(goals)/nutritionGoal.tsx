@@ -34,7 +34,6 @@ export default function nutritionGoals() {
     const [autoIntake, setAutoIntake] = useState(false)
     const [calorieIntake, setCalorieIntake] = useState<nutriDate[]>([])
     const [dates, setDates] = useState<Date[]>([])
-    const [excludeIntake, setExludeIntake] = useState<string[]>([])
     const { data: macroProfileList } = useLiveQuery(
         drizzleDb.select()
         .from(macroProfile)
@@ -102,16 +101,25 @@ export default function nutritionGoals() {
             fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
             carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings}* ${foodItem.serving_mult})`,
             protein: sql<number>`sum(${food.protein} * ${foodItem.servings}* ${foodItem.serving_mult})`,
-            timestamp: sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch')`,
+            timestamp: sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch', 'localtime')`,
             enabled: sql<boolean>`${true}`
         })
         .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-        .where(and(gte(foodItem.timestamp, tmpDate),
-            (notInArray(sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch')`, excludeIntake))
-        ))
-        .groupBy(sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch')`)
+        .where(gte(foodItem.timestamp, tmpDate))
+        .groupBy(sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch', 'localtime')`)
         .orderBy(foodItem.timestamp)
-        console.log('i like boobs', intake[0].timestamp)
+        const tstIntake : nutriDate[] = await drizzleDb.select({
+            fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+          // name: sql<string>`(${food.name})`,
+            carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+            protein: sql<number>`sum(${food.protein} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+            timestamp: sql<string>`strftime('%s', ${foodItem.timestamp}, 'unixepoch')`,
+            enabled: sql<boolean>`${true}`
+        })
+        .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+        .where(eq(sql<string>`strftime('%Y-%m-%d', ${foodItem.timestamp}, 'unixepoch', 'localtime')`, "2025-05-26"))
+        .orderBy(foodItem.timestamp)
+        console.log('i like boobs', tstIntake)
         //setCalorieIntake(intake)
         return intake
     }
@@ -152,17 +160,17 @@ export default function nutritionGoals() {
         tmpDate.setDate(tday.getDate() - 14)
         console.log('dateFormat', formatDate(tmpDate))
         let res : nutriDate[] = []
-        for (let i = tmpDate; i <= tday; i.setDate(i.getDate() + 1)) {
+        for (let i = tmpDate; i < tday; i.setDate(i.getDate() + 1)) {
             if (calint[cnt].timestamp === formatDate(i)){
                 res.push(calint[cnt])
                 if (cnt < calint.length - 1)
                     cnt++
             }
             else
-                console.log("did not find it", `${formatDate(i)} ${calint[cnt].timestamp}`)
+               // console.log("did not find it", `${formatDate(i)} ${calint[cnt].timestamp}`)
                 res.push({carbs: 0, fat: 0, protein: 0, timestamp: formatDate(i), enabled: true})
         }
-        console.log('res', res)
+        //console.log('res', res)
         setCalorieIntake(res)
     }
 
@@ -222,7 +230,6 @@ export default function nutritionGoals() {
                         colorfat={colors.fat}
                         colorCarbs={colors.carbs}
                         radius={10}
-                        width={337}
                     />
                 </View>
                 <View style={[styles.rowContainer, {justifyContent: 'space-around', marginRight: 20}]}>
@@ -264,19 +271,20 @@ export default function nutritionGoals() {
                 </View>
             </View> 
             <View style={styles.box}>
-                <FlatList
-                    data={calorieIntake}
-                    renderItem={({index, item}) => 
-                        <TouchableOpacity onPress={() => modifyDateList(index)}>
-                            <View style={[styles.box, {backgroundColor: item.enabled == true ? 'green' : 'red'}]}>
-                                <Text style={[styles.h3]}>{calculateCalories(item, 1)}</Text>
-                            </View>
-                        </TouchableOpacity>
+                <View>
+                    {calorieIntake.map((item, index) => {
+                        return (
+                            <TouchableOpacity onPress={() => modifyDateList(index)} key={index}>
+                                <View style={[styles.box, {backgroundColor: item.enabled == true ? 'green' : 'red', marginHorizontal: 5}]}>
+                                    <Text style={[styles.h5]}>{calculateCalories(item, 1)}</Text>
+                                    <Text style={[styles.h5]}>{item.timestamp}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )
+                    })
+
                     }
-                    scrollEnabled={false}
-                    numColumns={3}
-                    extraData={refresh}
-                />
+                </View>
 
             </View>
             <View style={styles.box}>

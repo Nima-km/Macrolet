@@ -18,8 +18,8 @@ export default function LogFood() {
     const drizzleDb = drizzle(db);
     // THIS IS A PLACEHOLDER FOR HISTORY PLEASE CHANGE IT
     const { data: history } = useLiveQuery(
-        drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-        .orderBy(foodItem.timestamp).limit(4)
+        drizzleDb.select().from(food)
+        .orderBy()
     )
     const [filteredData, setFilteredData] = useState(history);
     const [searchData, setSearchData] = useState<FoodInfo[]>();
@@ -30,7 +30,8 @@ export default function LogFood() {
             setSearchData(res)
     }
     useEffect(() => {
-        setFilteredData(history.filter((item) => item.food.name.toLowerCase().includes(`${searchHistory}`.toLowerCase())))
+        console.log("search history", history)
+        setFilteredData(history.filter((item) => item.name.toLowerCase().includes(`${searchHistory}`.toLowerCase())).slice(0, 4))
     }, [searchHistory, history])
     return (
         <ScrollView style={styles.container}>
@@ -47,11 +48,11 @@ export default function LogFood() {
                 <FlatList
                     data={searchData}
                     renderItem={({item}) => 
-                    <SearchItem name={item.name}
+                    <Item name={item.name}
                         description={item.description}
                         servings={item.servings}
                         nutritionInfo={{ carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein, fiber: item.nutritionInfo.fiber}}
-                        foodItem_id={item.foodItem_id}
+                        food_id={item.food_id}
                         is_link={true}
                         barcode={item.barcode}
                         backgroundColor={colors.box} 
@@ -76,19 +77,19 @@ export default function LogFood() {
                 <FlatList
                     data={filteredData}
                     renderItem={({item}) => 
-                    <SearchItem name={item.food.name}
-                        description={item.food.description}
-                        servings={item.foodItem.servings}
-                        nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein, fiber: item.food.fiber }}
-                        foodItem_id={item.foodItem.id}
+                    <Item name={item.name}
+                        description={item.description}
+                        servings={1}
+                        nutritionInfo={{ carbs: item.carbs, fat: item.fat, protein: item.protein, fiber: item.fiber }}
+                        food_id={item.id}
                         is_link={true}
                         backgroundColor={colors.box} 
-                        serving_mult={item.foodItem.serving_mult}
-                        serving_100g={item.food.serving_100g} 
-                        volume_100g={item.food.volume_100g} 
-                        serving_type={item.foodItem.serving_type}/>
+                        serving_mult={1}
+                        serving_100g={item.serving_100g} 
+                        volume_100g={item.volume_100g} 
+                        serving_type={"serving"}/>
                     }
-                    keyExtractor={item => item.foodItem.id.toString()}
+                    keyExtractor={item => item.id.toString()}
                     scrollEnabled={false}
                 />
             </View>

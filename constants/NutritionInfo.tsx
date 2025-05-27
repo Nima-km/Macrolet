@@ -27,7 +27,8 @@ export type FoodInfo = {
   servings: number;
   nutritionInfo: NutritionInfo;
   timestamp?: Date;
-  foodItem_id: number;
+  foodItem_id?: number;
+  food_id: number;
   barcode?: number;
   serving_mult: number;
   serving_100g: number;
@@ -62,9 +63,9 @@ export type Section = {
 
 
 export const calculateCalories = (nutrition: NutritionInfo, mult:number): number => {
-  return (Math.round((nutrition.protein * 4 * mult)) 
-    + Math.round((nutrition.fat * 9 * mult)) 
-    + Math.round(((nutrition.carbs - (nutrition.fiber ? nutrition.fiber : 0)) * 4 * mult)));
+  return (Math.round((nutrition.protein * mult)) * 4
+    + Math.round((nutrition.fat  * mult)) * 9
+    + Math.round(((nutrition.carbs - (nutrition.fiber ? nutrition.fiber : 0))  * mult)) * 4);
 };
 
 export const assignNutrition = (calories: number, bw_lbs: number, height: number, protein_mult: number) : NutritionInfo => {
@@ -77,19 +78,19 @@ export const assignNutrition = (calories: number, bw_lbs: number, height: number
 }
 
 
-export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is_link, backgroundColor, serving_mult, serving_type}: ItemProps) => {
+export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, food_id, is_link, backgroundColor, serving_mult, serving_type}: ItemProps) => {
   return (
     <Link href={{pathname: `${is_link ? "/addFood" : './'}`,
-      params: {food_id: foodItem_id}
+      params: {foodItem_id: foodItem_id, food_id: food_id}
     }} asChild>
       <TouchableOpacity disabled={!is_link}>
         <View style={[styles.item, {backgroundColor: backgroundColor}]}>
-          <View style={[styles.flexRowContainer, {paddingBottom:7}]}>
-            <Text style={styles.h4}>{name}</Text>
+          <View style={[styles.flexRowContainer, {paddingBottom:3}]}>
+            <Text style={styles.h4}>{name} <Text style={styles.h6}>{servings} {serving_type} </Text> </Text>
+            
             <Text style={styles.h4}>{nutritionInfo != null ? Math.floor(calculateCalories(nutritionInfo , servings * serving_mult)) : 0} cal</Text>
           </View>
           <View style={styles.flexRowContainer}>
-            <Text style={styles.h6}>{servings} {serving_type} </Text>
             {timestamp &&
             <Text style={styles.h6}>{timestamp.getHours() < 10 ? 0: ''}{timestamp.getHours()}:{timestamp?.getMinutes() < 10 ? 0: ''}{timestamp?.getMinutes()}</Text>
             }
@@ -100,7 +101,6 @@ export const Item = ({ name, timestamp, nutritionInfo, servings, foodItem_id, is
                 colorfat={colors.fat}
                 colorCarbs={colors.carbs}
                 radius={4}
-                width={337}
               />
           </View>
           <View style={[styles.flexRowContainer, {marginHorizontal: 0}]}>
@@ -143,6 +143,7 @@ export const SearchItem = ({ name, timestamp, barcode, nutritionInfo, servings, 
           calories: 0
         },
         foodItem_id: 0,
+        food_id: 0,
         serving_mult: serving_mult,
         serving_100g: serving_100g,
         volume_100g: 0,
@@ -230,6 +231,8 @@ export const RecipeItem = ({ name,
   );
 };
 
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -257,7 +260,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   item: {
-    paddingVertical: 24,
+    paddingVertical: 10,
     paddingHorizontal: 17,
     marginVertical: 7.5,
     borderRadius: 8,

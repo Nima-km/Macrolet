@@ -30,19 +30,25 @@ type AndroidMode = 'date' | 'time';
 const AddFood = () => {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
-    const { food_id } = useLocalSearchParams();
+    const { food_id, foodItem_id } = useLocalSearchParams();
+    console.log('fooditemid', foodItem_id)
+    console.log('foodid', food_id)
+    const { data: foodItemObject } = useLiveQuery(
+        drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.id} = ${Number(foodItem_id)}`)
+        .orderBy(food.id)
+    )
     const { data: foodObject } = useLiveQuery(
-        drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.id} = ${Number(food_id)}`)
+        drizzleDb.select().from(food).where(sql`${food.id} = ${Number(food_id)}`)
         .orderBy(food.id)
     )
     const { data: recipeObject } = useLiveQuery(
-        drizzleDb.select().from(recipeItem).innerJoin(food, eq(recipeItem.ingredient_id, food.id)).where(sql`${recipeItem.recipe_id} = ${foodObject[0]?.food.id}`)
-    , [foodObject])
+        drizzleDb.select().from(recipeItem).innerJoin(food, eq(recipeItem.ingredient_id, food.id)).where(sql`${recipeItem.recipe_id} = ${foodItemObject[0]?.food.id}`)
+    , [foodItemObject])
     const [refresh, setRefresh] = useState<boolean>(false);
     const [date, setDate] = React.useState(new Date());
     const [isRecipe, setIsRecipe] = React.useState(false);
     const context = useContext(Context)
-    const [serving, onChangeServing] = React.useState('');
+    const [serving, onChangeServing] = React.useState('1');
     const [foodName, onChangeFoodName] = React.useState('');
     const [servingSize, onChangeServingSize] = React.useState('');
     const [showDate, setShowDate] = useState(false);
@@ -57,16 +63,21 @@ const AddFood = () => {
     const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 8);
     
     useEffect(() => {
-        if (food_id){
-            setDate(foodObject[0]?.foodItem.timestamp)
-            setIsRecipe(foodObject[0]?.food.is_recipe ? foodObject[0]?.food.is_recipe : false)
-            onChangeServing(`${foodObject[0]?.foodItem.servings}`) 
-            setServingMult(foodObject[0]?.foodItem.serving_mult)
+        if (foodItem_id){
+            setDate(foodItemObject[0]?.foodItem.timestamp)
+            setIsRecipe(foodItemObject[0]?.food.is_recipe ? foodItemObject[0]?.food.is_recipe : false)
+            onChangeServing(`${foodItemObject[0]?.foodItem.servings}`) 
+            setServingMult(foodItemObject[0]?.foodItem.serving_mult)
+            setServingType(foodItemObject[0]?.foodItem.serving_type)
         }
-    }, [foodObject, recipeItem])
+        else if (food_id) {
+            setIsRecipe(foodObject[0]?.is_recipe ? foodObject[0]?.is_recipe : false)
+        }
+    }, [foodItemObject, recipeItem])
     useEffect(() => {
-        if (food_id)
-            setSumNutrition({carbs: foodObject[0]?.food.carbs, fat: foodObject[0]?.food.fat, protein: foodObject[0]?.food.protein, fiber: foodObject[0]?.food.fiber})
+        console.log('foodObject', foodObject[0])
+        if (food_id && foodObject[0])
+            setSumNutrition({carbs: foodObject[0]?.carbs, fat: foodObject[0]?.fat, protein: foodObject[0]?.protein, fiber: foodObject[0]?.fiber})
 
     }, [foodObject[0]])
     useEffect(() => {
@@ -74,7 +85,7 @@ const AddFood = () => {
     }, [sumNutrition])
     useEffect(() => {
         let total: NutritionInfo = {carbs: 0, fat: 0, protein: 0, fiber: 0}
-        if (ingredientList?.length && isRecipe == true && food_id){
+        if (ingredientList?.length && isRecipe == true && foodItem_id){
             for (let i = 0; i < ingredientList.length; i++) {
                 total.carbs += ingredientList[i].nutritionInfo.carbs * ingredientList[i].servings * ingredientList[i].serving_mult
                 total.fat += ingredientList[i].nutritionInfo.fat * ingredientList[i].servings * ingredientList[i].serving_mult
@@ -100,7 +111,8 @@ const AddFood = () => {
                     protein: (item.food.protein),
                     fiber: (item.food.fiber),
                 },
-                foodItem_id: item.food.id,
+                foodItem_id: 0,
+                food_id: item.food.id,
                 serving_mult: item.recipeItem.serving_mult,
                 serving_type: item.recipeItem.serving_type,
                 serving_100g: item.food.serving_100g,
@@ -114,18 +126,18 @@ const AddFood = () => {
     }
     const handleUpdateFood = async () => {
         
-        const foodCheck = await drizzleDb.update(foodItem).set({servings: Number(serving), timestamp: date}).where(eq(foodItem.id, Number(food_id))).returning()
+        const foodCheck = await drizzleDb.update(foodItem).set({servings: Number(serving), timestamp: date}).where(eq(foodItem.id, Number(foodItem_id))).returning()
         
     }
     const handleDeleteFood = async () => {
         
-        const foodCheck = await drizzleDb.delete(foodItem).where(eq(foodItem.id, Number(food_id))).returning()
+        const foodCheck = await drizzleDb.delete(foodItem).where(eq(foodItem.id, Number(foodItem_id))).returning()
         
     }
     const handleAddFoodItem = async () => {
         console.log("FOOD INSERT ADDED")
         await drizzleDb.insert(foodItem).values({
-            food_id: foodObject[0].food.id, 
+            food_id: foodItemObject[0].food.id, 
             servings: Number(serving), 
             serving_type: 'servings',
             serving_mult: 1,
@@ -135,11 +147,11 @@ const AddFood = () => {
 
     const handleAddFood = async () => {
         console.log("FOOD INSERT ADDED")
-        if (foodObject[0]?.food.is_recipe){
+        if (foodItemObject[0]?.food.is_recipe){
             console.log('wtf')
             const recipe = await drizzleDb.insert(food).values({
-                name: foodObject[0].food.name,
-                description: foodObject[0].food.name,
+                name: foodItemObject[0].food.name,
+                description: foodItemObject[0].food.name,
                 protein: Number(sumNutrition.protein),
                 fat: Number(sumNutrition.fat),
                 carbs: Number(sumNutrition.carbs),
@@ -147,7 +159,7 @@ const AddFood = () => {
             if (ingredientList){
                 const plist = ingredientList.map((item) => {
                     return( {recipe_id: recipe[0].id, 
-                        ingredient_id: item.foodItem_id, 
+                        ingredient_id: item.food_id, 
                         servings: item.servings, 
                         serving_mult: item.serving_mult,
                         serving_type: item.serving_type})})
@@ -160,12 +172,15 @@ const AddFood = () => {
                 serving_type: 'servings'})
         }
         else if (food_id){
-            console.log('its not quick add')
-            await drizzleDb.insert(foodItem).values({food_id: foodObject[0].food.id, 
-            servings: Number(serving), 
-            timestamp: date, 
-            serving_mult: foodObject[0].foodItem.serving_mult,
-            serving_type: foodObject[0].foodItem.serving_type})}
+            console.log('its not quick add', foodObject[0].id)
+            const tmp = await drizzleDb.insert(foodItem).values({food_id: foodObject[0].id, 
+                servings: Number(serving), 
+                timestamp: date, 
+                serving_mult: servingMult,
+                serving_type: servingType}).returning()
+            console.log('added', tmp)
+        }
+
         else if (food_id == undefined) {
             console.log('its quick add')
             const tmpFoodObject = await drizzleDb.insert(food).values({name: foodName, 
@@ -185,7 +200,7 @@ const AddFood = () => {
             console.log('NON')
         }
         console.log('NON')
-        console.log(!food_id)
+        console.log(!foodItem_id)
         console.log("FOODItem INSERT ADDED")
         console.log("FOOD INSERT ADDED")
         
@@ -250,7 +265,7 @@ const AddFood = () => {
             <View style={[styles.box]}>
                 {
                     food_id 
-                    ?   <Text style={styles.titleText}>{foodObject[0]?.food.name}</Text>
+                    ?   <Text style={styles.titleText}>{foodItemObject[0]?.food.name}</Text>
                     :   <TextInput
                             style={[styles.input, styles.smallInput]}
                             onChangeText={(inp) => (onChangeFoodName(inp))}
@@ -371,7 +386,7 @@ const AddFood = () => {
                                     description={item.description} 
                                     servings={item.servings} 
                                     nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein, fiber: item.nutritionInfo.fiber}}
-                                    foodItem_id={item.foodItem_id}
+                                    food_id={item.food_id}
                                     serving_mult={item.serving_mult}
                                     setServing={(text) => handleChangeServing(index, text)}
                                     handleDelete={() => handleDeleteIngredient(index)}

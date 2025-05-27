@@ -28,7 +28,6 @@ import { useEffect } from "react";
 interface BarProgressProps {
   strokeWidth: number;
   radius: number;
-  width: number;
 	dailyTarget: NutritionInfo;
   colorProtein: string;
   colorfat: string;
@@ -40,7 +39,6 @@ export const BarMacroChart: React.FC<BarProgressProps> = ({
     strokeWidth,
 		dailyTarget,
     radius,
-    width,
     colorProtein,
     colorfat,
     colorCarbs,
@@ -52,42 +50,41 @@ export const BarMacroChart: React.FC<BarProgressProps> = ({
     dailyTarget = {protein: 0, fat: 0, carbs: 0, calories: 0}
   const total = dailyTarget.carbs + dailyTarget.fat + dailyTarget.protein
 	
-  
-  const endProtein = useDerivedValue(() => ((dailyTarget.protein / total) * width ));
-  const endCarb = useDerivedValue(() => ((dailyTarget.carbs / total) * width) + endProtein.value);
-  const endFat = useDerivedValue(() => ((dailyTarget.fat / total) * width + endCarb.value));
+  const size = useSharedValue({ width: 0, height: 0 });
+  const endProtein = useDerivedValue(() => ((dailyTarget.protein / total) * size.value.width ));
+  const endCarb = useDerivedValue(() => ((dailyTarget.carbs / total) * size.value.width) + endProtein.value);
+  const endFat = useDerivedValue(() => ((dailyTarget.fat / total) * size.value.width + endCarb.value));
   const chartHeight = 1;
+  
 
   return (
-    <View style={[{height: strokeWidth + 1, width: width}]}>
-        <Canvas style={{ flex: 1}}>
-          
-          <RoundedRect
-              x={0}
-              y={chartHeight}
-              width={endFat}
-              height={strokeWidth}
-              r={radius}
-              color={colorfat}
-          />
-          <RoundedRect
-              x={0}
-              y={chartHeight}
-              width={endCarb}
-              height={strokeWidth}
-              r={radius}
-              color={colorCarbs}
-          />
-          <RoundedRect
-              x={0}
-              y={chartHeight}
-              width={endProtein}
-              height={strokeWidth}
-              r={radius}
-              color={colorProtein}
-          />
-        </Canvas>
-    </View>
+  
+    <Canvas style={[{flex: 1, }]} onSize={size}>
+      <RoundedRect
+          x={0}
+          y={chartHeight}
+          width={endFat}
+          height={strokeWidth}
+          r={radius}
+          color={colorfat}
+      />
+      <RoundedRect
+          x={0}
+          y={chartHeight}
+          width={endCarb}
+          height={strokeWidth}
+          r={radius}
+          color={colorCarbs}
+      />
+      <RoundedRect
+          x={0}
+          y={chartHeight}
+          width={endProtein}
+          height={strokeWidth}
+          r={radius}
+          color={colorProtein}
+      />
+    </Canvas>
   );
 };
 

@@ -35,7 +35,7 @@ export default function Index() {
   const context = useContext(Context)
   const [show, setShow] = useState(false);
   const [showLogWeight, setShowLogWeight] = useState(false);
-  const [curWeight, setCurWeight] = useState(0);
+  const [curWeight, setCurWeight] = useState('');
   const [weightMult, setweightMult] = useState(2.20);
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
@@ -101,7 +101,7 @@ export default function Index() {
   const logWeight = async () => {
     if (showLogWeight == true){
       const tmp = await drizzleDb.insert(WeightItem)
-        .values({weight: curWeight * weightMult}).returning()
+        .values({weight: (Number(curWeight) ? Number(curWeight) : 0) * weightMult}).returning()
       
       console.log('inserted', tmp)
     }
@@ -200,9 +200,9 @@ export default function Index() {
                   <Text style={styles.h5}>Log Weight</Text>
                   <TextInput 
                     style={[styles.h1, {fontWeight: 800, backgroundColor: colors.background, paddingHorizontal: 10}]}
-                    onChangeText={(inp) => setCurWeight(Number(inp) ? Number(inp): 0)}
-                    value={curWeight.toString()}
-                    placeholder="0"
+                    onChangeText={setCurWeight}
+                    value={curWeight}
+                    placeholder={currentWeight[0]?.weight.toString()}
                     keyboardType="numeric"
                     
                   />
@@ -210,7 +210,7 @@ export default function Index() {
                 :
                 <>
                   <Text style={styles.h5}>Current</Text>
-                  <Text style={[styles.h1, {fontWeight: 800}]}>{currentWeight[0]?.weight} lbs</Text>
+                  <Text style={[styles.h1, {fontWeight: 800}]}>{Math.round(currentWeight[0]?.weight * 100) / 100} lbs</Text>
                 </>
               }
             </View>
@@ -219,7 +219,7 @@ export default function Index() {
               <View style={[styles.centerContainter, {marginTop: 10}]}>
                 <Text style={[styles.h5, 
                   {color: currentWeight[0]?.weight - currentWeight[1]?.weight <= 0? 'red' : 'green'}]}>
-                    {currentWeight[0].weight - currentWeight[1].weight} lbs
+                    {Math.round((currentWeight[0].weight - currentWeight[1].weight) * 100) / 100} lbs
                 </Text>
               </View>
             }

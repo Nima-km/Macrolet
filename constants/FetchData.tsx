@@ -21,6 +21,7 @@ export const FetchBarcode = async (barcode: any) => {
                 serving_type: 'servings',
                 description: "",
                 foodItem_id: 0,
+                food_id: 0,
                 volume_100g: 0
             }
             return result
@@ -46,6 +47,7 @@ export const FetchSearch = async (search: string) => {
                     serving_type: 'servings',
                     description: "",
                     foodItem_id: 0,
+                    
                     volume_100g: 0
                 }
             }).slice(0, 5)

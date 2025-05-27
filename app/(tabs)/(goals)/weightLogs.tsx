@@ -8,7 +8,7 @@ import { View, FlatList, StyleSheet} from "react-native";
 
 
 
-function WeightLogs() {
+export default function WeightLogs() {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
     const {data : weightData} = useLiveQuery(
