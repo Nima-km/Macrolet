@@ -68,9 +68,9 @@ const CreateRecipe = () => {
        
     }
     const handleCreateRecipe = async (log: boolean) => {
-        const recipe = await drizzleDb.insert(food).values({name:foodName, description: "test", is_recipe: true}).returning()
+        const recipe = await drizzleDb.insert(food).values({name:foodName, description: "test", is_recipe: true, is_template: true}).returning()
         const plist = ingredientObject.ingredientList.map((item) => {
-            return( {recipe_id: recipe[0].id, ingredient_id: item.foodItem_id, servings: item.servings, serving_mult: item.serving_mult, serving_type: item.serving_type})})
+            return( {recipe_id: recipe[0].id, ingredient_id: item.food_id, servings: item.servings, serving_mult: item.serving_mult, serving_type: item.serving_type})})
         await drizzleDb.update(food).set({fat: sumNutrition.fat, protein: sumNutrition.protein, carbs: sumNutrition.carbs}).where(eq(food.id, recipe[0].id))
         await drizzleDb.insert(recipeItem).values(plist)
         if (log == true)
@@ -135,7 +135,6 @@ const CreateRecipe = () => {
                     colorfat={colors.fat}
                     colorCarbs={colors.carbs}
                     radius={10}
-                    width={372}
                 />
             </View>
             <View style={[styles.rowContainer, {justifyContent: 'space-around', marginRight: 20}]}>
@@ -177,7 +176,8 @@ const CreateRecipe = () => {
                     setServingType={() => handleServingMult}
                     serving_type={item.serving_type}
                     volume_100g={item.volume_100g}
-                    serving_100g={item.serving_100g} backgroundColor={colors.primary}                            />}
+                    serving_100g={item.serving_100g} backgroundColor={colors.primary} 
+                    food_id={item.food_id}                            />}
                     scrollEnabled={false}
                     extraData={refresh}
                     style={[{margin: 20}]}

@@ -15,6 +15,7 @@ export const food = sqliteTable('food', {
     fiber: integer('fiber').default(0).notNull(),
     barcode: integer('barcode').default(0),
     is_recipe: integer('is_recipe', {mode: 'boolean'}).default(false),
+    is_template: integer('is_template', {mode: 'boolean'}).default(false),
     serving_100g: integer('serving_100g').default(1).notNull(),
     volume_100g: integer('volume_100g').default(1).notNull(),
 })
@@ -58,7 +59,7 @@ export const foodItem = sqliteTable ('foodItem', {
     servings: integer('servings').default(0).notNull(),
     serving_mult: integer('serving_mult').default(1).notNull(),
     serving_type: text('serving_type').notNull(),
-    is_template: integer('is_template', {mode: 'boolean'}).default(false),
+    
 }
 )
 export const WeightItem = sqliteTable ('weightItem', {

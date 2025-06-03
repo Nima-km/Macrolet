@@ -22,12 +22,12 @@ export default function AddIngredient() {
     const drizzleDb = drizzle(db);
     // THIS IS A PLACEHOLDER FOR HISTORY PLEASE CHANGE IT
     const { data: history } = useLiveQuery(
-        drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
-        .orderBy(foodItem.timestamp).limit(4)
+        drizzleDb.select().from(food)
+        .orderBy()
     )
     const [filteredData, setFilteredData] = useState(history);
     useEffect(() => {
-        setFilteredData(history.filter((item) => item.food.name.toLowerCase().includes(`${search}`.toLowerCase())))
+        setFilteredData(history.filter((item) => item.name.toLowerCase().includes(`${search}`.toLowerCase())).slice(0, 4))
     }, [search, history])
 
     const handleAddIngredient = (newIng: FoodInfo) => {
@@ -104,30 +104,32 @@ export default function AddIngredient() {
                     renderItem={({item}) => 
                         <TouchableOpacity onPress={() => 
                             handleAddIngredient({
-                                name: item.food.name,
-                                description: item.food.description,
-                                servings: item.foodItem.servings,
-                                nutritionInfo: { protein: item.food.protein, fat: item.food.fat, carbs: item.food.carbs },
-                                foodItem_id: item.food.id,
-                                serving_mult: item.foodItem.serving_mult,
-                                serving_100g: item.food.serving_100g,
-                                volume_100g: item.food.volume_100g,
-                                serving_type: item.foodItem.serving_type
+                                name: item.name,
+                                description: item.description,
+                                servings: 1,
+                                nutritionInfo: { protein: item.protein, fat: item.fat, carbs: item.carbs },
+                                foodItem_id: item.id,
+                                serving_mult: 1,
+                                serving_100g: item.serving_100g,
+                                volume_100g: item.volume_100g,
+                                serving_type: 'servings',
+                                food_id: item.id
                             })}>
-                            <Item name={item.food.name}
-                                description={item.food.description}
-                                servings={item.foodItem.servings}
-                                nutritionInfo={{ carbs: item.food.carbs, fat: item.food.fat, protein: item.food.protein }}
-                                foodItem_id={item.foodItem.id}
-                                is_link={false} 
-                                serving_mult={item.foodItem.serving_mult} 
-                                serving_100g={item.food.serving_100g} 
-                                volume_100g={item.food.volume_100g} 
-                                serving_type={item.foodItem.serving_type} 
-                                backgroundColor={colors.box}/>
+                            <Item name={item.name}
+                                description={item.description}
+                                servings={1}
+                                nutritionInfo={{ carbs: item.carbs, fat: item.fat, protein: item.protein }}
+                                foodItem_id={0}
+                                is_link={false}
+                                serving_mult={1}
+                                serving_100g={item.serving_100g}
+                                volume_100g={item.volume_100g}
+                                serving_type={'servings'}
+                                backgroundColor={colors.box}
+                                food_id={item.id}/>
                         </TouchableOpacity>
                     }
-                    keyExtractor={item => item.foodItem.id.toString()}
+                    keyExtractor={item => item.id.toString()}
                     scrollEnabled={false}
                 />
             </View>
@@ -146,22 +148,25 @@ export default function AddIngredient() {
             <Text style={[styles.h1, {marginHorizontal: 20, marginTop: 40}]}>Added</Text>
             <FlatList
                 data={ingredientList}
-                renderItem={({item, index}) => <RecipeItem 
-                        name={item.name} 
-                        description={item.description} 
-                        servings={item.servings} 
-                        nutritionInfo={{carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein}}
+                renderItem={({item, index}) => 
+                    <RecipeItem 
+                        name={item.name}
+                        description={item.description}
+                        servings={item.servings}
+                        nutritionInfo={{ carbs: item.nutritionInfo.carbs, fat: item.nutritionInfo.fat, protein: item.nutritionInfo.protein }}
                         foodItem_id={item.foodItem_id}
                         serving_mult={item.serving_mult}
                         setServing={(text) => handleChangeServing(index, text)}
                         handleDelete={() => handleDeleteIngredient(index)}
-                        handleServingMult={(mult, type) => handleServingMult(mult, type, index)} 
-                        setServingType={() => handleServingMult} 
+                        handleServingMult={(mult, type) => handleServingMult(mult, type, index)}
+                        setServingType={() => handleServingMult}
                         serving_type={item.serving_type}
                         volume_100g={item.volume_100g}
                         serving_100g={item.serving_100g}
-                        backgroundColor={colors.primary}
-                    />}
+                        backgroundColor={colors.primary} 
+                        food_id={0}
+                        />
+                    }
                     scrollEnabled={false}
                     extraData={refresh}
                     style={[{margin: 20}]}

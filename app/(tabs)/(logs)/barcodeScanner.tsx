@@ -74,7 +74,8 @@ export default function BarcodeScanner({ingredientList, setIngredientList, setIs
                     serving_mult: servingMult,
                     serving_100g: foodObject[0].serving_100g,
                     volume_100g: 0,
-                    serving_type: servingType
+                    serving_type: servingType,
+                    food_id: 0
                 }
                 const newList = ingredientList ? ingredientList.concat(newIng) : [newIng]
                 setIngredientList(newList)
@@ -177,8 +178,7 @@ export default function BarcodeScanner({ingredientList, setIngredientList, setIs
             handleServingMult={handleServingMult}
             setServingType={setServingType}
             serving_type={servingType} serving_100g={serving100g} volume_100g={1}
-            backgroundColor={colors.primary}
-            />
+            backgroundColor={colors.primary} food_id={0}            />
             <Link style={[styles.button, styles.centerContainer]} href={setIngredientList && setIsScanner ? '/addIngredient': '/(tabs)/(logs)/logs'} asChild>
                 <TouchableOpacity style={[styles.button, styles.centerContainer]} onPress={handleAddFood}>
                     <Text style={styles.buttonText}>Log food</Text>

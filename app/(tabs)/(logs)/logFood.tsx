@@ -7,7 +7,7 @@ import { Link } from 'expo-router';
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 import { food, foodItem } from "@/db/schema";
-import { like, sql, eq, sum} from 'drizzle-orm';
+import { like, sql, eq, sum, or} from 'drizzle-orm';
 import { RoundedRect } from "@shopify/react-native-skia";
 import { FetchSearch } from "@/constants/FetchData";
 export default function LogFood() {
@@ -19,6 +19,7 @@ export default function LogFood() {
     // THIS IS A PLACEHOLDER FOR HISTORY PLEASE CHANGE IT
     const { data: history } = useLiveQuery(
         drizzleDb.select().from(food)
+        .where(or(eq(food.is_recipe, false), eq(food.is_template, true)))
         .orderBy()
     )
     const [filteredData, setFilteredData] = useState(history);
@@ -30,7 +31,6 @@ export default function LogFood() {
             setSearchData(res)
     }
     useEffect(() => {
-        console.log("search history", history)
         setFilteredData(history.filter((item) => item.name.toLowerCase().includes(`${searchHistory}`.toLowerCase())).slice(0, 4))
     }, [searchHistory, history])
     return (

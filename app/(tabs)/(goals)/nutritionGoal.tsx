@@ -102,7 +102,7 @@ export default function nutritionGoals() {
             carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings}* ${foodItem.serving_mult})`,
             protein: sql<number>`sum(${food.protein} * ${foodItem.servings}* ${foodItem.serving_mult})`,
             timestamp: sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch', 'localtime')`,
-            enabled: sql<boolean>`${true}`
+            enabled: sql<boolean>`${true}` 
         })
         .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
         .where(gte(foodItem.timestamp, tmpDate))
@@ -270,21 +270,19 @@ export default function nutritionGoals() {
                     />
                 </View>
             </View> 
-            <View style={styles.box}>
-                <View>
-                    {calorieIntake.map((item, index) => {
-                        return (
-                            <TouchableOpacity onPress={() => modifyDateList(index)} key={index}>
-                                <View style={[styles.box, {backgroundColor: item.enabled == true ? 'green' : 'red', marginHorizontal: 5}]}>
-                                    <Text style={[styles.h5]}>{calculateCalories(item, 1)}</Text>
-                                    <Text style={[styles.h5]}>{item.timestamp}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        )
+            <View style={[styles.box, styles.gridContainer]}>
+                {calorieIntake.map((item, index) => {
+                    return (
+                        <TouchableOpacity onPress={() => modifyDateList(index)} key={index}>
+                            <View style={[styles.box, {backgroundColor: item.enabled == true ? 'green' : 'red', marginHorizontal: 5}]}>
+                                <Text style={[styles.h5]}>{calculateCalories(item, 1)}</Text>
+                                <Text style={[styles.h5]}>{item.timestamp}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    )
                     })
 
-                    }
-                </View>
+                }
 
             </View>
             <View style={styles.box}>
@@ -376,6 +374,10 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         backgroundColor: colors.primary,
         borderRadius: 10,
+    },
+    gridContainer: {
+        flex: 4, // the number of columns you want to devide the screen into
+        backgroundColor: "red"
     },
     boxColorless: {
         paddingVertical: 20,

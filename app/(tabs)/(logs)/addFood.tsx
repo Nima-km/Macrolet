@@ -31,8 +31,6 @@ const AddFood = () => {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
     const { food_id, foodItem_id } = useLocalSearchParams();
-    console.log('fooditemid', foodItem_id)
-    console.log('foodid', food_id)
     const { data: foodItemObject } = useLiveQuery(
         drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id)).where(sql`${foodItem.id} = ${Number(foodItem_id)}`)
         .orderBy(food.id)
@@ -42,21 +40,20 @@ const AddFood = () => {
         .orderBy(food.id)
     )
     const { data: recipeObject } = useLiveQuery(
-        drizzleDb.select().from(recipeItem).innerJoin(food, eq(recipeItem.ingredient_id, food.id)).where(sql`${recipeItem.recipe_id} = ${foodItemObject[0]?.food.id}`)
-    , [foodItemObject])
+        drizzleDb.select().from(recipeItem).innerJoin(food, eq(recipeItem.ingredient_id, food.id)).where(sql`${recipeItem.recipe_id} = ${foodObject[0]?.id}`)
+    , [foodObject])
     const [refresh, setRefresh] = useState<boolean>(false);
     const [date, setDate] = React.useState(new Date());
     const [isRecipe, setIsRecipe] = React.useState(false);
     const context = useContext(Context)
     const [serving, onChangeServing] = React.useState('1');
     const [foodName, onChangeFoodName] = React.useState('');
-    const [servingSize, onChangeServingSize] = React.useState('');
     const [showDate, setShowDate] = useState(false);
     const [showTime, setShowTime] = useState(false);
-    const [ingredientList, setIngredientList] = useState<FoodInfo[]>();
+    const [ingredientList, setIngredientList] = useState<FoodInfo[]>([]);
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 0, fat: 0, protein: 0, fiber: 0});
     const [mode, setMode] = useState<AndroidMode>('date');
-    const [servingType, setServingType] = useState('serving')
+    const [servingType, setServingType] = useState('servings')
     const [servingMult, setServingMult] = useState(1)
     const targetPercentage = 60 / 100;
     const font = useFont(require("../../../Roboto-Light.ttf"), 14);
@@ -72,6 +69,7 @@ const AddFood = () => {
         }
         else if (food_id) {
             setIsRecipe(foodObject[0]?.is_recipe ? foodObject[0]?.is_recipe : false)
+            console.log("is ", foodObject[0]?.is_recipe)
         }
     }, [foodItemObject, recipeItem])
     useEffect(() => {
@@ -85,7 +83,7 @@ const AddFood = () => {
     }, [sumNutrition])
     useEffect(() => {
         let total: NutritionInfo = {carbs: 0, fat: 0, protein: 0, fiber: 0}
-        if (ingredientList?.length && isRecipe == true && foodItem_id){
+        if (ingredientList?.length && isRecipe == true && food_id){
             for (let i = 0; i < ingredientList.length; i++) {
                 total.carbs += ingredientList[i].nutritionInfo.carbs * ingredientList[i].servings * ingredientList[i].serving_mult
                 total.fat += ingredientList[i].nutritionInfo.fat * ingredientList[i].servings * ingredientList[i].serving_mult
@@ -119,7 +117,7 @@ const AddFood = () => {
                 volume_100g: item.food.volume_100g,
             })
         }))
-      //  console.log(ingredientList[2])
+        console.log('we r setting', recipeObject)
       }, [recipeObject])
     if (!font || !smallerFont) {
         return <View />;
@@ -213,7 +211,13 @@ const AddFood = () => {
         if (currentDate)
             setDate(currentDate);
         
-      };
+    };
+    const onChangeServingMult = () => {
+        if (foodObject[0]){
+            setServingMult(servingType == 'servings' ? 1 / foodObject[0]?.serving_100g : 1)
+            setServingType(servingType == 'servings' ? 'g' : 'servings')
+        }
+    };
     
     const showTimepicker = () => {
     setShowTime(true);
@@ -228,7 +232,7 @@ const AddFood = () => {
             setRefresh(!refresh)
         }
     }
-    const handleServingMult = (mult: number, type: string, index: number) => {
+    const handleServingMultList = (mult: number, type: string, index: number) => {
         if (ingredientList) {
             var newList = ingredientList
             newList[index].serving_mult = mult
@@ -244,7 +248,7 @@ const AddFood = () => {
             var newList = ingredientList
             newList[index].servings = Number(text)
             setIngredientList(newList)
-            
+            console.log('changed')
             setRefresh(!refresh)
         }
     }
@@ -265,7 +269,7 @@ const AddFood = () => {
             <View style={[styles.box]}>
                 {
                     food_id 
-                    ?   <Text style={styles.titleText}>{foodItemObject[0]?.food.name}</Text>
+                    ?   <Text style={styles.titleText}>{foodObject[0]?.name}</Text>
                     :   <TextInput
                             style={[styles.input, styles.smallInput]}
                             onChangeText={(inp) => (onChangeFoodName(inp))}
@@ -300,11 +304,9 @@ const AddFood = () => {
                         </View>
                         <View style={[styles.flexRowContainer, styles.spaceInbetween]}>
                             <Text style={styles.smallText}>Serving size</Text>
-                            <TextInput
-                            style={[styles.input, styles.smallInput]}
-                            onChangeText={onChangeServingSize}
-                            value={servingSize}
-                            />
+                            <TouchableOpacity onPress={onChangeServingMult}>
+                                <Text style={[styles.input, styles.smallInput]}> {servingType} </Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                     <View style={[styles.ringChartContainer]}>
@@ -390,8 +392,8 @@ const AddFood = () => {
                                     serving_mult={item.serving_mult}
                                     setServing={(text) => handleChangeServing(index, text)}
                                     handleDelete={() => handleDeleteIngredient(index)}
-                                    handleServingMult={(mult, type) => handleServingMult(mult, type, index)} 
-                                    setServingType={() => handleServingMult} 
+                                    handleServingMult={(mult, type) => handleServingMultList(mult, type, index)} 
+                                    setServingType={() => handleServingMultList} 
                                     serving_type={item.serving_type}
                                     volume_100g={item.volume_100g}
                                     serving_100g={item.serving_100g}
