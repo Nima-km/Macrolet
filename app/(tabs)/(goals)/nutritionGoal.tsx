@@ -11,10 +11,13 @@ import { useEffect, useState } from "react";
 import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
 import { timestamp } from "drizzle-orm/gel-core";
 import { Link } from "expo-router";
+import { ProgressBox } from "@/constants/ProgressBox";
+import { useFont } from "@shopify/react-native-skia";
+import { SimpleChart } from "@/constants/SimpleChart";
 
 
 
-type nutriDate = {
+export type nutriDate = {
     enabled: boolean
     protein: number
     carbs: number
@@ -34,6 +37,8 @@ export default function nutritionGoals() {
     const [autoIntake, setAutoIntake] = useState(false)
     const [calorieIntake, setCalorieIntake] = useState<nutriDate[]>([])
     const [dates, setDates] = useState<Date[]>([])
+    const [selectedDate, setSelectedDate] = useState(0)
+    const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
     const { data: macroProfileList } = useLiveQuery(
         drizzleDb.select()
         .from(macroProfile)
@@ -198,7 +203,9 @@ export default function nutritionGoals() {
     useEffect(() => {
         handleAutoIntake(Number(autoIntake))
     }, [refresh])
-
+    const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), 17);
+    if (!font)
+        return <View></View>
     return (
         <ScrollView style={styles.container}>
             <Text style={[styles.h1, styles.text]}>Nutrition Calculator</Text>
@@ -269,21 +276,58 @@ export default function nutritionGoals() {
                         
                     />
                 </View>
-            </View> 
-            <View style={[styles.box, styles.gridContainer]}>
-                {calorieIntake.map((item, index) => {
-                    return (
-                        <TouchableOpacity onPress={() => modifyDateList(index)} key={index}>
-                            <View style={[styles.box, {backgroundColor: item.enabled == true ? 'green' : 'red', marginHorizontal: 5}]}>
-                                <Text style={[styles.h5]}>{calculateCalories(item, 1)}</Text>
-                                <Text style={[styles.h5]}>{item.timestamp}</Text>
+            </View>
+            <View style={[styles.box]}>
+                <View style={[styles.rowContainer, {marginVertical: 5}]}>
+                    {calorieIntake.slice(0, 7).map((item) => {
+                        const d = new Date(item.timestamp)
+                        d.setDate(d.getDate() + 1)
+                        return (
+                            <View style={{flex: 1, margin: 2, alignItems: 'center'}}>
+                                <Text style={[styles.h5]}>{dayNames[d.getDay()]}</Text>
                             </View>
-                        </TouchableOpacity>
-                    )
+                        )
                     })
 
-                }
+                    }
+                </View>
+                <View style={[styles.gridContainer]}>
+                    {calorieIntake.map((item, index) => {
+                        return (
 
+                            <TouchableOpacity onLongPress={() => modifyDateList(index)} key={index} onPress={() => setSelectedDate(index)}>
+                                <ProgressBox 
+                                mainText={item.timestamp}
+                                strokeWidth={5}
+                                target={2000}
+                                progress={calculateCalories(item, 1)}
+                                key={index}
+                                backgroundColor={index == selectedDate ? colors.button : 'white'}
+                                textColor={index == selectedDate ? 'white' : 'black'}
+                                barColor={index == selectedDate ? 'white' : colors.button}
+                                enabled={item.enabled}
+                                />
+                            </TouchableOpacity>
+                        )
+                        })
+
+                    }
+                    <View style={[styles.rowContainer]}>
+                        <Text style={[styles.h5]}>{new Date(calorieIntake[selectedDate].timestamp).toString().slice(3, 11)}</Text>
+                        <View style={[{ minWidth: 300}]}>
+                            <SimpleChart 
+                                strokeWidth={20}
+                                target={2000}
+                                progress={calculateCalories(calorieIntake[selectedDate], 1)}
+                                smallerFont={font} 
+                                backgroundColor={colors.box} 
+                                barColor={colors.button}
+                                width={200}
+                                unit='cal'                   
+                            />
+                        </View>
+                    </View>
+                </View>
             </View>
             <View style={styles.box}>
                 <FlatList
@@ -376,8 +420,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     gridContainer: {
-        flex: 4, // the number of columns you want to devide the screen into
-        backgroundColor: "red"
+        flexDirection: 'row',
+        flexWrap: 'wrap',
     },
     boxColorless: {
         paddingVertical: 20,

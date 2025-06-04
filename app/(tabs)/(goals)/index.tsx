@@ -150,6 +150,8 @@ export default function Index() {
               progress={LiveFood[0].protein}
               smallerFont={smallerFont}
               mainText="Protein"
+              width={120}
+              unit='g'
             />
             <SimpleChart
               strokeWidth={18}
@@ -159,6 +161,8 @@ export default function Index() {
               progress={LiveFood[0].carbs}
               smallerFont={smallerFont}
               mainText="Carbs"
+              width={120}
+              unit='g'
             />
             <SimpleChart
               strokeWidth={18}
@@ -168,6 +172,8 @@ export default function Index() {
               progress={LiveFood[0].fat}
               smallerFont={smallerFont}
               mainText="Fat"
+              width={120}
+              unit='g'
             />
           </View>
       </TouchableOpacity>

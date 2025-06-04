@@ -22,13 +22,15 @@ import { useEffect } from "react";
 
 interface BarProgressProps {
   strokeWidth: number;
-  backgroundColor?: string;
+  backgroundColor: string;
   mainText?: string;
   target: number;
-  barColor?: string;
+  barColor: string;
   progress: number;
   font?: SkFont;
   smallerFont: SkFont;
+  width: number;
+  unit: string;
 }
 
 export const SimpleChart: React.FC<BarProgressProps> = ({
@@ -40,6 +42,8 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
     font,
     progress,
     smallerFont,
+    width,
+    unit,
 }) => {
     if (!target)
         target = 0;
@@ -55,8 +59,8 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
       easing: Easing.inOut(Easing.cubic),
     });
   };
-  const end = useDerivedValue(() => (target ? Math.min(((progressDaily.value / target) * 120), 120) : 0));
-  const goalText = useDerivedValue(() => (Math.round(progressDaily.value).toString() + 'g'  + '/' + target.toString() + 'g'));
+  const end = useDerivedValue(() => (target ? Math.min(((progressDaily.value / target) * width), width) : 0));
+  const goalText = useDerivedValue(() => (Math.round(progressDaily.value).toString() + unit  + '/' + target.toString() + unit));
   useEffect(() => {
     console.log(target)
     //if (progress)
@@ -73,7 +77,7 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
               x={0}
               y={smallerFont.getSize()}
               font={smallerFont}
-              text={`${mainText}`}
+              text={`${mainText ? mainText : ''}`}
             />
             <Text
               x={0}
@@ -84,7 +88,7 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
             <RoundedRect
                 x={0}
                 y={20}
-                width={120}
+                width={width}
                 height={strokeWidth}
                 r={20}
                 color={backgroundColor}
