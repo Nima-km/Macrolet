@@ -43,13 +43,11 @@ export const ProgressBox: React.FC<BarProgressProps> = ({
   const end = (Math.min((progress / target), 1));
   const goalText = (mainText.slice(8));
   useEffect(() => {
-    console.log(progress / target)
+    console.log("progress", progress / target)
   }, [target, progress])
   return (
       <View style={[styles.container]}>
-        
         <Svg width={width} height={height}>
-          {/* Background Circle */}
           
           <Rect
             x={0}
@@ -65,18 +63,18 @@ export const ProgressBox: React.FC<BarProgressProps> = ({
           <Rect
             x={0}
             y={0}
-            width={width - strokeWidth * 2}
-            height={height - strokeWidth * 2}
+            height={width - strokeWidth * 2}
+            width={height - strokeWidth * 2}
             
             strokeWidth={strokeWidth}
             rx={7}
             ry={7}
             stroke={barColor}
             fill="none"
-            strokeDasharray={`${(height + width) * 2} ${(height + width) * 2}`}
-            strokeDashoffset={(height + width) * 2 * Math.min(progress/target, 1) + (height + width) * 2}
+            strokeDasharray={`${144} ${144}`}
+            strokeDashoffset={144 * Math.max(1 - progress / target, 0)}
             strokeLinecap="round"
-            transform={`rotate(-180, ${width/2 - strokeWidth / 2}, ${height/2 - strokeWidth / 2})`}
+            transform={`rotate(-270, ${height/2 - 9.1}, ${width/2 - 0.1})`}
           />
           {enabled == false && 
             <Path

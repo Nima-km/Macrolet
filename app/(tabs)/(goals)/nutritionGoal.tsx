@@ -28,7 +28,7 @@ export default function nutritionGoals() {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
     const [refresh, setRefresh] = useState<boolean>(false);
-    const [weightChange, setWeightChange] = useState('')
+    const [weightChange, setWeightChange] = useState('0')
     const [sumNutrition, setSumNutrition] = useState<NutritionInfo>({carbs: 200, fat: 80, protein: 190});
     const [calories, setCalories] = useState(2000)
     const [proteinMult, setProteinMult] = useState(.4)
@@ -279,11 +279,11 @@ export default function nutritionGoals() {
             </View>
             <View style={[styles.box]}>
                 <View style={[styles.rowContainer, {marginVertical: 5}]}>
-                    {calorieIntake.slice(0, 7).map((item) => {
+                    {calorieIntake.slice(0, 7).map((item, index) => {
                         const d = new Date(item.timestamp)
                         d.setDate(d.getDate() + 1)
                         return (
-                            <View style={{flex: 1, margin: 2, alignItems: 'center'}}>
+                            <View style={{flex: 1, margin: 2, alignItems: 'center'}} key={index}>
                                 <Text style={[styles.h5]}>{dayNames[d.getDay()]}</Text>
                             </View>
                         )

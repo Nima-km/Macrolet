@@ -1,3 +1,4 @@
+import { MultiLineChart } from "@/constants/MultiLineChart";
 import { calculateCalories } from "@/constants/NutritionInfo";
 import { colors } from "@/constants/theme";
 import { macroGoal, macroProfile } from "@/db/schema";
@@ -6,11 +7,11 @@ import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
-import { View, FlatList, Text, StyleSheet, TextInput, TouchableOpacity} from "react-native";
+import { View, FlatList, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView} from "react-native";
 
 
 
-
+const chartWidth = 360;
 export default function MacroProfile() {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
@@ -50,7 +51,7 @@ export default function MacroProfile() {
         setRefresh(!refresh)  
     }
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container} scrollEnabled={false}>
             {
                 profile_id != undefined
                 ?   <Text style={styles.h5}>{profileObject[0]?.macroProfile.name}</Text>
@@ -62,6 +63,14 @@ export default function MacroProfile() {
                         
                     />
             }
+            <View style={[styles.box, styles.barChartContainer]}>
+                <MultiLineChart 
+                    target={profileObject.map((item) => {
+                        return ({calories: item.macroGoal.calories, protein: item.macroGoal.protein, carbs: item.macroGoal.carbs, fat: item.macroGoal.fat})
+                    })}
+                    chartWidth= {chartWidth}
+                />
+            </View>
             <FlatList 
                 data={profileObject}
                 renderItem={({item, index}) => 
@@ -76,6 +85,7 @@ export default function MacroProfile() {
                 style={[{maxHeight: 300}]}
                 extraData={refresh}
             />
+            
             <View style={[styles.box, styles.rowContainer ,{margin: 20}]}>
                 <View style={{marginHorizontal: 10}}>
                     <Text style={styles.h5}>calories</Text>
@@ -115,7 +125,7 @@ export default function MacroProfile() {
             <TouchableOpacity style={[styles.button, styles.centerContainer]} onPress={handleAddGoal}>
                 <Text style={styles.h5}>add MacroGoal</Text>
             </TouchableOpacity>
-        </View>
+        </ScrollView>
     )
 }
 
@@ -136,8 +146,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     barChartContainer: {
-        width: 320,
-        height: 300,
+        width: chartWidth,
+        height: 430,
     },
     input: {
         backgroundColor: colors.primary,

@@ -20,7 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useEffect } from "react";
 
-interface BarProgressProps {
+interface BarProgressProps { 
   strokeWidth: number;
   backgroundColor: string;
   mainText?: string;
@@ -47,13 +47,9 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
 }) => {
     if (!target)
         target = 0;
-//	const endCarb = useDerivedValue(() => ((progressCarbs.value / calorieTarget) * 320 * 4));
-  //const endFat = useDerivedValue(() => ((progressFat.value / calorieTarget) * 320 * 4 + progressDaily.value.carbs));
+
   const progressDaily = useSharedValue(0)
   const animateChart = () => {
-    // Reset daily progress
-   // progressDaily.value = 0;
-    // Update carbs immutably
     progressDaily.value = withTiming(progress,  {
       duration: 1250,
       easing: Easing.inOut(Easing.cubic),
