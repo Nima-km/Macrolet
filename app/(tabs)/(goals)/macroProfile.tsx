@@ -1,7 +1,9 @@
+import { MacroSetter } from "@/constants/MacroSetter";
 import { MultiLineChart } from "@/constants/MultiLineChart";
-import { calculateCalories } from "@/constants/NutritionInfo";
+import { calculateCalories, calculateRawCalories } from "@/constants/NutritionInfo";
 import { colors } from "@/constants/theme";
 import { macroGoal, macroProfile } from "@/db/schema";
+import { useFont } from "@shopify/react-native-skia";
 import { sql, eq} from "drizzle-orm";
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useLocalSearchParams } from "expo-router";
@@ -20,8 +22,11 @@ export default function MacroProfile() {
     const [name, setName] = useState('');
     const [protein, setProtein] = useState(0);
     const [fat, setFat] = useState(0);
+    const [calories, setCalories] = useState(2000);
     const [refresh, setRefresh] = useState<boolean>(false);
+    const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
     const [carbs, setCarbs] = useState(0);
+    const font = useFont(require("@/assets/fonts/Metropolis-Medium.ttf"), 18);
     console.log(pfId)
     console.log(profile_id)
     const { data: profileObject } = useLiveQuery(
@@ -50,8 +55,11 @@ export default function MacroProfile() {
         })
         setRefresh(!refresh)  
     }
+     if (!font) {
+        return <View />;
+      }
     return (
-        <ScrollView style={styles.container} scrollEnabled={false}>
+        <ScrollView style={[styles.container]} scrollEnabled={scrollEnabled}>
             {
                 profile_id != undefined
                 ?   <Text style={styles.h5}>{profileObject[0]?.macroProfile.name}</Text>
@@ -69,58 +77,32 @@ export default function MacroProfile() {
                         return ({calories: item.macroGoal.calories, protein: item.macroGoal.protein, carbs: item.macroGoal.carbs, fat: item.macroGoal.fat})
                     })}
                     chartWidth= {chartWidth}
+                    setScrollEnabled={setScrollEnabled}
                 />
             </View>
-            <FlatList 
-                data={profileObject}
-                renderItem={({item, index}) => 
-                    <View style={styles.rowContainer}>
-                        <Text style={[styles.h5, {margin: 6}]}>calories: {item.macroGoal.calories}</Text>
-                        <Text style={[styles.h5, {margin: 6}]}>protein: {item.macroGoal.protein}</Text>
-                        <Text style={[styles.h5, {margin: 6}]}>carbs: {item.macroGoal.carbs}</Text>
-                        <Text style={[styles.h5, {margin: 6}]}>fat: {item.macroGoal.fat}</Text> 
-                    </View>
-                }
-                scrollEnabled={false}
-                style={[{maxHeight: 300}]}
-                extraData={refresh}
-            />
-            
-            <View style={[styles.box, styles.rowContainer ,{margin: 20}]}>
-                <View style={{marginHorizontal: 10}}>
-                    <Text style={styles.h5}>calories</Text>
-                    <Text style={[{marginTop: 20}]}>
-                        {calculateCalories({carbs: carbs, fat: fat, protein: protein}, 1)}
-                    </Text>
-                </View>
-                <View style={{marginHorizontal: 10}}>
-                    <Text style={styles.h5}>protein</Text>
-                    <TextInput
-                        style={[styles.input, {marginTop: 20, backgroundColor: colors.background}]}
-                        onChangeText={(inp) => setProtein(Number(inp) ? Number(inp) : 0)}
-                        value={protein.toString()}
-                        placeholder="calories"
-                    />
-                </View>
-                <View style={{marginHorizontal: 10}}>
-                    <Text style={styles.h5}>carbs</Text>
-                    <TextInput
-                        style={[styles.input, {marginTop: 20, backgroundColor: colors.background}]}
-                        onChangeText={(inp) => setCarbs(Number(inp) ? Number(inp) : 0)}
-                        value={carbs.toString()}
-                        placeholder="calories"
-                    />
-                </View>
-                <View style={{marginHorizontal: 10}}>
-                    <Text style={styles.h5}>fat</Text>
-                    <TextInput
-                        style={[styles.input, {marginTop: 20, backgroundColor: colors.background}]}
-                        onChangeText={(inp) => setFat(Number(inp) ? Number(inp) : 0)}
-                        value={fat.toString()}
-                        placeholder="calories"
-                    />
-                </View>
+            <View style={styles.box}>
                 
+                <View style={[styles.rowContainer, {alignItems: 'center'}]}>
+                    <Text style={[styles.h3]}>Calories: </Text>
+                    <TextInput
+                        style={[styles.input, {backgroundColor: colors.background, paddingVertical: 15, paddingHorizontal: 60, marginLeft: 20}]}
+                        onChangeText={(inp) => setCalories(Number(inp) ? Number(inp) : 0)}
+                        value={calories.toString()}
+                        placeholder="calories"
+                    />
+                </View>
+                <View style={{flex: 1, height: 100}}>
+                    <MacroSetter 
+                        strokeWidth={30}
+                        calories={calories}
+                        font={font}
+                        width={320}
+                        setScrollEnabled={setScrollEnabled}
+                        setProtein={(inp) => setProtein(inp)}
+                        setCarbs={(inp) => setCarbs(inp)}
+                        setFat={(inp) => setFat(inp)}
+                    />
+                </View>
             </View>
             <TouchableOpacity style={[styles.button, styles.centerContainer]} onPress={handleAddGoal}>
                 <Text style={styles.h5}>add MacroGoal</Text>

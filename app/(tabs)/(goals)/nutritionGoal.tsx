@@ -165,17 +165,21 @@ export default function nutritionGoals() {
         tmpDate.setDate(tday.getDate() - 14)
         console.log('dateFormat', formatDate(tmpDate))
         let res : nutriDate[] = []
+        console.log('tmpdate', tmpDate, tday)
         for (let i = tmpDate; i < tday; i.setDate(i.getDate() + 1)) {
-            if (calint[cnt].timestamp === formatDate(i)){
+            console.log('i', calint[cnt])
+            console.log('i', calint[cnt]?.timestamp)
+            if (calint[cnt]?.timestamp === formatDate(i)){
                 res.push(calint[cnt])
                 if (cnt < calint.length - 1)
                     cnt++
             }
-            else
-               // console.log("did not find it", `${formatDate(i)} ${calint[cnt].timestamp}`)
+            else {
+                console.log("did not find it", `${formatDate(i)} ${calint[cnt]?.timestamp}`)
                 res.push({carbs: 0, fat: 0, protein: 0, timestamp: formatDate(i), enabled: true})
+            }
         }
-        //console.log('res', res)
+        console.log('res', res)
         setCalorieIntake(res)
     }
 
@@ -204,7 +208,7 @@ export default function nutritionGoals() {
         handleAutoIntake(Number(autoIntake))
     }, [refresh])
     const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), 17);
-    if (!font)
+    if (!font || calorieIntake.length == 0)
         return <View></View>
     return (
         <ScrollView style={styles.container}>

@@ -27,6 +27,7 @@ import { findMiddleMacro } from "./AutoCalorieCalculator";
 
 interface LineProgressProps {
   strokeWidth?: number
+  setScrollEnabled: (inp: boolean) => void
   chartWidth: number
   backgroundColor?: string
   target: NutritionInfoFull[]
@@ -51,6 +52,7 @@ export const MultiLineChart: React.FC<LineProgressProps> = ({
   backgroundColor,
   strokeWidth,
   target,
+  setScrollEnabled,
   barColor,
   chartWidth,
 }) => {
@@ -97,7 +99,7 @@ export const MultiLineChart: React.FC<LineProgressProps> = ({
   }
   const panGesture = Gesture.Pan()
     .onBegin((event) => {
-      
+      runOnJS(setScrollEnabled)(false)
       runOnJS(setClosestY)(event.x)
       touchY.value = event.y;
       touchX.value = event.x;
@@ -112,6 +114,7 @@ export const MultiLineChart: React.FC<LineProgressProps> = ({
     .onEnd(() => {
       isTouching.value = false;
       state.isActive.value = false
+      runOnJS(setScrollEnabled)(true)
     })
     .onFinalize(() => {
         isTouching.value = false;
@@ -238,11 +241,11 @@ function ToolTip({ x, carbs, fat, protein }: { x: SharedValue<number>; carbs: ch
 
       </SkiaLine>
       
-      <Circle cx={x} cy={protein.position} r={5} color={colors.protein} style='stroke' strokeWidth={3} />
+      <Circle cx={x} cy={protein.position} r={7} color={colors.protein} style='fill' />
       <Circle cx={x} cy={protein.position} r={3} color={"white"} />
-      <Circle cx={x} cy={fat.position} r={5} color={colors.fat} style='stroke' strokeWidth={3} />
+      <Circle cx={x} cy={fat.position} r={7} color={colors.fat} style='fill' />
       <Circle cx={x} cy={fat.position} r={3} color={"white"}/>
-      <Circle cx={x} cy={carbs.position} r={5} color={colors.carbs} style='stroke' strokeWidth={3} />
+      <Circle cx={x} cy={carbs.position} r={7} color={colors.carbs} style='fill' />
       <Circle cx={x} cy={carbs.position} r={3} color={"white"} />
 
     </>

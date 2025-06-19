@@ -64,8 +64,13 @@ export type Section = {
 
 export const calculateCalories = (nutrition: NutritionInfo, mult:number): number => {
   return (Math.round((nutrition.protein * mult)) * 4
-    + Math.round((nutrition.fat  * mult)) * 9
+    + Math.round((nutrition.fat * mult)) * 9
     + Math.round(((nutrition.carbs - (nutrition.fiber ? nutrition.fiber : 0))  * mult)) * 4);
+};
+export const calculateRawCalories = (nutrition: NutritionInfo, mult:number): number => {
+  return (((nutrition.protein * mult)) * 4
+    + ((nutrition.fat * mult)) * 9
+    + (((nutrition.carbs - (nutrition.fiber ? nutrition.fiber : 0))  * mult)) * 4);
 };
 
 export const assignNutrition = (calories: number, bw_lbs: number, height: number, protein_mult: number) : NutritionInfo => {
