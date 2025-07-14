@@ -24,7 +24,7 @@ export type nutriDate = {
     fat: number
     timestamp: string
 }
-export default function nutritionGoals() {
+export default function NutritionGoals() {
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db);
     const [refresh, setRefresh] = useState<boolean>(false);

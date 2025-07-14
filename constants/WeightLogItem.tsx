@@ -1,39 +1,30 @@
-import { colors } from "@/constants/theme";
-import { WeightLogItem, weightType } from "@/constants/WeightLogItem";
-import { WeightItem } from "@/db/schema";
-import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { useSQLiteContext } from "expo-sqlite";
-import { View, StyleSheet, FlatList, Text } from "react-native"
+import { View, StyleSheet, Text} from "react-native";
+import { colors } from "./theme";
 
 
+export type weightType = {
+    id: number;
+    timestamp: Date;
+    weight: number;
+    
 
+}
 
-export default function WeightLogs () {
-    const db = useSQLiteContext();
-    const drizzleDb = drizzle(db);
-
-    const {data: weightlogs} = useLiveQuery(
-        drizzleDb.select()
-        .from(WeightItem)
-    )
-    const test : weightType = {
-        id: 0,
-        timestamp: new Date(),
-        weight: 0
-    }
+export const WeightLogItem = (item: weightType) => {
     return (
-        <View style={styles.container}>
-            <View style={styles.box}>
-                <Text style={[styles.h2, {marginBottom: 10}]}>Weight Log</Text>
-                {weightlogs &&
-                    <FlatList
-                        data={weightlogs}
-                        renderItem={({index, item}) =>
-                            <WeightLogItem id={item.id} timestamp={item.timestamp} weight={item.weight}                                
-                            />
-                        }
-                    />
-                }
+        <View style={styles.item}>
+            <View style={[styles.flexRowContainer, {justifyContent: 'space-between'}]}>
+                <View>
+                    <Text>
+                        {item.timestamp.toDateString().slice(4)}
+                    </Text>
+                    <Text style={{marginTop: 10}}>
+                        {item.timestamp.getHours()}:{item.timestamp.getMinutes().toString().padStart(2, '0')}
+                    </Text>
+                </View>
+                <Text style={[styles.h1, {marginTop: 10}]}>
+                    {item.weight}
+                </Text>
             </View>
         </View>
     )
@@ -81,10 +72,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   item: {
-    padding: 10,
-    backgroundColor: colors.secondary,
-    marginRight: 30,
-
+    backgroundColor: colors.box,
+    paddingVertical: 10,
+    paddingHorizontal: 17,
+    marginVertical: 7.5,
+    borderRadius: 8,
   },
   h1: {
     fontFamily: 'Geist',

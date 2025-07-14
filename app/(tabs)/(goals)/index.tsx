@@ -178,7 +178,7 @@ export default function Index() {
           </View>
       </TouchableOpacity>
       <View style={styles.flexRowContainer}>
-        <TouchableOpacity onLongPress={() => logWeight()}>
+        <TouchableOpacity onLongPress={() => logWeight()} onPress={() => router.navigate('/weightLogs')}>
           <View style={[styles.smallBox, styles.box]}>
             { showLogWeight ?
                 <View style={[styles.flexRowContainer, { justifyContent: 'space-between'}]}>
