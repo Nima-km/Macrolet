@@ -50,6 +50,146 @@
       "when": 1741895446865,
       "tag": "0006_wet_ken_ellis",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1742500668360,
+      "tag": "0007_mean_deathbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1742500854094,
+      "tag": "0008_omniscient_namor",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1743005146850,
+      "tag": "0009_faulty_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1743005165245,
+      "tag": "0010_groovy_ultimatum",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1743786786087,
+      "tag": "0011_harsh_prowler",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1743802090966,
+      "tag": "0012_outgoing_shocker",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1744140333491,
+      "tag": "0013_tranquil_reavers",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1744224692200,
+      "tag": "0014_tiny_ben_parker",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1744839221618,
+      "tag": "0015_large_golden_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1745341606261,
+      "tag": "0016_cloudy_anthem",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1745342995695,
+      "tag": "0017_melodic_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1745343711834,
+      "tag": "0018_clever_black_widow",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1745344025872,
+      "tag": "0019_outstanding_otto_octavius",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1745348703860,
+      "tag": "0020_nebulous_nightcrawler",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1746126295903,
+      "tag": "0021_purple_ultimatum",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1746731008540,
+      "tag": "0022_oval_dagger",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1747340922487,
+      "tag": "0023_mysterious_miek",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1747414934906,
+      "tag": "0024_huge_madame_web",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1747855736927,
+      "tag": "0025_red_sabretooth",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1748895278324,
+      "tag": "0026_fixed_jack_flag",
+      "breakpoints": true
     }
   ]
 }

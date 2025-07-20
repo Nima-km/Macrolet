@@ -1,0 +1,1 @@
+ALTER TABLE `nutritionGoal` ADD `timestamp` text DEFAULT (current_timestamp) NOT NULL;

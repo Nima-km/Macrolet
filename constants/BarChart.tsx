@@ -5,6 +5,11 @@ import {
     Skia,
     Text,
     RoundedRect,
+    useFont,
+    FontWeight,
+    FontWidth,
+    matchFont,
+    useFonts,
   } from "@shopify/react-native-skia";
 import { Share, StyleSheet, View } from "react-native";
 import {NutritionInfo, SharedNutritionInfo} from "./NutritionInfo";
@@ -18,141 +23,221 @@ import Animated, {
   Easing,
   useDerivedValue
 } from 'react-native-reanimated';
+import { useEffect } from "react";
 
 interface BarProgressProps {
   strokeWidth: number;
   backgroundColor: string;
-	calorieTarget: number;
+	dailyTarget: NutritionInfo;
   colorProtein: string;
   colorfat: string;
   colorCarbs: string;
-  progressProtein?: SharedValue<number>;
-  progressFat: SharedValue<number>;
-  progressCarbs: SharedValue<number>;
-  progressDaily: SharedValue<NutritionInfo>;
-  font: SkFont;
+  dailyEnd: NutritionInfo;
   smallerFont?: SkFont;
-  targetPercentage: number;
 }
 
 export const BarChart: React.FC<BarProgressProps> = ({
     backgroundColor,
     strokeWidth,
-		calorieTarget,
+		dailyTarget,
     colorProtein,
     colorfat,
     colorCarbs,
-    progressDaily,
-    font,
-    smallerFont,
-    targetPercentage,
+    dailyEnd,
+   // font,
+    smallerFont ,
 }) => {
-	if (calorieTarget == 0)
-		calorieTarget = 1;
-//	const endCarb = useDerivedValue(() => ((progressCarbs.value / calorieTarget) * 320 * 4));
-  //const endFat = useDerivedValue(() => ((progressFat.value / calorieTarget) * 320 * 4 + progressDaily.value.carbs));
+  const titleFont = useFont(require("@/assets/fonts/Metropolis-Medium.ttf"), 20);
+  const remainFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 16);
+  const fontStyle = {
+    fontFamily: "Geist",
+    fontWeight: 'bold',
+    fontSize: 30
+  } as const;
+  const fontMgr = useFonts({
+    Geist: [
+      require("@/assets/fonts/Geist-VariableFont_wght.ttf"),
+    ]
+  });
+  
+  if (!dailyTarget)
+    dailyTarget = {protein: 0, fat: 0, carbs: 0, calories: 0}
+  const calorieTarget = dailyTarget.calories ? dailyTarget.calories : 0
+	
+  const progressDaily = useSharedValue<NutritionInfo>({
+    protein: 0,
+    fat: 0,
+    carbs: 0,
+  });
+  const animateChart = () => {
+    // Reset daily progress
+    progressDaily.value = { protein: 0, fat: 0, carbs: 0 };
+    // Update carbs immutably
+    progressDaily.value = withTiming(dailyEnd,  {
+      duration: 1250,
+      easing: Easing.inOut(Easing.cubic),
+    });
+  };
+  const endProtein = useDerivedValue(() => Math.min(((progressDaily.value.protein / calorieTarget) * 320 * 4 ), 320));
+  const endCarb = useDerivedValue(() => Math.min(calorieTarget ? (progressDaily.value.carbs / calorieTarget) * 320 * 4 + endProtein.value: 0, 320));
+  const endFat = useDerivedValue(() => Math.min(calorieTarget ? (progressDaily.value.fat / calorieTarget) * 320 * 9 + endCarb.value : 0, 320));
+  
+  const calorieDay = useDerivedValue(() => (Math.round(((progressDaily.value.protein) + Math.round(progressDaily.value.carbs)) * 4 + Math.round(progressDaily.value.fat) * 9)));
+  const calorieDayText = useDerivedValue(() => (calorieDay.value.toString() + ' / ' + calorieTarget.toString() + ' cal'));
+  const caloriesRemaining = useDerivedValue(() => (calorieTarget ? calorieTarget - calorieDay.value : 0).toString() + ' remaining')
+  const carbsDayText = useDerivedValue(() => (Math.round(progressDaily.value.carbs).toString() + 'g'));
+  const fatDayText = useDerivedValue(() => (Math.round(progressDaily.value.fat).toString() + 'g'));
+  const proteinDayText = useDerivedValue(() => (Math.round(progressDaily.value.protein).toString() + 'g'));
+  
+  
+  
+  useEffect(() => {
+    console.log(dailyEnd)
+    animateChart()
+  }, [dailyEnd])
+  
+  
+  const remainWidth = useDerivedValue(() => 250 - ((remainFont?.measureText(caloriesRemaining.value) ? remainFont?.measureText(caloriesRemaining.value).width : 0) - 10) / 2);
+  const calorieFont = matchFont(fontStyle, fontMgr ? fontMgr : undefined);
+  const chartHeight = 80;
 
-  const endCarb = useDerivedValue(() => ((progressDaily.value.carbs / calorieTarget) * 320 * 4));
-  const endFat = useDerivedValue(() => ((progressDaily.value.fat / calorieTarget) * 320 * 9 + endCarb.value));
-  const endProtein = useDerivedValue(() => ((progressDaily.value.protein / calorieTarget) * 320 * 4 + endFat.value));
-  const calorieDayText = useDerivedValue(() => (Math.floor((progressDaily.value.protein + progressDaily.value.carbs) * 4 + progressDaily.value.fat * 9).toString() + '/' + calorieTarget.toString()));
-  const carbsDayText = useDerivedValue(() => (Math.floor(progressDaily.value.carbs).toString() + 'g'));
-  const fatDayText = useDerivedValue(() => (Math.floor(progressDaily.value.fat).toString() + 'g'));
-  const proteinDayText = useDerivedValue(() => (Math.floor(progressDaily.value.protein).toString() + 'g'));
+  if (!remainFont || !titleFont || !fontMgr) {
+    return <View></View>;
+  }
   return (
     <View style={styles.container}>
         <Canvas style={{ flex: 1 }}>
             <Text
               x={10}
               y={20}
-              font={font}
+              font={titleFont}
               text="Calorie Intake"
             />
             <Text
               x={10}
               y={50}
-              font={font}
+              font={calorieFont}
               text={calorieDayText}
             />
             <RoundedRect
                 x={0}
-                y={60}
-                width={endProtein}
+                y={chartHeight}
+                width={320}
                 height={strokeWidth}
-                r={25}
-                color="gray"
+                r={10}
+                color={backgroundColor}
             />
+            
             <RoundedRect
                 x={0}
-                y={60}
+                y={chartHeight}
                 width={endFat}
                 height={strokeWidth}
-                r={25}
-                color="black"
+                r={10}
+                color={colorfat}
             />
             <RoundedRect
                 x={0}
-                y={60}
+                y={chartHeight}
                 width={endCarb}
                 height={strokeWidth}
-                r={25}
-                color="white"
+                r={10}
+                color={colorCarbs}
+            />
+            <RoundedRect
+                x={0}
+                y={chartHeight}
+                width={endProtein}
+                height={strokeWidth}
+                r={10}
+                color={colorProtein}
+            />
+            <RoundedRect
+                x={0}
+                y={192}
+                width={10}
+                height={25}
+                r={10}
+                color={colorProtein}
+            />
+            <RoundedRect
+                x={0}
+                y={230}
+                width={10}
+                height={25}
+                r={10}
+                color={colorCarbs}
+            />
+            <RoundedRect
+                x={0}
+                y={270}
+                width={10}
+                height={25}
+                r={10}
+                color={colorfat}
             />
             <Text
-              x={10}
-              y={150}
-              font={font}
-              text="carbs"
+              x={remainWidth}
+              y={chartHeight + 25}
+              font={remainFont}
+              text={caloriesRemaining}
+            />
+            <Text
+              x={20}
+              y={210}
+              font={titleFont}
+              text="Protein"
             />
             <Text
               x={150}
-              y={150}
-              font={font}
+              y={210}
+              font={titleFont}
+              text={proteinDayText}
+            />
+            <Text
+              x={250}
+              y={210}
+              font={titleFont}
+              text={Math.round(dailyTarget.protein).toString() + 'g'}
+            />
+            <Text
+              x={20}
+              y={250}
+              font={titleFont}
+              text="Carbs"
+            />
+            <Text
+              x={150}
+              y={250}
+              font={titleFont}
               text={carbsDayText}
             />
             <Text
               x={250}
-              y={150}
-              font={font}
-              text={carbsDayText}
+              y={250}
+              font={titleFont}
+              text={Math.round(dailyTarget.carbs).toString() + 'g'}
             />
 
             <Text
-              x={10}
-              y={200}
-              font={font}
-              text="fat"
+              x={20}
+              y={290}
+              font={titleFont}
+              text="Fat"
             />
             <Text
               x={150}
-              y={200}
-              font={font}
+              y={290}
+              font={titleFont}
               text={fatDayText}
             />
             <Text
               x={250}
-              y={200}
-              font={font}
-              text={fatDayText}
+              y={290}
+              font={titleFont}
+              text={Math.round(dailyTarget.fat).toString() + 'g'}
             />
-            <Text
-              x={10}
-              y={250}
-              font={font}
-              text="protein"
-            />
-            <Text
-              x={150}
-              y={250}
-              font={font}
-              text={proteinDayText}
-            />
-            <Text
-              x={250}
-              y={250}
-              font={font}
-              text={proteinDayText}
-            />
+            
         </Canvas>
     </View>
   );

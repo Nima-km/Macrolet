@@ -1,0 +1,1 @@
+ALTER TABLE `weight` ADD `is_metric` integer DEFAULT false;

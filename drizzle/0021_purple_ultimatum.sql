@@ -1,0 +1,1 @@
+ALTER TABLE `food` ADD `fiber` integer DEFAULT 0 NOT NULL;

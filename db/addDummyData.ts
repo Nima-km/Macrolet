@@ -1,4 +1,4 @@
-import { lists, tasks, food, foodItem } from './schema';
+import { food, foodItem } from './schema';
 import { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 
 import AsyncStorage from 'expo-sqlite/kv-store';

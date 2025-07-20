@@ -7,36 +7,53 @@ import {
     useFont,
   } from "@shopify/react-native-skia";
 import { PixelRatio, StyleSheet, View } from "react-native";
-import { useDerivedValue, SharedValue } from "react-native-reanimated";
-import { } from "react-native-reanimated";
+import { Easing, useDerivedValue, SharedValue, useSharedValue, withTiming } from "react-native-reanimated";
 import { colors, spacing, typography } from "./theme";
+import { useFocusEffect } from "expo-router";
+import { useEffect } from "react";
   
 interface CircularProgressProps {
   font: SkFont;
   backgroundColor: string;
-  percentageComplete: SharedValue<number>;
+  radius: number;
   smallerFont: SkFont;
   targetPercentage: number;
+  dailyProgress: number;
 }
 
 
 
 
 export const DonutChart: React.FC<CircularProgressProps> = ({
-  percentageComplete,
   font,
   targetPercentage,
+  radius,
+  dailyProgress,
   smallerFont,
 }) => {
+  if (!targetPercentage)
+    targetPercentage = 1
+  const percentageComplete = useSharedValue(0);
+  const opacity = useSharedValue(0);
+  const animateChart = () => {
+    //percentageComplete.value = 0;
+    console.log(dailyProgress)
+   // if (dailyProgress)
+      percentageComplete.value = withTiming(dailyProgress, {
+        duration: 1250,
+        easing: Easing.inOut(Easing.cubic),
+      });
+    //opacity.value = 0;
+    opacity.value = withTiming(1, {
+      duration: 1250,
+      easing: Easing.inOut(Easing.cubic),
+    });
+  };
   const font_size = font.getSize()
-  const radius = PixelRatio.roundToNearestPixel(font_size * 3);
   const STROKE_WIDTH = Math.min(font_size * 1, 16);
   const innerRadius = radius - STROKE_WIDTH / 2;
-  const targetText = `${targetPercentage * 100}`;
+  const targetText = useDerivedValue(() => Math.floor(percentageComplete.value).toString());
   
-
- // const font = useFont(require("../Roboto-Light.ttf"), FONT_SIZE);
-  font.setSize(font.getSize())
   const path = Skia.Path.Make();
   path.addCircle(radius, radius, innerRadius);
 
@@ -44,7 +61,6 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
     return <View />;
   }
 
-  smallerFont.setSize(font.getSize() * .6)
   const matrix = Skia.Matrix();
   matrix.translate(radius, radius);
   matrix.rotate(-Math.PI / 2);
@@ -52,16 +68,30 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
   path.transform(matrix);
 
   // Using Reanimated's derived values directly
-  const end = useDerivedValue(() => percentageComplete.value);
-  const opacity = useDerivedValue(() => percentageComplete.value);
-  const width = font.getTextWidth(targetText) - 10;
-  const titleWidth = smallerFont.getTextWidth("Power");
+  const end = useDerivedValue(() => percentageComplete.value / targetPercentage);
+  const width = useDerivedValue(() => innerRadius - (font.measureText(Math.floor(percentageComplete.value).toString()).width - 10) / 2);
+
+  useEffect(() => {
+    
+    animateChart()
+    console.log(end.value)
+  }, [dailyProgress])
+
   return (
     <View style={styles.container}>
       <Canvas style={styles.container}>
         <Path
           path={path}
-          color={colors.secondary}
+          color={colors.background}
+          style="stroke"
+          strokeJoin="round"
+          strokeWidth={STROKE_WIDTH}
+          strokeCap="round"
+          
+        />
+        <Path
+          path={path}
+          color="#1A8199"
           style="stroke"
           strokeJoin="round"
           strokeWidth={STROKE_WIDTH}
@@ -69,9 +99,10 @@ export const DonutChart: React.FC<CircularProgressProps> = ({
           start={0}
           end={end}
         />
+        
         <Text
-          x={innerRadius - width / 2}
-          y={innerRadius }
+          x={width}
+          y={60}
           text={targetText}
           font={font}
           opacity={opacity}
