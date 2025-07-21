@@ -1,7 +1,7 @@
 import { Container } from "@shopify/react-native-skia/lib/typescript/src/renderer/Container";
 import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ScrollView, Image } from "react-native";
-import { colors, spacing, typography } from "@/constants/theme";
-import { NutritionInfo, Item, SearchItem, FoodInfo} from "@/constants/NutritionInfo";
+import { colors, spacing, typography } from "@/components/theme";
+import { NutritionInfo, Item, SearchItem, FoodInfo} from "@/components/NutritionInfo";
 import { useEffect, useState } from "react";
 import { Link } from 'expo-router';
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
@@ -9,7 +9,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { food, foodItem } from "@/db/schema";
 import { like, sql, eq, sum, or} from 'drizzle-orm';
 import { RoundedRect } from "@shopify/react-native-skia";
-import { FetchSearch } from "@/constants/FetchData";
+import { FetchSearch } from "@/components/FetchData";
 export default function LogFood() {
     const [searchHistory, setSearchHistory] = useState('');
     const [search, setSearch] = useState('');

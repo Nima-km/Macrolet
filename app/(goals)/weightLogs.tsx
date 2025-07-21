@@ -1,5 +1,5 @@
-import { colors } from "@/constants/theme";
-import { WeightLogItem, weightType } from "@/constants/WeightLogItem";
+import { colors } from "@/components/theme";
+import { WeightLogItem, weightType } from "@/components/WeightLogItem";
 import { WeightItem } from "@/db/schema";
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";

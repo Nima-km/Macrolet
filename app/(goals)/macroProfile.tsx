@@ -1,7 +1,7 @@
-import { MacroSetter } from "@/constants/MacroSetter";
-import { MultiLineChart } from "@/constants/MultiLineChart";
-import { calculateCalories, calculateRawCalories } from "@/constants/NutritionInfo";
-import { colors } from "@/constants/theme";
+import { MacroSetter } from "@/components/MacroSetter";
+import { MultiLineChart } from "@/components/MultiLineChart";
+import { calculateCalories, calculateRawCalories } from "@/components/NutritionInfo";
+import { colors } from "@/components/theme";
 import { macroGoal, macroProfile } from "@/db/schema";
 import { useFont } from "@shopify/react-native-skia";
 import { sql, eq} from "drizzle-orm";

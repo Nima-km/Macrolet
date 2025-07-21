@@ -1,13 +1,13 @@
-import { LineChart } from "@/constants/LineChart";
-import { colors } from "@/constants/theme";
+import { LineChart } from "@/components/LineChart";
+import { colors } from "@/components/theme";
 import { food, foodItem, nutritionGoal } from "@/db/schema";
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 import { useContext, useEffect, useState } from "react";
 import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ScrollView, Image } from "react-native";
-import { Context } from "../_layout";
-import { calculateCalories } from "@/constants/NutritionInfo";
+import { Context } from "./_layout";
+import { calculateCalories } from "@/components/NutritionInfo";
 
 export default function Profile() {
   const db = useSQLiteContext();

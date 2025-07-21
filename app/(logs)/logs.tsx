@@ -1,9 +1,9 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, SectionList, Image} from "react-native";
-import { colors, spacing, typography } from "@/constants/theme";
+import { colors, spacing, typography } from "@/components/theme";
 import { TouchableOpacity } from "react-native";
 import { Link } from 'expo-router';
-import { NutritionInfo, Item} from "@/constants/NutritionInfo";
-import { BarChart } from "../../../constants/BarChart";
+import { NutritionInfo, Item} from "@/components/NutritionInfo";
+import { BarChart } from "@/components/BarChart";
 import React, { useContext, useEffect, useState } from 'react';
 import {
   Canvas,
@@ -101,8 +101,8 @@ export default function Logs() {
   }).filter((item) => item.data.length > 0))
   //console.log(slData)
   }, [breakFast, context.date])
-  const font = useFont(require("../../../Roboto-Light.ttf"), 25);
-  const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 25);
+  const font = useFont(require("@/Roboto-Light.ttf"), 25);
+  const smallerFont = useFont(require("@/Roboto-Light.ttf"), 25);
   const displayText = useDerivedValue(() => {
     return `Calories: ${Math.floor(dailyProgress.value.carbs)}`;
   });

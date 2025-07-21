@@ -1,8 +1,8 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, Image, TextInput, ScrollView } from "react-native";
-import { colors, spacing, typography } from "@/constants/theme";
+import { colors, spacing, typography } from "@/components/theme";
 import { TouchableOpacity } from "react-native";
-import { DonutChart } from "@/constants/DonutChart";
-import { SimpleChart } from "@/constants/SimpleChart";
+import { DonutChart } from "@/components/DonutChart";
+import { SimpleChart } from "@/components/SimpleChart";
 import React, { useContext, useEffect, useState } from 'react';
 import {
   Canvas,
@@ -20,10 +20,10 @@ import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { food, foodItem, nutritionGoal, WeightItem } from "@/db/schema";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Context } from "../../_layout";
+import { Context } from "../_layout";
 import { useRouter } from "expo-router";
-import { autoCalorie, MaintenanceCalories } from "@/constants/AutoCalorieCalculator";
-import { NutritionInfoFull } from "@/constants/NutritionInfo";
+import { autoCalorie, MaintenanceCalories } from "@/components/AutoCalorieCalculator";
+import { NutritionInfoFull } from "@/components/NutritionInfo";
 
 
 const FONT_SIZE = 22

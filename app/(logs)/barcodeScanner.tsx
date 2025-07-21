@@ -1,18 +1,18 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, TextInput, TouchableOpacity, SafeAreaView, Button} from "react-native";
-import { colors, spacing, typography } from "../../../constants/theme";
+import { colors, spacing, typography } from "@/components/theme";
 import React, { useContext, useEffect, useState } from 'react';
 
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 import axios from 'axios';
-import { FoodInfo, NutritionInfo, RecipeItem } from "@/constants/NutritionInfo";
+import { FoodInfo, NutritionInfo, RecipeItem } from "@/components/NutritionInfo";
 import { useSQLiteContext } from "expo-sqlite";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { food, foodItem, recipeItem } from "@/db/schema";
 import { Context } from "@/app/_layout";
 import { sql } from "drizzle-orm";
 import { Link, useLocalSearchParams } from "expo-router";
-import { FetchBarcode } from "@/constants/FetchData";
+import { FetchBarcode } from "@/components/FetchData";
 import { IngredientObject } from "./_layout";
 
 type AndroidMode = 'date' | 'time';
@@ -179,7 +179,7 @@ export default function BarcodeScanner({ingredientList, setIngredientList, setIs
             setServingType={setServingType}
             serving_type={servingType} serving_100g={serving100g} volume_100g={1}
             backgroundColor={colors.primary} food_id={0}            />
-            <Link style={[styles.button, styles.centerContainer]} href={setIngredientList && setIsScanner ? '/addIngredient': '/(tabs)/(logs)/logs'} asChild>
+            <Link style={[styles.button, styles.centerContainer]} href={setIngredientList && setIsScanner ? '/addIngredient': '/(logs)/logs'} asChild>
                 <TouchableOpacity style={[styles.button, styles.centerContainer]} onPress={handleAddFood}>
                     <Text style={styles.buttonText}>Log food</Text>
                 </TouchableOpacity>

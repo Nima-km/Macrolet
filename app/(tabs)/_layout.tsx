@@ -1,4 +1,4 @@
-import { colors } from '@/constants/theme';
+import { colors } from '@/components/theme';
 import { Tabs } from 'expo-router';
 import { StyleSheet, View, Text, Image } from 'react-native';
 

@@ -1,6 +1,6 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, TextInput, TouchableOpacity, SafeAreaView, Button} from "react-native";
-import { colors, spacing, typography } from "../../../constants/theme";
-import { DonutChart } from "../../../constants/DonutChart";
+import { colors, spacing, typography } from "@/components/theme";
+import { DonutChart } from "@/components/DonutChart";
 import { useSharedValue, withTiming, Easing } from "react-native-reanimated";
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -17,7 +17,7 @@ import { foodItem, food, recipeItem } from "@/db/schema";
 import { sql, eq, sum} from 'drizzle-orm';
 import { Link, router, useLocalSearchParams } from "expo-router";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { calculateCalories, FoodInfo, Item, NutritionInfo, RecipeItem } from "@/constants/NutritionInfo";
+import { calculateCalories, FoodInfo, Item, NutritionInfo, RecipeItem } from "@/components/NutritionInfo";
 import { Context } from "@/app/_layout";
 const FONT_SIZE = 18
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
@@ -56,8 +56,8 @@ const AddFood = () => {
     const [servingType, setServingType] = useState('servings')
     const [servingMult, setServingMult] = useState(1)
     const targetPercentage = 60 / 100;
-    const font = useFont(require("../../../Roboto-Light.ttf"), 14);
-    const smallerFont = useFont(require("../../../Roboto-Light.ttf"), 8);
+    const font = useFont(require("@/Roboto-Light.ttf"), 14);
+    const smallerFont = useFont(require("@/Roboto-Light.ttf"), 8);
     
     useEffect(() => {
         if (foodItem_id){
@@ -404,19 +404,19 @@ const AddFood = () => {
                         />
                     </View>
                 }
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
+                <Link style={[styles.button, styles.centerContainter]} href='/(logs)/logs' asChild>
                     <TouchableOpacity onPress={handleDeleteFood}>
                         <Text style={styles.buttonText}>Delete food</Text>
                     </TouchableOpacity>
                 </Link>
                 {!isRecipe &&
-                    <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
+                    <Link style={[styles.button, styles.centerContainter]} href='/(logs)/logs' asChild>
                         <TouchableOpacity style={[styles.button, styles.centerContainter]} onPress={handleUpdateFood}>
                             <Text style={styles.buttonText}>Update food</Text>
                         </TouchableOpacity>
                     </Link>
                 }
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
+                <Link style={[styles.button, styles.centerContainter]} href='/(logs)/logs' asChild>
                     <TouchableOpacity style={[styles.button, styles.centerContainter]} onPress={handleAddFood}>
                         <Text style={styles.buttonText}>Log food</Text>
                     </TouchableOpacity>

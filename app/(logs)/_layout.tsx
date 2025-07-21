@@ -1,5 +1,5 @@
-import { FoodInfo } from '@/constants/NutritionInfo';
-import { colors } from '@/constants/theme';
+import { FoodInfo } from '@/components/NutritionInfo';
+import { colors } from '@/components/theme';
 import { foodItem } from '@/db/schema';
 import { Stack } from 'expo-router';
 import { createContext, Dispatch, SetStateAction, useState } from 'react';

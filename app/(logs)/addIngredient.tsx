@@ -1,7 +1,7 @@
 import { Container } from "@shopify/react-native-skia/lib/typescript/src/renderer/Container";
 import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, ScrollView, Image } from "react-native";
-import { colors, spacing, typography } from "@/constants/theme";
-import { FoodInfo, Item, RecipeItem} from "@/constants/NutritionInfo";
+import { colors, spacing, typography } from "@/components/theme";
+import { FoodInfo, Item, RecipeItem} from "@/components/NutritionInfo";
 import { useContext, useEffect, useState } from "react";
 import { Link } from 'expo-router';
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";

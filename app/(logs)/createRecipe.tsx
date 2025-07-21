@@ -1,6 +1,6 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, TextInput, TouchableOpacity, SafeAreaView, Button} from "react-native";
-import { colors, spacing, typography } from "../../../constants/theme";
-import { DonutChart } from "../../../constants/DonutChart";
+import { colors, spacing, typography } from "@/components/theme";
+import { DonutChart } from "@/components/DonutChart";
 import { useSharedValue, withTiming, Easing } from "react-native-reanimated";
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -17,10 +17,10 @@ import { foodItem, food, recipeItem } from "@/db/schema";
 import { sql, eq, sum} from 'drizzle-orm';
 import { Link, router, useLocalSearchParams } from "expo-router";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { calculateCalories, FoodInfo, Item, NutritionInfo, RecipeItem } from "@/constants/NutritionInfo";
+import { calculateCalories, FoodInfo, Item, NutritionInfo, RecipeItem } from "@/components/NutritionInfo";
 import { Context } from "@/app/_layout";
 import { IngredientObject } from "./_layout";
-import { BarMacroChart } from "@/constants/BarMacroChart";
+import { BarMacroChart } from "@/components/BarMacroChart";
 const FONT_SIZE = 18
 const radius = PixelRatio.roundToNearestPixel(FONT_SIZE * 3);
 const STROKE_WIDTH = 8;
@@ -40,8 +40,8 @@ const CreateRecipe = () => {
     const [refresh, setRefresh] = useState<boolean>(false);
     const [fat, setFat] = useState(0);
     const targetPercentage = 60 / 100;
-    const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
-    const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
+    const font = useFont(require("@/Roboto-Light.ttf"), FONT_SIZE);
+    const smallerFont = useFont(require("@/Roboto-Light.ttf"), FONT_SIZE / 2);
 
     const ingredientObject = useContext(IngredientObject);
     
@@ -182,24 +182,24 @@ const CreateRecipe = () => {
                     extraData={refresh}
                     style={[{margin: 20}]}
             />
-            <Link style={[styles.buttonMain, styles.centerContainer, {marginHorizontal: 20}]} href='/(tabs)/(logs)/addIngredient' asChild>
+            <Link style={[styles.buttonMain, styles.centerContainer, {marginHorizontal: 20}]} href='/(logs)/addIngredient' asChild>
                 <TouchableOpacity onPress={handleAddIngredient}>
                     <Text style={[styles.h7, {color: colors.primary}]}>+ Add ingredient</Text>
                 </TouchableOpacity>
             </Link>
             <View style={[styles.rowContainer, {margin: 20, justifyContent: 'space-between'}]}>
-                <Link style={[styles.buttonMain, styles.centerContainer]} href='/(tabs)/(logs)/logs' asChild>
+                <Link style={[styles.buttonMain, styles.centerContainer]} href='/(logs)/logs' asChild>
                     <TouchableOpacity onPress={() => handleCreateRecipe(true)}>
                         <Text style={[styles.h7, {color: colors.primary}]}>Create and Log</Text>
                     </TouchableOpacity>
                 </Link>
-                <Link style={[styles.buttonMain, styles.centerContainer]} href='/(tabs)/(logs)/logs' asChild>
+                <Link style={[styles.buttonMain, styles.centerContainer]} href='/(logs)/logs' asChild>
                     <TouchableOpacity  onPress={() => handleCreateRecipe(false)}>
                         <Text style={[styles.h7, {color: colors.primary}]}>Create Recipe</Text>
                     </TouchableOpacity>
                 </Link>
             </View>
-            <Link style={[styles.buttonSub, styles.centerContainer, {margin: 20}]} href='/(tabs)/(logs)/logs' asChild>
+            <Link style={[styles.buttonSub, styles.centerContainer, {margin: 20}]} href='/(logs)/logs' asChild>
                 <TouchableOpacity onPress={handleDeleteFood}>
                     <Text style={[styles.h4, {color: colors.button}]}>Cancel</Text>
                 </TouchableOpacity>

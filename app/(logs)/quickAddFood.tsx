@@ -1,6 +1,6 @@
 import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, TextInput, TouchableOpacity} from "react-native";
-import { colors, spacing, typography } from "../../../constants/theme";
-import { DonutChart } from "../../../constants/DonutChart";
+import { colors, spacing, typography } from "@/components/theme";
+import { DonutChart } from "@/components/DonutChart";
 import { useSharedValue, withTiming, Easing } from "react-native-reanimated";
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -34,8 +34,8 @@ export default function QuickAddFood() {
     const [time, onChangeTime] = React.useState('');
     const [date, setDate] = React.useState(new Date());
     const targetPercentage = 60 / 100;
-    const font = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE);
-    const smallerFont = useFont(require("../../../Roboto-Light.ttf"), FONT_SIZE / 2);
+    const font = useFont(require("@/Roboto-Light.ttf"), FONT_SIZE);
+    const smallerFont = useFont(require("@/Roboto-Light.ttf"), FONT_SIZE / 2);
     useEffect(() => {
         console.log("WEEEEE")
         console.log("WOOOOO")
@@ -146,7 +146,7 @@ export default function QuickAddFood() {
                     </View>
 
                 </View>
-                <Link style={[styles.button, styles.centerContainter]} href='/(tabs)/(logs)/logs' asChild>
+                <Link style={[styles.button, styles.centerContainter]} href='/(logs)/logs' asChild>
                     <TouchableOpacity onPress={handleAddFood}>
                         <Text style={styles.buttonText}>+ Add food</Text>
                     </TouchableOpacity>

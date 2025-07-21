@@ -1,11 +1,13 @@
-import { SplashScreen, Stack } from 'expo-router';
-import { createContext, Dispatch, SetStateAction, Suspense, useContext, useEffect, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { SplashScreen, Stack, Tabs } from 'expo-router';
+import React, { createContext, Dispatch, SetStateAction, Suspense, useContext, useEffect, useState } from 'react';
+
 import { SQLiteProvider, openDatabaseSync } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations';
 import { useFonts } from 'expo-font';
+import { colors } from '@/components/theme';
+import { ActivityIndicator, StyleSheet, View, Text, Image } from 'react-native';
 interface DateContextType {
   date: Date;
 
@@ -21,6 +23,17 @@ export const Context = createContext<DateContextType>({
   setDate: () => {},
 });
 export const DATABASE_NAME = 'tasks';
+
+function LogoTitle() {
+  return (
+    <View style={styles.header}>
+      <Image source={require('@/assets/images/User-Profile.png')} />
+      <Text style={styles.h1}>MACROLET</Text>
+      <Image source={require('@/assets/images/Bell-Notif.png')} />
+    </View>
+  );
+}
+
 export default function RootLayout() {
   const expoDb = openDatabaseSync(DATABASE_NAME);
   const db = drizzle(expoDb);
@@ -58,11 +71,49 @@ export default function RootLayout() {
           databaseName={DATABASE_NAME}
           options={{ enableChangeListener: true }}
           useSuspense>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
+          <Tabs
+                screenOptions={{
+                  tabBarActiveTintColor: colors.text,
+                  sceneStyle: {
+                    backgroundColor: colors.background,
+                 },
+                  headerStyle: {
+                    backgroundColor: colors.secondary,
+                  },
+                  headerShadowVisible: true,
+                  headerTintColor: 'black',
+                  tabBarStyle: {
+                  backgroundColor: colors.secondary,
+                  },
+                  header: ({ navigation, route, options }) => {
+                    return (<LogoTitle />)
+                  },
+                }}
+              >
+                <Tabs.Screen name="(goals)" options={{ title: 'Home' }} />
+                <Tabs.Screen name="recipes" options={{ title: 'Recipes' }} />
+                <Tabs.Screen name="(logs)" options={{ title: 'Logs' }} />
+                <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+          
+              </Tabs>
         </SQLiteProvider>
       </Suspense>
     </Context.Provider>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    //flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    height: 90,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  h1: {
+    fontFamily: 'Geist',
+    fontWeight: 'medium',
+    fontSize: 28,
+  },
+});

@@ -1,8 +1,8 @@
-import { autoCalorie, MaintenanceCalories, WeighIn } from "@/constants/AutoCalorieCalculator";
-import { BarMacroChart } from "@/constants/BarMacroChart";
-import { assignNutrition, calculateCalories, NutritionInfo, NutritionInfoFull } from "@/constants/NutritionInfo";
-import RadioButton from "@/constants/selector";
-import { colors } from "@/constants/theme";
+import { autoCalorie, MaintenanceCalories, WeighIn } from "@/components/AutoCalorieCalculator";
+import { BarMacroChart } from "@/components/BarMacroChart";
+import { assignNutrition, calculateCalories, NutritionInfo, NutritionInfoFull } from "@/components/NutritionInfo";
+import RadioButton from "@/components/selector";
+import { colors } from "@/components/theme";
 import { food, foodItem, macroGoal, macroProfile, nutritionGoal, WeightItem } from "@/db/schema";
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { and, desc, eq, gte, inArray, lt, notInArray, sql } from "drizzle-orm";
@@ -11,9 +11,9 @@ import { useEffect, useState } from "react";
 import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
 import { timestamp } from "drizzle-orm/gel-core";
 import { Link } from "expo-router";
-import { ProgressBox } from "@/constants/ProgressBox";
+import { ProgressBox } from "@/components/ProgressBox";
 import { useFont } from "@shopify/react-native-skia";
-import { SimpleChart } from "@/constants/SimpleChart";
+import { SimpleChart } from "@/components/SimpleChart";
 
 
 
@@ -352,12 +352,12 @@ export default function NutritionGoals() {
             <TouchableOpacity style={styles.button} onPress={handleAddGoal}>
                 <Text style={styles.h5}>Set Goals</Text>
             </TouchableOpacity>
-            <Link style={[styles.button, styles.centerContainer]} href='/(tabs)/(goals)/macroProfile' asChild>
+            <Link style={[styles.button, styles.centerContainer]} href='/(goals)/macroProfile' asChild>
                 <TouchableOpacity>
                     <Text style={styles.h5}>create MacroProfile</Text>
                 </TouchableOpacity>
             </Link>
-            <Link style={[styles.button, styles.centerContainer]} href={{pathname: '/(tabs)/(goals)/macroProfile',
+            <Link style={[styles.button, styles.centerContainer]} href={{pathname: '/(goals)/macroProfile',
                 params: {pfId: macro_profile_id}
                 }} asChild>
                 <TouchableOpacity>
