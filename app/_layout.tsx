@@ -8,6 +8,7 @@ import migrations from '@/drizzle/migrations';
 import { useFonts } from 'expo-font';
 import { colors } from '@/components/theme';
 import { ActivityIndicator, StyleSheet, View, Text, Image } from 'react-native';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 interface DateContextType {
   date: Date;
 
@@ -24,6 +25,8 @@ export const Context = createContext<DateContextType>({
 });
 export const DATABASE_NAME = 'tasks';
 
+
+const queryClient = new QueryClient();
 function LogoTitle() {
   return (
     <View style={styles.header}>
@@ -65,40 +68,42 @@ export default function RootLayout() {
     return null;
   }
   return (
-    <Context.Provider value={{date, setDate}}>
-      <Suspense fallback={<ActivityIndicator size="large" />}>
-        <SQLiteProvider
-          databaseName={DATABASE_NAME}
-          options={{ enableChangeListener: true }}
-          useSuspense>
-          <Tabs
-                screenOptions={{
-                  tabBarActiveTintColor: colors.text,
-                  sceneStyle: {
-                    backgroundColor: colors.background,
-                 },
-                  headerStyle: {
+    <QueryClientProvider client={queryClient}>
+      <Context.Provider value={{date, setDate}}>
+        <Suspense fallback={<ActivityIndicator size="large" />}>
+          <SQLiteProvider
+            databaseName={DATABASE_NAME}
+            options={{ enableChangeListener: true }}
+            useSuspense>
+            <Tabs
+                  screenOptions={{
+                    tabBarActiveTintColor: colors.text,
+                    sceneStyle: {
+                      backgroundColor: colors.background,
+                  },
+                    headerStyle: {
+                      backgroundColor: colors.secondary,
+                    },
+                    headerShadowVisible: true,
+                    headerTintColor: 'black',
+                    tabBarStyle: {
                     backgroundColor: colors.secondary,
-                  },
-                  headerShadowVisible: true,
-                  headerTintColor: 'black',
-                  tabBarStyle: {
-                  backgroundColor: colors.secondary,
-                  },
-                  header: ({ navigation, route, options }) => {
-                    return (<LogoTitle />)
-                  },
-                }}
-              >
-                <Tabs.Screen name="(goals)" options={{ title: 'Home' }} />
-                <Tabs.Screen name="recipes" options={{ title: 'Recipes' }} />
-                <Tabs.Screen name="(logs)" options={{ title: 'Logs' }} />
-                <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
-          
-              </Tabs>
-        </SQLiteProvider>
-      </Suspense>
-    </Context.Provider>
+                    },
+                    header: ({ navigation, route, options }) => {
+                      return (<LogoTitle />)
+                    },
+                  }}
+                >
+                  <Tabs.Screen name="(goals)" options={{ title: 'Home' }} />
+                  <Tabs.Screen name="recipes" options={{ title: 'Recipes' }} />
+                  <Tabs.Screen name="(logs)" options={{ title: 'Logs' }} />
+                  <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+            
+                </Tabs>
+          </SQLiteProvider>
+        </Suspense>
+      </Context.Provider>
+    </QueryClientProvider>
   );
 }
 

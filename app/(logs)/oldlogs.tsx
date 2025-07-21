@@ -1,41 +1,118 @@
-import { StyleSheet, Text, View, ScrollView, SectionList, Image, TouchableOpacity} from "react-native";
-import React, { useContext, useEffect, useState } from 'react';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Context } from "../_layout";
-import { useFont } from "@shopify/react-native-skia";
+import { PixelRatio, Pressable, StyleSheet, Text, View, FlatList, ScrollView, SectionList, Image} from "react-native";
+import { colors, spacing, typography } from "@/components/theme";
+import { TouchableOpacity } from "react-native";
+import { Link } from 'expo-router';
+import { NutritionInfo, Item} from "@/components/NutritionInfo";
 import { BarChart } from "@/components/BarChart";
-import { Link } from "expo-router";
-import { Item } from "@/components/NutritionInfo";
-import { colors } from "@/components/theme";
-import { useNutriGoals } from "@/hooks/goal/useGoal";
-import { useHistorySum } from "@/hooks/history/useHistorySum";
-import { useFoodMacroSectionList } from "@/hooks/history/useHistorySectionList";
+import React, { useContext, useEffect, useState } from 'react';
+import {
+  Canvas,
+  Path,
+  SkFont,
+  Skia,
+  useFont,
+} from "@shopify/react-native-skia";
+import Animated, {useSharedValue, withTiming, Easing, useDerivedValue} from "react-native-reanimated";
+import { useFocusEffect } from '@react-navigation/native';
+import { SQLiteProvider, openDatabaseSync, useSQLiteContext } from 'expo-sqlite';
+import { drizzle, useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { food, foodItem, nutritionGoal} from '@/db/schema';
+import { sql, eq, sum, and, gte, lt, desc} from 'drizzle-orm';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Context } from "@/app/_layout";
+
 const strokeWidth = 40;
+
 export default function Logs() {
-  const [show, setShow] = useState(false);
+  
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db);
+  const calorieTarget = 5000;
   const context = useContext(Context)
-  const font = useFont(require("@/Roboto-Light.ttf"), 25);
-  const smallerFont = useFont(require("@/Roboto-Light.ttf"), 25);
-  const { data: nutriGoals, isLoading: loadingGoal, error: errorGoal } = useNutriGoals();
-  const { data: slData, isLoading: loadingSectionList, error: errorSectionList } = useFoodMacroSectionList(
-    new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate()),
-    new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24)
-  );
-  const { data: LiveFood, isLoading: loadingHistorySum, error: errorHistorySum } = useHistorySum(
-    new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate()),
-    new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24)
+  const [show, setShow] = useState(false);
+  const { data: nutriGoals } = useLiveQuery(
+      drizzleDb.select().from(nutritionGoal).orderBy(desc(nutritionGoal.timestamp))
+    )
+  const { data: breakFast } = useLiveQuery(
+    drizzleDb.select().from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+    .where(and(
+      gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
+      lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
+    .orderBy(foodItem.timestamp)
+  , [context.date])
+  const { data: LiveFood } = useLiveQuery(
+    drizzleDb.select({
+      fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      protein: sql<number>`sum(${food.protein} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+    })
+    .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+    .where(and( 
+      gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
+      lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
+    .orderBy(food.id)
+  , [context.date])
+  const timeSections = (start : number, stop: number, step: number) =>
+    Array.from(
+    { length: (stop - start) / step + 1 },
+    (value, index) => start + index * step
+    );
+  const [slData, setSlData] = useState(timeSections(breakFast[0]?.foodItem.timestamp.getHours(), breakFast[breakFast.length - 1]?.foodItem.timestamp.getHours(), 5)
+    .map((tmp) => {
+      return {title: tmp, data: breakFast
+        .filter((item) => (item.foodItem.timestamp.getHours() >= tmp && item.foodItem.timestamp.getHours() < tmp + 5))}
+  }).filter((item) => item.data.length > 0))
+  const dailyProgress = useSharedValue<NutritionInfo>({
+    protein: 0,
+    fat: 0,
+    carbs: 0,
+    fiber: 0,
+  });
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Tab is now focused');
+      console.log(LiveFood[0])
+      return () => {
+        console.log('Tab is unfocused');
+      };
+      
+    }, [])
   );
   useEffect(() => {
-    console.log('this is test for hook', errorGoal)
-  }, [nutriGoals])
-  const isLoading = loadingGoal || loadingHistorySum || loadingSectionList;
-  if (!font || !smallerFont || isLoading) {
-    return <Text>HIIII {loadingGoal}  {loadingHistorySum}  {loadingSectionList}</Text>;
+    //console.log(breakFast[0])
+    //console.log(LiveFood)
+    console.log("HAIISISI")
+    let tmp: (number)[] = []
+    tmp.push(breakFast[0]?.foodItem.timestamp.getHours())
+    for (let i = 1; i < 9; i++) {
+      const tst1 = breakFast?.find((item) => item.foodItem.timestamp.getHours() >= tmp[i - 1] + 3)?.foodItem.timestamp.getHours()
+      if (tst1)
+        tmp.push(tst1)
+
+    }
+    console.log(tmp)
+    const timesec = tmp
+    setSlData(timesec
+    .map((tmp) => {
+      const filtered = breakFast
+        .filter((item) => (item.foodItem.timestamp.getHours() >= tmp && item.foodItem.timestamp.getHours() < tmp + 3))
+      return {title: tmp, data: filtered}
+  
+  }).filter((item) => item.data.length > 0))
+  //console.log(slData)
+  }, [breakFast, context.date])
+  const font = useFont(require("@/Roboto-Light.ttf"), 25);
+  const smallerFont = useFont(require("@/Roboto-Light.ttf"), 25);
+  const displayText = useDerivedValue(() => {
+    return `Calories: ${Math.floor(dailyProgress.value.carbs)}`;
+  });
+  if (!font || !smallerFont) {
+    return <Text>LOADING</Text>;
   }
   const onChange = (event: any, selectedDate? : Date) => {
     const currentDate = selectedDate;
     setShow(false);
-      
+     
     if (currentDate)
       context.setDate(currentDate);
     console.log(context.date);
@@ -44,7 +121,7 @@ export default function Logs() {
   const showTimepicker = () => {
     setShow(true);
   };
-  
+
   return (
     <ScrollView style={styles.container}>
       {show && 
@@ -66,11 +143,11 @@ export default function Logs() {
         <View style={styles.barChartContainer}>
           <BarChart
             backgroundColor="#F0E6DE"
-            dailyTarget={nutriGoals}
+            dailyTarget={nutriGoals[0]}
             colorProtein={colors.protein}
             colorfat={colors.fat}
             colorCarbs={colors.carbs}
-            dailyEnd={LiveFood}
+            dailyEnd={LiveFood[0]}
             strokeWidth={strokeWidth}
           />
         </View>
@@ -85,7 +162,7 @@ export default function Logs() {
         </View>
       </View>
       <SectionList
-        sections={slData}
+      sections={slData}
         renderItem={({item}) => <Item name={item.food.name}
         description={item.food.description}
         servings={item.foodItem.servings}

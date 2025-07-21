@@ -28,11 +28,11 @@ import { useEffect } from "react";
 interface BarProgressProps {
   strokeWidth: number;
   backgroundColor: string;
-	dailyTarget: NutritionInfo;
+	dailyTarget: NutritionInfo | undefined;
   colorProtein: string;
   colorfat: string;
   colorCarbs: string;
-  dailyEnd: NutritionInfo;
+  dailyEnd: NutritionInfo | undefined;
   smallerFont?: SkFont;
 }
 
@@ -62,6 +62,8 @@ export const BarChart: React.FC<BarProgressProps> = ({
   
   if (!dailyTarget)
     dailyTarget = {protein: 0, fat: 0, carbs: 0, calories: 0}
+  if (!dailyEnd)
+    dailyEnd = {protein: 0, fat: 0, carbs: 0, calories: 0}
   const calorieTarget = dailyTarget.calories ? dailyTarget.calories : 0
 	
   const progressDaily = useSharedValue<NutritionInfo>({
