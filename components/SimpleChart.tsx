@@ -24,9 +24,9 @@ interface BarProgressProps {
   strokeWidth: number;
   backgroundColor: string;
   mainText?: string;
-  target: number;
+  target: number | undefined;
   barColor: string;
-  progress: number;
+  progress: number | undefined;
   font?: SkFont;
   smallerFont: SkFont;
   width: number;
@@ -46,8 +46,11 @@ export const SimpleChart: React.FC<BarProgressProps> = ({
     unit,
 }) => {
     if (!target)
-        target = 0;
-
+        target = 200;
+    if (!progress)
+        progress = 0;
+  target = Math.round(target)
+  progress = Math.round(progress)
   const progressDaily = useSharedValue(0)
   const animateChart = () => {
     progressDaily.value = withTiming(progress,  {

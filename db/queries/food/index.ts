@@ -24,15 +24,15 @@ export type FoodType = {
 }
 
 export const insertFood = async (foodObject: FoodType) => {
-  await db.insert(food).values(foodObject);
+  return db.insert(food).values(foodObject).returning();
 };
 
 export const updateFood = async (foodID: number, foodObject: FoodType) => {
-  await db.update(food).set(foodObject).where(eq(food.id, foodID));
+  return db.update(food).set(foodObject).where(eq(food.id, foodID)).returning();
 };
 
 export const deleteFood = async (foodID: number) => {
-  await db.delete(food).where(eq(food.id, foodID));
+  return db.delete(food).where(eq(food.id, foodID)).returning();
 };
 
 export const getNutriGoals = async () => {

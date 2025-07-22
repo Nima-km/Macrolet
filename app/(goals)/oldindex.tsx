@@ -24,9 +24,6 @@ import { Context } from "../_layout";
 import { useRouter } from "expo-router";
 import { autoCalorie, MaintenanceCalories } from "@/components/AutoCalorieCalculator";
 import { NutritionInfoFull } from "@/components/NutritionInfo";
-import { useHistorySum } from "@/hooks/history/useHistorySum";
-import { useNutriGoals } from "@/hooks/goal/useGoal";
-import { useInsertWeight, useLatestWeight } from "@/hooks/weight/useWeight";
 
 
 const FONT_SIZE = 22
@@ -40,13 +37,59 @@ export default function Index() {
   const [showLogWeight, setShowLogWeight] = useState(false);
   const [curWeight, setCurWeight] = useState('');
   const [weightMult, setweightMult] = useState(2.20);
-  const { mutate, isPending, error } = useInsertWeight();
-  const {data: LiveFood, isLoading: liveFoodLoading, error: liveFoodError} = useHistorySum(
-    new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate()),
-    new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24)
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db);
+  useDrizzleStudio(db);
+
+  const WeightOptions = [
+      { label: 'Kg', value: 2.2 },
+      { label: 'Lbs', value: 1 },
+  ];
+
+  const { data: LiveFood } = useLiveQuery(
+    drizzleDb.select({
+      fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      protein: sql<number>`sum(${food.protein} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+      calories: sql<number>`sum((${food.protein} * 4 + ${food.carbs} * 4 + ${food.fat} * 9) * ${foodItem.servings} * ${foodItem.serving_mult})`,
+    })
+    .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+    .where(and( 
+          gte(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate())), 
+          lt(foodItem.timestamp, new Date(context.date.getFullYear(), context.date.getMonth(), context.date.getDate(), 24))))
+    .orderBy(food.id)
+  , [context.date])
+  const { data: nutriGoals } = useLiveQuery(
+    drizzleDb.select().from(nutritionGoal).orderBy(desc(nutritionGoal.timestamp))
   )
-  const { data: nutriGoals, isLoading: goalLoading, error: errorGoal } = useNutriGoals();
-  const { data: currentWeight, isLoading: currentWeightLoading, error: errorcurrentWeight } = useLatestWeight();
+
+  const {data: currentWeight } = useLiveQuery(
+    drizzleDb.select()
+    .from(WeightItem)
+    .orderBy(desc(WeightItem.timestamp))
+  )
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // This code runs when the screen is focused
+      console.log('Tab is now focused');
+
+      // Optionally return a cleanup function if needed
+      return () => {
+        console.log('Tab is unfocused');
+      };
+    }, [])
+  );
+  useEffect(() => {
+    
+      console.log("showLog", showLogWeight)
+    }, [showLogWeight])
+  const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), FONT_SIZE);
+  const smallerFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 16);
+
+  if (!font || !smallerFont) {
+    return <View />;
+  }
   const onChange = (event: any, selectedDate? : Date) => {
     const currentDate = selectedDate;
     setShow(false);
@@ -55,25 +98,21 @@ export default function Index() {
       context.setDate(currentDate);
     console.log(context.date);
   };
+  const logWeight = async () => {
+    if (showLogWeight == true){
+      const tmp = await drizzleDb.insert(WeightItem)
+        .values({weight: (Number(curWeight) ? Number(curWeight) : 0) * weightMult}).returning()
+      
+      console.log('inserted', tmp)
+    }
+    setShowLogWeight(!showLogWeight)
+  }
   const showTimepicker = () => {
     setShow(true);
   };
-  const logWeight = async () => {
-      if (showLogWeight == true){
-        mutate({weight: (Number(curWeight) ? Number(curWeight) : 0) * weightMult})
-        
-      }
-      setShowLogWeight(!showLogWeight)
-    }
   const logWeightCancel = () => {
     setShowLogWeight(!showLogWeight)
   };
-  const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), FONT_SIZE);
-  const smallerFont = useFont(require("@/assets/fonts/Metropolis-Regular.ttf"), 16);
-  const isLoading = liveFoodLoading || goalLoading || currentWeightLoading
-  if (!font || !smallerFont || isLoading) {
-    return <Text>{isLoading ? 'true' : 'false'} {!font}</Text>;
-  }
   return (
     <ScrollView style={styles.container}>
       {show && 
@@ -96,8 +135,8 @@ export default function Index() {
             <DonutChart
               backgroundColor="white"
               radius={radius}
-              dailyProgress={LiveFood?.calories ? LiveFood.calories : 0}
-              targetPercentage={nutriGoals?.calories ? nutriGoals.calories : 3000}
+              dailyProgress={LiveFood[0].calories ? LiveFood[0].calories : 0}
+              targetPercentage={nutriGoals[0]?.calories}
               font={font}
               smallerFont={smallerFont}
             />
@@ -106,9 +145,9 @@ export default function Index() {
             <SimpleChart
               strokeWidth={18}
               backgroundColor="#F3F0EE"
-              target={nutriGoals?.protein}
+              target={Math.round(nutriGoals[0]?.protein)}
               barColor={colors.protein}
-              progress={LiveFood?.protein}
+              progress={LiveFood[0].protein}
               smallerFont={smallerFont}
               mainText="Protein"
               width={120}
@@ -117,9 +156,9 @@ export default function Index() {
             <SimpleChart
               strokeWidth={18}
               backgroundColor="#F3F0EE"
-              target={nutriGoals?.carbs}
+              target={Math.round(nutriGoals[0]?.carbs)}
               barColor={colors.carbs}
-              progress={LiveFood?.carbs}
+              progress={LiveFood[0].carbs}
               smallerFont={smallerFont}
               mainText="Carbs"
               width={120}
@@ -128,9 +167,9 @@ export default function Index() {
             <SimpleChart
               strokeWidth={18}
               backgroundColor="#F3F0EE"
-              target={nutriGoals?.fat}
+              target={Math.round(nutriGoals[0]?.fat)}
               barColor={colors.fat}
-              progress={LiveFood?.fat}
+              progress={LiveFood[0].fat}
               smallerFont={smallerFont}
               mainText="Fat"
               width={120}
@@ -169,7 +208,7 @@ export default function Index() {
                     style={[styles.h1, {fontWeight: 800, backgroundColor: colors.background, paddingHorizontal: 10}]}
                     onChangeText={setCurWeight}
                     value={curWeight}
-                    placeholder={currentWeight ? currentWeight[0]?.weight.toString() : '0'}
+                    placeholder={currentWeight[0]?.weight.toString()}
                     keyboardType="numeric"
                     
                   />
@@ -177,16 +216,16 @@ export default function Index() {
                 :
                 <>
                   <Text style={styles.h5}>Current</Text>
-                  <Text style={[styles.h1, {fontWeight: 800}]}>{Math.round(currentWeight ? currentWeight[0]?.weight * 100 : 0) / 100} lbs</Text>
+                  <Text style={[styles.h1, {fontWeight: 800}]}>{Math.round(currentWeight[0]?.weight * 100) / 100} lbs</Text>
                 </>
               }
             </View>
             {
-              (currentWeight && currentWeight[1]) &&
+              currentWeight[1] &&
               <View style={[styles.centerContainter, {marginTop: 10}]}>
                 <Text style={[styles.h5, 
-                  {color: (currentWeight && currentWeight[0]?.weight - currentWeight[1]?.weight <= 0) ? 'red' : 'green'}]}>
-                    {Math.round((currentWeight ? (currentWeight[0]?.weight - currentWeight[1]?.weight) : 0) * 100) / 100} lbs
+                  {color: currentWeight[0]?.weight - currentWeight[1]?.weight <= 0? 'red' : 'green'}]}>
+                    {Math.round((currentWeight[0].weight - currentWeight[1].weight) * 100) / 100} lbs
                 </Text>
               </View>
             }
