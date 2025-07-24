@@ -9,6 +9,14 @@ import { sql, eq, sum, and, gte, lt, desc} from 'drizzle-orm';
 export const getLatestWeight = async () => {
   return db.select().from(WeightItem).orderBy(desc(WeightItem.timestamp)).limit(3);
 };
+export const getWeightList = async (from: Date, to: Date) => {
+  return db.select()
+            .from(WeightItem)
+            .where(and(
+              gte(WeightItem.timestamp, from),
+              lt(WeightItem.timestamp, to)
+            ))
+};
 export const insertWeight = async (weightObject: WeightType) => {
   return db.insert(WeightItem).values(weightObject).returning();
 };

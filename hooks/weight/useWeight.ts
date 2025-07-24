@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSumHistory } from "@/db/queries/history";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteWeight, getLatestWeight, insertWeight, updateWeight } from "@/db/queries/weight";
+import { deleteWeight, getLatestWeight, getWeightList, insertWeight, updateWeight } from "@/db/queries/weight";
 import { WeightType } from "@/types/weight";
 
 
@@ -12,7 +12,12 @@ export const useLatestWeight = () => {
   });
 };
 
-
+export const useGetWeightList = (from: Date, to: Date) => {
+  return useQuery({
+    queryKey: ["weight", from.toISOString(), to.toISOString()],
+    queryFn: () => getWeightList(from, to),
+  });
+};
 
 export const useInsertWeight = () => {
     const queryClient = useQueryClient()

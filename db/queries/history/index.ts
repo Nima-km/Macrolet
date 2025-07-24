@@ -11,6 +11,7 @@ export const getHistory = async (from: Date, to: Date) => {
       .orderBy(foodItem.timestamp)
 };
 export const getSumHistory = async (from: Date, to: Date) => {
+//  console.log('getDailyHistory')
   return db.select({
         fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
         carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings} * ${foodItem.serving_mult})`,
@@ -23,3 +24,24 @@ export const getSumHistory = async (from: Date, to: Date) => {
         lt(foodItem.timestamp, to)))
       .get()
 };
+
+export const getDailySumHistory = async (from: Date, to: Date) => {
+ // console.log('getDailySumHistory THISSS', from, to)
+  const res = db
+    .select({
+        fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+        carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+        protein: sql<number>`sum(${food.protein} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+        timestamp: sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch', 'localtime')`,
+        enabled: sql<boolean>`${true}` 
+    })
+    .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+    .where(and(
+      gte(foodItem.timestamp, from),
+      lt(foodItem.timestamp, to)
+    ))
+    .groupBy(sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch', 'localtime')`)
+    .orderBy(foodItem.timestamp)
+  return res
+  
+}

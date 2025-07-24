@@ -25,7 +25,7 @@ import { useRouter } from "expo-router";
 import { autoCalorie, MaintenanceCalories } from "@/components/AutoCalorieCalculator";
 import { NutritionInfoFull } from "@/components/NutritionInfo";
 import { useHistorySum } from "@/hooks/history/useHistorySum";
-import { useNutriGoals } from "@/hooks/goal/useGoal";
+import { useNutriGoals } from "@/hooks/macroProfile/useGoal";
 import { useInsertWeight, useLatestWeight } from "@/hooks/weight/useWeight";
 
 
@@ -61,7 +61,6 @@ export default function Index() {
   const logWeight = async () => {
       if (showLogWeight == true){
         mutate({weight: (Number(curWeight) ? Number(curWeight) : 0) * weightMult})
-        
       }
       setShowLogWeight(!showLogWeight)
     }

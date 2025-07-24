@@ -7,16 +7,13 @@ import { food, foodItem, macroGoal, macroProfile, nutritionGoal, WeightItem } fr
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { and, desc, eq, gte, inArray, lt, notInArray, sql } from "drizzle-orm";
 import { useSQLiteContext } from "expo-sqlite";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, View, StyleSheet, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
 import { timestamp } from "drizzle-orm/gel-core";
 import { Link } from "expo-router";
 import { ProgressBox } from "@/components/ProgressBox";
 import { useFont } from "@shopify/react-native-skia";
 import { SimpleChart } from "@/components/SimpleChart";
-import { useDailySumHistory } from "@/hooks/history/useDailySumHistory";
-import { useGetMacroProfile, useGetMacroProfileAll, useInsertNutritionGoal } from "@/hooks/macroProfile/useMacroProfiles";
-import { useGetWeightList } from "@/hooks/weight/useWeight";
 
 
 
@@ -41,19 +38,14 @@ export default function NutritionGoals() {
     const [calorieIntake, setCalorieIntake] = useState<nutriDate[]>([])
     const [dates, setDates] = useState<Date[]>([])
     const [selectedDate, setSelectedDate] = useState(0)
-    const endDate = useMemo(() => {
-        const date = new Date();
-        date.setHours(0, 0, 0, 0);
-        return date;
-    }, []);
-    const startDate = useMemo(() => {
-        const date = new Date();
-        date.setHours(0, 0, 0, 0);
-        
-        date.setDate(date.getDate() - 14)
-        return date;
-    }, []);
     const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    const { data: macroProfileList } = useLiveQuery(
+        drizzleDb.select()
+        .from(macroProfile)
+        )
+
+    const bw = 165
+    const height = 180
     const WeightOptions = [
         { label: 'Gain', value: 1 },
         { label: 'Lose', value: -1 },
@@ -67,67 +59,82 @@ export default function NutritionGoals() {
         { label: 'Moderate', value: .7 },
         { label: 'Max', value: 1 },
     ];
-    const bw = 165
-    const height = 180
-    
-    const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), 17);
-
-    const { data: intakeHistory, isLoading: intakeHistoryLoading, error: errorIntakeHistory } = useDailySumHistory(startDate, endDate);
-    const { data: weighIn, isLoading: weighInLoading, error: errorweighIn } = useGetWeightList(startDate, endDate);
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    const { data: macroProfileList, isLoading: macroProfileListLoading, error: macroProfileListHistory } = useGetMacroProfileAll();
-    const { data: selectedMacroProfile, isLoading: selectedMacroProfileLoading, error: selectedMacroProfileHistory, refetch: refetchProfile} = useGetMacroProfile(macro_profile_id, false);
-    const { mutate: mutateNutritionGoal, isPending, error: errorNutritionGoal } = useInsertNutritionGoal();
-    const isLoading = macroProfileListLoading || selectedMacroProfileLoading || intakeHistoryLoading || weighInLoading
     const formatDate = (item: Date) => {
         return `${item.getFullYear()}-${(item.getMonth() + 1).toString().padStart(2, "0")}-${(item.getDate()).toString().padStart(2, "0")}`
     }
     const handleSelectProtein = (selectedValue: number) => {
+        console.log('SelectedProtein:', selectedValue);
         setMacro_profile_id(0)
         setProteinMult(selectedValue)
         const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, selectedValue)
         setSumNutrition(goal)
- 
+        console.log(sumNutrition)
+    // Handle the selection here
     };
+    const handleAddGoal = async () => {
+        await drizzleDb.insert(nutritionGoal).values(
+            {calories: sumNutrition.calories, 
+            carbs: sumNutrition.carbs, 
+            fat: sumNutrition.fat,
+            protein: sumNutrition.protein
+            })
+        console.log('new macros Set', sumNutrition)
+    }
     const FetchMacroProfile = async (profile_id : number) => {
         setMacro_profile_id(profile_id)
-        refetchProfile().then((result) => {
-            console.log('macro profile', result)
-            if (result.data){
-                const macro_goal = autoCalorie({
-                    macro_profile: result.data, 
-                    calories: calories, 
-                    })
-                if (macro_goal != "OUT OF BOUNDS"){
-                    console.log('OUT OF BOUNDSSSSSS')
-                    setSumNutrition(macro_goal)
-                }
-                else{
-                    console.log(macro_goal)
-                    console.log('HIIIII')
-                }
-            }
-        })
-        
-    }
-    const setupIntakeDate = async () => {
-        let cnt = 0
-
-        let res : nutriDate[] = []
-     //   console.log('tmpdate', endDate, startDate)
-        for (let i = new Date(startDate); i < endDate; i.setDate(i.getDate() + 1)) {
-            if (intakeHistory && intakeHistory[cnt]?.timestamp === formatDate(i)){
-                res.push(intakeHistory[cnt])
-                if (cnt < intakeHistory.length - 1)
-                    cnt++
-            }
-            else {
-                res.push({carbs: 0, fat: 0, protein: 0, timestamp: formatDate(i), enabled: true})
-               // console.log('this is test', startDate)
-            }
+        const macro_profile : NutritionInfoFull[]= await drizzleDb.select({
+            fat: macroGoal.fat,
+            carbs: macroGoal.carbs,
+            protein: macroGoal.protein,
+            calories: macroGoal.calories,
+        }).from(macroProfile).innerJoin(macroGoal, eq(macroGoal.macro_profile, macroProfile.id)).where(eq(macroProfile.id, profile_id))
+        console.log('macro profile', macro_profile)
+        const macro_goal = autoCalorie({
+            macro_profile: macro_profile, 
+            calories: calculateCalories(sumNutrition, 1), 
+            })
+        if (macro_goal != "OUT OF BOUNDS"){
+            setSumNutrition(macro_goal)
         }
-      //  console.log('res', res.length)
-        setCalorieIntake(res)
+        else
+            console.log(macro_goal)
+    }
+    const FetchIntake = async () => {
+        const tmpDate = new Date()
+        tmpDate.setDate(tmpDate.getDate() - 14)
+        const intake : nutriDate[] = await drizzleDb.select({
+            fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+            carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+            protein: sql<number>`sum(${food.protein} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+            timestamp: sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch', 'localtime')`,
+            enabled: sql<boolean>`${true}` 
+        })
+        .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+        .where(gte(foodItem.timestamp, tmpDate))
+        .groupBy(sql<string>`strftime('%F', ${foodItem.timestamp}, 'unixepoch', 'localtime')`)
+        .orderBy(foodItem.timestamp)
+        const tstIntake : nutriDate[] = await drizzleDb.select({
+            fat: sql<number>`sum(${food.fat} * ${foodItem.servings} * ${foodItem.serving_mult})`,
+          // name: sql<string>`(${food.name})`,
+            carbs: sql<number>`sum(${food.carbs} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+            protein: sql<number>`sum(${food.protein} * ${foodItem.servings}* ${foodItem.serving_mult})`,
+            timestamp: sql<string>`strftime('%s', ${foodItem.timestamp}, 'unixepoch')`,
+            enabled: sql<boolean>`${true}`
+        })
+        .from(foodItem).innerJoin(food, eq(foodItem.food_id, food.id))
+        .where(eq(sql<string>`strftime('%Y-%m-%d', ${foodItem.timestamp}, 'unixepoch', 'localtime')`, "2025-05-26"))
+        .orderBy(foodItem.timestamp)
+        console.log('i like boobs', tstIntake)
+        //setCalorieIntake(intake)
+        return intake
+    }
+    const FetchWeight = async () => {
+        const tmpDate = new Date()
+        tmpDate.setDate(tmpDate.getDate() - 14)
+        const weight : WeighIn[] = await drizzleDb.select()
+            .from(WeightItem)
+            .where(gte(WeightItem.timestamp, tmpDate))
+        return weight
     }
     const handleSelectIntake = (selectedValue: number) => {
         console.log('SelectedIntake:', selectedValue);
@@ -138,7 +145,7 @@ export default function NutritionGoals() {
         console.log('AutoIntake:', selectedValue);
         if (selectedValue == 1){
             const tmpin = calorieIntake.filter((item) => item.enabled == true)
-            const tmpw = weighIn ? weighIn : []
+            const tmpw = await FetchWeight()
             console.log('weigh_in', tmpw)
             console.log('Intake', tmpin)
             const maintenance = MaintenanceCalories({calorie_intake: tmpin, weigh_in: tmpw})
@@ -150,27 +157,59 @@ export default function NutritionGoals() {
         }
         setAutoIntake(selectedValue == 1)
     };
+    const setupIntakeDate = async () => {
+        const calint = await FetchIntake()
+        let cnt = 0
+        const tday = new Date()
+        const tmpDate = new Date()
+        tmpDate.setDate(tday.getDate() - 14)
+        console.log('dateFormat', formatDate(tmpDate))
+        let res : nutriDate[] = []
+        console.log('tmpdate', tmpDate, tday)
+        for (let i = tmpDate; i < tday; i.setDate(i.getDate() + 1)) {
+            console.log('i', calint[cnt])
+            console.log('i', calint[cnt]?.timestamp)
+            if (calint[cnt]?.timestamp === formatDate(i)){
+                res.push(calint[cnt])
+                if (cnt < calint.length - 1)
+                    cnt++
+            }
+            else {
+                console.log("did not find it", `${formatDate(i)} ${calint[cnt]?.timestamp}`)
+                res.push({carbs: 0, fat: 0, protein: 0, timestamp: formatDate(i), enabled: true})
+            }
+        }
+        console.log('res', res)
+        setCalorieIntake(res)
+    }
+
     const modifyDateList = (index: number) => {
         let newList = calorieIntake
         newList[index].enabled = !newList[index].enabled
         setCalorieIntake(newList)
         setRefresh(!refresh)
     }
-    const handleAddGoal = async () => {
-        mutateNutritionGoal(sumNutrition)
-    }
     useEffect(() => {
-        //if (intakeHistory)
-            setupIntakeDate()
-    }, [intakeHistory])
+        const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
+        setSumNutrition(goal)
+        setupIntakeDate()
+    }, [])
     useEffect(() => {
-        console.log('startDate', startDate)
-    }, [startDate])
+        const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
+        setSumNutrition(goal)
+    }, [dietOption, weightChange])
     useEffect(() => {
-
+        if (macro_profile_id == 0){
+            const goal = assignNutrition(calories + Number(weightChange) * 500 * dietOption, bw, height, proteinMult)
+            setSumNutrition(goal)
+        }
     }, [calories])
-    if (!font || isLoading || calorieIntake.length == 0)
-        return <Text>HIIII {calorieIntake.toString()}</Text>
+    useEffect(() => {
+        handleAutoIntake(Number(autoIntake))
+    }, [refresh])
+    const font = useFont(require("@/assets/fonts/Geist-VariableFont_wght.ttf"), 17);
+    if (!font || calorieIntake.length == 0)
+        return <View></View>
     return (
         <ScrollView style={styles.container}>
             <Text style={[styles.h1, styles.text]}>Nutrition Calculator</Text>
@@ -276,15 +315,14 @@ export default function NutritionGoals() {
                         )
                         })
 
-                    } 
-                    
+                    }
                     <View style={[styles.rowContainer]}>
-                        <Text style={[styles.h5]}>{calorieIntake ? new Date(calorieIntake[selectedDate]?.timestamp).toString().slice(3, 11) : ''}</Text>
+                        <Text style={[styles.h5]}>{new Date(calorieIntake[selectedDate].timestamp).toString().slice(3, 11)}</Text>
                         <View style={[{ minWidth: 300}]}>
                             <SimpleChart 
                                 strokeWidth={20}
                                 target={2000}
-                                progress={calorieIntake ? calculateCalories(calorieIntake[selectedDate], 1) : 0}
+                                progress={calculateCalories(calorieIntake[selectedDate], 1)}
                                 smallerFont={font} 
                                 backgroundColor={colors.box} 
                                 barColor={colors.button}
@@ -297,7 +335,7 @@ export default function NutritionGoals() {
             </View>
             <View style={styles.box}>
                 <FlatList
-                    data={macroProfileList ? macroProfileList : []}
+                    data={macroProfileList}
                     renderItem={({index, item}) => 
                         <TouchableOpacity onPress={() => FetchMacroProfile(item.id)}>
                             <View style={[styles.box, {backgroundColor: item.id == macro_profile_id ? 'green' : 'red'}]}>

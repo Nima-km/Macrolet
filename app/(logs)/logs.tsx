@@ -7,7 +7,7 @@ import { BarChart } from "@/components/BarChart";
 import { Link } from "expo-router";
 import { Item } from "@/components/NutritionInfo";
 import { colors } from "@/components/theme";
-import { useNutriGoals } from "@/hooks/goal/useGoal";
+import { useNutriGoals } from "@/hooks/macroProfile/useGoal";
 import { useHistorySum } from "@/hooks/history/useHistorySum";
 import { useFoodMacroSectionList } from "@/hooks/history/useHistorySectionList";
 const strokeWidth = 40;
